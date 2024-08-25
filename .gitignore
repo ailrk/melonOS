@@ -80,3 +80,5 @@ sysroot
 #
 
 .qemu.log
+*.img
+*.bin
