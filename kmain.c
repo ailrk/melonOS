@@ -7,7 +7,6 @@ int kmain(void) {
     load_idt();
     Terminal term = create_teriminal();
 
-    write(&term, "Welcome to 0S\n", 14);
-
+    repl(&term);
     return 0;
 }

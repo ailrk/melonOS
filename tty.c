@@ -1,4 +1,6 @@
 #include "tty.h"
+#include "string.h"
+#include "i386.h"
 
 #if defined(__linux__)
 #error "wrong targat"
@@ -8,20 +10,16 @@
 #error "wrong target. require i386"
 #endif
 
-static inline uint8_t vga_entry_color(VgaColor fg, VgaColor bg) {
+static inline uint8_t 
+vga_entry_color(VgaColor fg, VgaColor bg) {
     return fg | bg << 4;
 }
 
-static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
+static inline uint16_t 
+vga_entry(unsigned char uc, uint8_t color) {
     return (uint16_t)(uc) | (uint16_t)(color) << 8;
 }
 
-size_t strlen(char const *str) {
-    size_t len = 0;
-    for (; *str != '\0'; ++len)
-        ;
-    return len;
-}
 
 static size_t const VGA_WIDTH = 80;
 static size_t const VGA_HEIGHT = 25;
@@ -32,16 +30,10 @@ static size_t const VGA_HEIGHT = 25;
 #define HISTORY_END (HISTORY_START + TERMBUF_SIZE * 8)
 #define MAX_PAGE 7
 
-void memcpy(void *dest, void *src, size_t sz) {
-    for (int i = 0; i < sz; ++i) {
-        ((char *)dest)[i] = ((char *)src)[i];
-    }
-}
-
 void clear(Terminal *self) {
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
         for (size_t x = 0; x < VGA_WIDTH; ++x)
-            self->buffer[y * VGA_HEIGHT + x] = vga_entry(' ', self->color);
+            self->buffer[y * VGA_WIDTH + x] = vga_entry(' ', self->color);
 }
 
 void save_buffer(Terminal *self) {
@@ -54,16 +46,21 @@ void load_page(Terminal *self, uint16_t page) {
 
 void page_up(Terminal *self) {
     save_buffer(self);
-    int new_pagen = self->pagen += 1;
-    if (new_pagen > MAX_PAGE) {
-
-    }
+    int new_pagen = self->pagen - 1;
+    if (new_pagen < 0)
+        self->pagen = 0;
+    else
+        self->pagen = new_pagen;
     load_page(self, self->pagen);
 }
 
 void page_down(Terminal *self) {
     save_buffer(self);
-    self->pagen -= 1;
+    int new_pagen = self->pagen + 1;
+    if (new_pagen > MAX_PAGE)
+        self->pagen = MAX_PAGE;
+    else 
+        self->pagen = new_pagen;
     load_page(self, self->pagen);
 }
 
@@ -72,7 +69,7 @@ void newline(Terminal *self) {
     self->row += 1;
 }
 
-Terminal create_terminal() {
+Terminal create_teriminal() {
     Terminal self = 
     { .row = 0, 
       .column = 0, 
@@ -86,7 +83,7 @@ Terminal create_terminal() {
 }
 
 void set_cursor(Terminal *self, uint16_t x, uint16_t y) {
-    self->cursor = self->buffer + (y * VGA_HEIGHT + x );
+    self->cursor = self->buffer + (y * VGA_WIDTH + x );
 }
 
 void set_color(Terminal *self, uint8_t color) { self->color = color; }
@@ -94,7 +91,7 @@ void set_color(Terminal *self, uint8_t color) { self->color = color; }
 void put_entry_at(Terminal *self, char c) {
     size_t x = self->column;
     size_t y = self->row;
-    self->buffer[y * VGA_HEIGHT + x] = vga_entry(c, self->color);
+    self->buffer[y * VGA_WIDTH + x] = vga_entry(c, self->color);
 }
 
 void putchar(Terminal *self, char c) {
@@ -121,3 +118,7 @@ void write(Terminal *self, char const *data, size_t size) {
 }
 
 void write_string(Terminal *self, char const *data) { write(self, data, strlen(data)); }
+
+void repl(Terminal *self) {
+    write_string(self, "melonos 0.0.1\n");
+}

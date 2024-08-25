@@ -39,11 +39,12 @@ DEF_I386 void insl(int port, void *addr, int cnt) {
                      : "memory", "cc");
 }
 
-DEF_I386 void outb(unsigned short port, unsigned char data) {
-    __asm__ volatile("out %0, %1" :: "a"(data), "d"(port));
+static inline void outb(uint16_t port, uint8_t val)
+{
+    __asm__ volatile ( "outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
 }
 
-DEF_I386 void outw(unsigned short port, unsigned short data) {
+DEF_I386 void outw(unsigned short port, uint16_t data) {
     __asm__ volatile("out %0, %1" :: "a"(data), "d"(port));
 }
 

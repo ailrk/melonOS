@@ -29,26 +29,27 @@ typedef enum VgaColor {
 /* The vga terminal */
 
 typedef struct Terminal {
-    size_t row;
-    size_t column;
-    uint8_t color;
+    size_t    row;
+    size_t    column;
+    uint8_t   color;
     uint16_t *buffer;
-    uint16_t pagen;
+    uint16_t  pagen;
     uint16_t *cursor;
 }Terminal;
 
 
-struct Terminal create_teriminal();
-void clear(Terminal *self);
-void save_buffer(Terminal *self);
-void load_page(Terminal *self, uint16_t page);
-void page_up(Terminal *self);
-void page_down(Terminal *self);
-void newline(Terminal *self);
-void set_cursor(Terminal *self, uint16_t x, uint16_t y);
-void set_color(Terminal*, uint8_t color);
-void put_entry_at(Terminal*, char c);
-void putchar(Terminal*, char c);
-void write(Terminal*, const char *data, size_t size);
-void write_string(Terminal*, const char *data);
-void repl(Terminal*);
+Terminal create_teriminal();
+void     clear(Terminal *self);
+void     save_buffer(Terminal *self);
+void     load_page(Terminal *self, uint16_t page);
+void     page_up(Terminal *self);
+void     page_down(Terminal *self);
+void     newline(Terminal *self);
+void     set_cursor(Terminal *self, uint16_t x, uint16_t y);
+void     set_color(Terminal*, uint8_t color);
+void     put_entry_at(Terminal*, char c);
+void     putchar(Terminal*, char c);
+void     write(Terminal*, const char *data, size_t size);
+void     write_string(Terminal*, const char *data);
+void     repl(Terminal*);
+void     update_cursor(int x, int y);

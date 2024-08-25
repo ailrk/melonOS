@@ -165,10 +165,6 @@ output_end:
     pop ebp
     ret
 
-; define data
-bios_msg:
-    db "[- BIOS ok -]", 0
-
 
 times 1024 - ($-$$) db 0           ; pad til 510 bytes
 ;; end of the second 512 bytes

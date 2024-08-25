@@ -20,15 +20,14 @@ void exception_handler() {
 
 void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
     IDTEntry *entry = &idt[vector];
-    
-    entry->isr_low = (size_t) isr & 0xffff;
+    entry->isr_low = (uint32_t) isr & 0xffff;
     entry->kernel_cs = 0x08; // 8 bytes after gdt 
     entry->reserved = 0;
     entry->attributes = flags;
-    entry->isr_high = (size_t) isr >> 16;
+    entry->isr_high = (uint32_t) isr >> 16;
 }
 
-extern void* isr_handler_table[];
+static void* isr_handler_table[IDT_MAX_VECTOR];
 
 
 void load_idt() {
@@ -41,6 +40,7 @@ void load_idt() {
 
     regist_idt_handler(I_SYSCALL, isr_handler_table[I_SYSCALL], TrapGate);
 
+    
     lidt((void*)&idtr);
     sti();
 }

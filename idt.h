@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdlib.h>
 #include "i386.h"
 
 #define IDT_MAX_VECTOR 256

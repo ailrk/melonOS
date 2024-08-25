@@ -27,6 +27,14 @@ void *memmove(void *dest, const void* src, uint32_t n) {
 }
 
 
+void memcpy(void *dest, const void *src, uint32_t n) {
+    for (int i = 0; i < n; ++i) {
+        ((char *)dest)[i] = ((char *)src)[i];
+    }
+}
+
+
+
 void* memset(void* tgt, int v, uint32_t n) {
     unsigned char *t = tgt;
     while(n--) {
