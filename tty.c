@@ -1,6 +1,7 @@
 #include "tty.h"
 #include "string.h"
 #include "i386.h"
+#include "defs.h"
 
 #if defined(__linux__)
 #error "wrong targat"
@@ -30,95 +31,95 @@ static size_t const VGA_HEIGHT = 25;
 #define HISTORY_END (HISTORY_START + TERMBUF_SIZE * 8)
 #define MAX_PAGE 7
 
-void clear(Terminal *self) {
+Terminal term;
+
+void vga_tty_clear() {
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
         for (size_t x = 0; x < VGA_WIDTH; ++x)
-            self->buffer[y * VGA_WIDTH + x] = vga_entry(' ', self->color);
+            term.buffer[y * VGA_WIDTH + x] = vga_entry(' ', term.color);
 }
 
-void save_buffer(Terminal *self) {
-    uint16_t *page_history = (uint16_t *)(HISTORY_START + TERMBUF_SIZE * self->pagen);
+void vga_tty_save_buffer() {
+    uint16_t *page_history = (uint16_t *)(HISTORY_START + TERMBUF_SIZE * term.pagen);
 }
 
-void load_page(Terminal *self, uint16_t page) {
-    memcpy(self->buffer, (char *)(HISTORY_START + TERMBUF_SIZE * page), TERMBUF_SIZE);
+void vga_tty_load_page(uint16_t page) {
+    memcpy(term.buffer, (char *)(HISTORY_START + TERMBUF_SIZE * page), TERMBUF_SIZE);
 }
 
-void page_up(Terminal *self) {
-    save_buffer(self);
-    int new_pagen = self->pagen - 1;
+void vga_tty_page_up() {
+    vga_tty_save_buffer();
+    int new_pagen = term.pagen - 1;
     if (new_pagen < 0)
-        self->pagen = 0;
+        term.pagen = 0;
     else
-        self->pagen = new_pagen;
-    load_page(self, self->pagen);
+        term.pagen = new_pagen;
+    vga_tty_load_page(term.pagen);
 }
 
-void page_down(Terminal *self) {
-    save_buffer(self);
-    int new_pagen = self->pagen + 1;
+void vga_tty_page_down() {
+    vga_tty_save_buffer();
+    int new_pagen = term.pagen + 1;
     if (new_pagen > MAX_PAGE)
-        self->pagen = MAX_PAGE;
+        term.pagen = MAX_PAGE;
     else 
-        self->pagen = new_pagen;
-    load_page(self, self->pagen);
+        term.pagen = new_pagen;
+    vga_tty_load_page(term.pagen);
 }
 
-void newline(Terminal *self) {
-    self->column = 0;
-    self->row += 1;
+void newline() {
+    term.column = 0;
+    term.row += 1;
 }
 
-Terminal create_teriminal() {
-    Terminal self = 
-    { .row = 0, 
-      .column = 0, 
-      .color = vga_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK),
-      .buffer = (uint16_t *)(TERMBUF_START),
-      .pagen = 0
-    };
-
-    clear(&self);
-    return self;
+void vga_tty_init() {
+    term = (Terminal)
+        { .row = 0, 
+          .column = 0, 
+          .color = vga_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK),
+          .buffer = (uint16_t *)(TERMBUF_START),
+          .pagen = 0
+        };
+    vga_tty_clear();
 }
 
-void set_cursor(Terminal *self, uint16_t x, uint16_t y) {
-    self->cursor = self->buffer + (y * VGA_WIDTH + x );
+void vga_tty_set_cursor(uint16_t x, uint16_t y) {
+    term.cursor = term.buffer + (y * VGA_WIDTH + x );
 }
 
-void set_color(Terminal *self, uint8_t color) { self->color = color; }
+void vga_tty_set_color(uint8_t color) { term.color = color; }
 
-void put_entry_at(Terminal *self, char c) {
-    size_t x = self->column;
-    size_t y = self->row;
-    self->buffer[y * VGA_WIDTH + x] = vga_entry(c, self->color);
+void put_entry_at(char c) {
+    size_t x = term.column;
+    size_t y = term.row;
+    term.buffer[y * VGA_WIDTH + x] = vga_entry(c, term.color);
 }
 
-void putchar(Terminal *self, char c) {
-    if (self->row > VGA_HEIGHT) {
-        page_down(self);
+void vga_tty_putchar(char c) {
+    if (term.row > VGA_HEIGHT) {
+        vga_tty_page_down();
     }
 
     if (c == '\n') {
-        newline(self);
+        newline();
         return;
     }
 
-    put_entry_at(self, c);
-    if (++self->column == VGA_WIDTH) {
-        self->column = 0;
-        if (++self->row == VGA_HEIGHT)
-            self->row = 0;
+    put_entry_at(c);
+    if (++term.column == VGA_WIDTH) {
+        term.column = 0;
+        if (++term.row == VGA_HEIGHT)
+            term.row = 0;
     }
 }
 
 
-void write(Terminal *self, char const *data, size_t size) {
-    for (size_t i = 0; i < size; ++i) putchar(self, data[i]);
+void vga_tty_write(char const *data, size_t size) {
+    for (size_t i = 0; i < size; ++i) vga_tty_putchar(data[i]);
 }
 
-void write_string(Terminal *self, char const *data) { write(self, data, strlen(data)); }
+void vga_tty_write_string(char const *data) { vga_tty_write(data, strlen(data)); }
 
-void repl(Terminal *self) {
-    write_string(self, "melonos 0.0.1\n");
+void repl() {
+    vga_tty_write_string("msh 0.0.1\n");
 }

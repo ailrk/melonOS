@@ -21,6 +21,8 @@ typedef struct IDTRecord
 } __attribute__((packed)) IDTRecord ;
 
 
+typedef void (*IDTHanlder)();
+
 // 8 bytes flag that describes the idt
 // | 7 | 6-5 | 4 |  3-0      |
 // | p | dpl | 0 | gate type |
@@ -32,6 +34,7 @@ enum IDTFlags {
 
 
 void exception_handler();
+IDTHanlder get_handler_from_idt(uint8_t vector);
 void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags);
 void load_idt();
 

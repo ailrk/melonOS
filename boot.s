@@ -44,6 +44,7 @@ boot:
     or eax, 0x1                 ; set protected mode bit on eax
     mov cr0, eax                ; mv it to cr0 register.
                                 ; this enables protected mode
+    ;lidt [idtr]
 
     mov ax, DATA_SEG            ; set seg reg points to data segment.
     mov ds, ax
@@ -89,14 +90,14 @@ gdt_code:                       ; code segment (CS)
     dw 0x0                      ; - base 0 - 15 bits
     db 0x0                      ; - base 16 - 23
     db 0x9a                     ; - access byte
-    db 0xcf                     ; - flags 4 bit, lo 4 bit
+    db 1101111b                 ; - flags 4 bit, lo 4 bit
     db 0x0                      ; - base 24 - 32 bits
 gdt_data:                       ; data segment (DS)
     dw 0xffff                   ; the same
     dw 0x0
     db 0x0
     db 0x92
-    db 0xcf
+    db 1101111b
     db 0x0
 gdt_end:
 gdt_pointer:
@@ -121,7 +122,6 @@ dw 0xaa55                           ; magic word 0x55AA, little endian for x86.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; The second 512 bytes sector
 next_512_bytes:
-
     ; entering 32 bit mode.
     ; in protected mode we can't use bios anymore
     bits 32
@@ -165,6 +165,9 @@ output_end:
     pop ebp
     ret
 
+int_handler:
+    jmp int_handler                ; hang
+    iret
 
 times 1024 - ($-$$) db 0           ; pad til 510 bytes
 ;; end of the second 512 bytes

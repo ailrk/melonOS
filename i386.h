@@ -18,6 +18,11 @@ DEF_I386 void sti() {
     __asm__ volatile("sti");
 }
 
+
+DEF_I386 void int_(uint8_t interrupt) {
+    __asm__ volatile("int %0" : : "i" (interrupt));
+}
+
 DEF_I386 uint32_t xchg(volatile uint32_t *addr, uint32_t newval) {
   uint32_t result;
   // The + in "+m" denotes a read-modify-write operand.
@@ -29,7 +34,9 @@ DEF_I386 uint32_t xchg(volatile uint32_t *addr, uint32_t newval) {
 }
 
 DEF_I386 void lidt(void *addr) {
-    __asm__ volatile("lidt %0":: "m"(addr));
+    // m should be r and it needs to be derefenced for whatever reason.
+    // __asm__ volatile("lidt %0":: "m"(addr));
+    __asm__ volatile("lidt (%0)":: "r"(addr));
 }
 
 DEF_I386 void insl(int port, void *addr, int cnt) {
@@ -60,4 +67,15 @@ DEF_I386 void stosb(void *addr, int data, int cnt) {
                      : "=D"(addr), "=c"(cnt)
                      : "0"(addr), "1"(cnt), "a"(data)
                      : "memory", "cc");
+}
+
+
+DEF_I386 void iret() {
+    __asm__ volatile ("iret");
+}
+
+
+/* write a value to edi for debugging purpose */
+DEF_I386 void debug_efi(uint32_t val) {
+    __asm__ volatile("movl %0,  %%edi\n" : "=r"(val): ); 
 }
