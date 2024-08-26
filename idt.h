@@ -21,8 +21,6 @@ typedef struct IDTRecord
 } __attribute__((packed)) IDTRecord ;
 
 
-typedef void (*IDTHanlder)();
-
 // 8 bytes flag that describes the idt
 // | 7 | 6-5 | 4 |  3-0      |
 // | p | dpl | 0 | gate type |
@@ -34,7 +32,7 @@ enum IDTFlags {
 
 
 void exception_handler();
-IDTHanlder get_handler_from_idt(uint8_t vector);
+void *get_handler_from_idt(uint8_t vector);
 void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags);
 void load_idt();
 
@@ -54,15 +52,14 @@ enum {
     I_COPSEG       =  9,   // coprocessor sement overrun
     I_TSS          = 10,   // invalid tss 
     I_SEGNP        = 11,   // segment not present
-    I_STKSGFLT     = 12,   // stuck segment fault
+    I_STKSGFLT     = 12,   // stack segment fault
     I_GPFLT        = 13,   // general protection fault
     I_PGFLT        = 14,   // page fault
                            // reserved
-    I_FPERR        = 15,   // floating point error 
-    I_ALIGN        = 16,   // alignment check 
-    I_MACHINE      = 17,   // machine check
-    I_SIMDERR      = 18,   // simd floating point error
-    I_VIRERR       = 19,   // virtualization error
+    I_FPERR        = 16,   // floating point error 
+    I_ALIGN        = 17,   // alignment check 
+    I_MACHINE      = 18,   // machine check
+    I_SIMDERR      = 19,   // simd floating point error
     
     I_IRQ_TIMER    = IRQ0,        // IRQ timer
     I_IRQ_KBD      = IRQ0 + 1,    // IRQ keyboard
@@ -73,5 +70,5 @@ enum {
 
     /* melonos specific vectors */
     I_SYSCALL    =  64,   // system call 
-    I_DEFAULT    = 300,   // catch all
+    I_DEFAULT    = 255,   // catch all
 };

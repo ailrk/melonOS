@@ -68,9 +68,7 @@ DEF_I386 void stosb(void *addr, int data, int cnt) {
 }
 
 
-DEF_I386 void iret() {
-    __asm__ volatile ("iret");
-}
+#define iret() __asm__ volatile ("iret");
 
 
 /* write a value to edi for debugging purpose */

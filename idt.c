@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "isr.h"
 #include <stdint.h>
 
 // an array of IDT entries; 
@@ -20,12 +21,12 @@ void exception_handler() {
 }
 
 // reconstruct the handler ptr from the IDT table. 
-IDTHanlder get_handler_from_idt(uint8_t vector) {
+void *get_handler_from_idt(uint8_t vector) {
     IDTEntry e = idt[vector];
     uint32_t high = e.isr_high << 16;
     uint32_t low = e.isr_low;
     uint32_t ptr = high | low;
-    return (IDTHanlder)ptr;
+    return (void*)ptr;
 }
 
 
@@ -45,7 +46,7 @@ void load_idt() {
         regist_idt_handler(i, &exception_handler, InterruptGate);
     }
 
-    regist_idt_handler(I_SYSCALL, &exception_handler, TrapGate);
+    isr_register();
     
     lidt((void*)&idtr);
     sti();

@@ -29,7 +29,7 @@ boot:
     ; memory.
     mov [disk], dl
     mov ah, 0x2                 ; read sectors
-    mov al, 6                   ; sector to read
+    mov al, 36                  ; sector to read
     mov ch, 0                   ; cylinder index
     mov dh, 0                   ; head index
     mov cl, 2                   ; sector index
