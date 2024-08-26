@@ -38,18 +38,18 @@ typedef struct Terminal {
 }Terminal;
 
 
-void     vga_tty_init();
-void     vga_tty_clear();
-void     vga_tty_save_buffer();
-void     vga_tty_load_page(uint16_t page);
-void     vga_tty_page_up();
-void     vga_tty_page_down();
-void     vga_tty_newline();
-void     vga_tty_set_cursor(uint16_t x, uint16_t y);
-void     vga_tty_set_color(uint8_t color);
-void     vga_tty_put_entry_at(char c);
-void     vga_tty_putchar(char c);
-void     vga_tty_write(const char *data, size_t size);
-void     vga_tty_write_string(const char *data);
-void     vga_tty_repl();
-void     vga_tty_update_cursor(int x, int y);
+void vga_tty_init();
+void vga_tty_clear();
+void vga_tty_save_buffer();
+void vga_tty_load_page(uint16_t page);
+void vga_tty_page_up();
+void vga_tty_page_down();
+void vga_tty_newline();
+void vga_tty_set_cursor(uint16_t x, uint16_t y);
+void vga_tty_set_color(uint8_t color);
+void vga_tty_put_entry_at(char c);
+void vga_tty_putchar(char c);
+void vga_tty_write(const char *data, size_t size);
+void vga_tty_write_string(const char *data);
+void vga_tty_printf(const char *fmt, ...);
+void vga_tty_repl();

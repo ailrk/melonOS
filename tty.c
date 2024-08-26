@@ -2,6 +2,7 @@
 #include "string.h"
 #include "i386.h"
 #include "defs.h"
+#include <stdarg.h>
 
 #if defined(__linux__)
 #error "wrong targat"
@@ -119,6 +120,69 @@ void vga_tty_write(char const *data, size_t size) {
 }
 
 void vga_tty_write_string(char const *data) { vga_tty_write(data, strlen(data)); }
+
+
+static void print_uint(uint32_t n, int base) {
+    static const char digits[] = "0123456789ABCDEF";
+    char buf[16 + 1];
+    int i = 0;
+
+    do {
+        buf[i++] = digits[n % base];
+        n /= base;
+    } while(n);
+    buf[i++] = '\0';
+
+    vga_tty_write_string(strrev(buf));
+}
+
+
+static void print_int(int n, int base) {
+    if (n < 0) {
+        n = -n;
+    }
+    print_uint(n, base);
+    vga_tty_putchar('-');
+}
+
+
+static void print_hex(int n) {
+    vga_tty_write_string("0x");
+    print_int(n, 16);
+}
+
+
+static void print_uhex(uint32_t n) {
+    vga_tty_write_string("0x");
+    print_uint(n, 16);
+}
+
+
+/* printf on vga tty.
+ * supports %d, %x, %p, %s.
+ * */ 
+void vga_tty_printf(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    while(*fmt) {
+        if (*fmt == '%') {
+            fmt++;
+            if (*fmt == 'd') {
+                print_int(va_arg(args, int), 10);
+            } else if (*fmt == 'x') {
+                print_hex(va_arg(args, int));
+            } else if (*fmt == 'p') {
+                print_uhex(va_arg(args, uint32_t));
+            } else if (*fmt == 's') {
+                vga_tty_write_string(va_arg(args, const char *));
+            }
+        } else {
+            vga_tty_putchar(*fmt);
+        }
+        fmt++;
+    }
+    va_end(args);
+}
 
 void repl() {
     vga_tty_write_string("msh 0.0.1\n");

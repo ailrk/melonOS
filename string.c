@@ -67,3 +67,19 @@ char *strncpy(char *dest, const char* src, uint32_t n) {
     while (n-- > 0) *dest++ = 0;
     return dest;
 }
+
+
+ char *strrev(char *s) {
+    char *b = s;
+    char *e = s;
+    char tmp;
+    while(*e != '\0') e++;
+    e--;
+    while(e - b >= 1) {
+        tmp = *b;
+        *b = *e;
+        *e = tmp;
+        b++; e--;
+    }
+    return s;
+}
