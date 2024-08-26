@@ -124,13 +124,31 @@ void vga_tty_write_string(char const *data) { vga_tty_write(data, strlen(data));
 
 static void print_uint(uint32_t n, int base) {
     static const char digits[] = "0123456789ABCDEF";
-    char buf[16 + 1];
+
+    char buf[32];
     int i = 0;
 
     do {
         buf[i++] = digits[n % base];
         n /= base;
     } while(n);
+
+    switch (base) {
+        case 2:
+            buf[i++] = 'x';
+            buf[i++] = 'b';
+            break;
+        case 8:
+            buf[i++] = 'o';
+            buf[i++] = '0';
+            break;
+        case 16:
+            buf[i++] = 'x';
+            buf[i++] = '0';
+            break;
+        default:
+            break;
+    }
     buf[i++] = '\0';
 
     vga_tty_write_string(strrev(buf));
@@ -140,20 +158,18 @@ static void print_uint(uint32_t n, int base) {
 static void print_int(int n, int base) {
     if (n < 0) {
         n = -n;
+        vga_tty_putchar('-');
     }
     print_uint(n, base);
-    vga_tty_putchar('-');
 }
 
 
 static void print_hex(int n) {
-    vga_tty_write_string("0x");
     print_int(n, 16);
 }
 
 
 static void print_uhex(uint32_t n) {
-    vga_tty_write_string("0x");
     print_uint(n, 16);
 }
 

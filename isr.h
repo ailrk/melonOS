@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 void handle_I_DIVBYZERO();
 void handle_I_DEBUG();
 void handle_I_NMI();
@@ -29,3 +31,8 @@ void handle_I_SYSCALL();
 void handle_I_DEFAULT();
 
 void isr_register();
+
+
+typedef struct TrapFrame {
+    uint32_t esi;
+}TrapFrame;

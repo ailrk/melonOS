@@ -13,13 +13,6 @@ IDTRecord idtr;
 int vectors[IDT_MAX_VECTOR];
 
 
-// default exception handler 
-__attribute__((noreturn))
-void exception_handler() {
-    __asm__ volatile ("cli; hlt"); // hangs the computer
-    //__asm__ volatile ("iret"); // hangs the computer
-}
-
 // reconstruct the handler ptr from the IDT table. 
 void *get_handler_from_idt(uint8_t vector) {
     IDTEntry e = idt[vector];
@@ -42,12 +35,7 @@ void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
 void load_idt() {
     idtr.base = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
-    for (uint16_t i = 0; i < IDT_MAX_VECTOR; ++i) {
-        regist_idt_handler(i, &exception_handler, InterruptGate);
-    }
-
     isr_register();
-    
     lidt((void*)&idtr);
     sti();
 }

@@ -81,8 +81,17 @@ void handle_I_IRQ_SPURIOUS() {
 void handle_I_SYSCALL() {
     vga_tty_write_string("syscall\n");
 }
+__attribute__((noreturn))
 void handle_I_DEFAULT() {
 }
+
+// default exception handler 
+__attribute__((noreturn))
+void exception_handler() {
+    vga_tty_printf("\n[ERR] unhandled exception\n");
+    __asm__ volatile ("cli; hlt"); // hangs the computer
+}
+
 
 
 extern void* isr_I_DIVBYZERO;
@@ -116,6 +125,9 @@ extern void* isr_I_DEFAULT;
 
 
 void isr_register() {
+    for (int i = 0; i < IDT_MAX_VECTOR; ++i) {
+        regist_idt_handler(i, &exception_handler, InterruptGate);
+    }
     regist_idt_handler(I_DIVBYZERO, &isr_I_DIVBYZERO, InterruptGate);
     regist_idt_handler(I_DEBUG, &isr_I_DEBUG, InterruptGate);
     regist_idt_handler(I_NMI, &isr_I_NMI, InterruptGate);

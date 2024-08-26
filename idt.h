@@ -31,7 +31,6 @@ enum IDTFlags {
 };
 
 
-void exception_handler();
 void *get_handler_from_idt(uint8_t vector);
 void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags);
 void load_idt();
