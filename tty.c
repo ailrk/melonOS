@@ -73,13 +73,11 @@ void newline() {
 }
 
 void vga_tty_init() {
-    term = (Terminal)
-        { .row = 0, 
-          .column = 0, 
-          .color = vga_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK),
-          .buffer = (uint16_t *)(TERMBUF_START),
-          .pagen = 0
-        };
+    term.row = 0;
+    term.column = 0;
+    term.color = vga_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+    term.buffer = (uint16_t *)(TERMBUF_START);
+    term.pagen = 0;
     vga_tty_clear();
 }
 

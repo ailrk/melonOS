@@ -6,8 +6,5 @@
 int kmain(void) {
     load_idt();
 
-    vga_tty_init();
-    vga_tty_write_string("HI");
-
     return 0;
 }
