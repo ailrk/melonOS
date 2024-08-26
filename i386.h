@@ -1,3 +1,4 @@
+#pragma once 
 // x86 specific instructions
 
 #include <stdint.h>
@@ -18,10 +19,7 @@ DEF_I386 void sti() {
     __asm__ volatile("sti");
 }
 
-
-DEF_I386 void int_(uint8_t interrupt) {
-    __asm__ volatile("int %0" : : "i" (interrupt));
-}
+#define int_(interrupt) __asm__ volatile("int %0" : : "i" (interrupt))
 
 DEF_I386 uint32_t xchg(volatile uint32_t *addr, uint32_t newval) {
   uint32_t result;

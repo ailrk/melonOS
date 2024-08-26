@@ -79,6 +79,7 @@ void vga_tty_init() {
     term.buffer = (uint16_t *)(TERMBUF_START);
     term.pagen = 0;
     vga_tty_clear();
+    vga_tty_write_string("melonos 0.0.1\n");
 }
 
 void vga_tty_set_cursor(uint16_t x, uint16_t y) {
@@ -111,9 +112,10 @@ void vga_tty_putchar(char c) {
     }
 }
 
-
 void vga_tty_write(char const *data, size_t size) {
-    for (size_t i = 0; i < size; ++i) vga_tty_putchar(data[i]);
+    for (size_t i = 0; i < size; ++i) {
+        vga_tty_putchar(data[i]);
+    }
 }
 
 void vga_tty_write_string(char const *data) { vga_tty_write(data, strlen(data)); }
