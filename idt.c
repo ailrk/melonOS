@@ -3,18 +3,18 @@
 #include "pic.h"
 #include <stdint.h>
 
-// an array of IDT entries; 
+/* an array of IDT entries; */
 IDTEntry idt[IDT_MAX_VECTOR];
 
 
-// IDT pointer for `lidt`
+/* IDT pointer for `lidt` */
 IDTRecord idtr;
 
-// indicate available vectors.
+/* indicate available vectors. */
 int vectors[IDT_MAX_VECTOR];
 
 
-// reconstruct the handler ptr from the IDT table. 
+/* reconstruct the handler ptr from the IDT table. */
 void *get_handler_from_idt(uint8_t vector) {
     IDTEntry e = idt[vector];
     uint32_t high = e.isr_high << 16;

@@ -3,8 +3,9 @@
 #include "i386.h"
 #include "kbd.h"
 
-// sample C function.
-// We need to establish a stack from the bool sector to run this function.
+/* sample C function.
+ * We need to establish a stack from the bool sector to run this function.
+ */
 int kmain(void) {
     idt_init();
     vga_tty_init();
