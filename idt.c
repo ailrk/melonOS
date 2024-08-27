@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "isr.h"
+#include "pic.h"
 #include <stdint.h>
 
 // an array of IDT entries; 
@@ -32,10 +33,12 @@ void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
     entry->isr_high = (uint32_t) isr >> 16;
 }
 
-void load_idt() {
+void idt_init() {
     idtr.base = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     isr_register();
+    pic_remap(0x20, 0x20 + 8);
+    pic_irq_mask(1);
     lidt((void*)&idtr);
     sti();
 }

@@ -2,26 +2,25 @@
 // x86 specific instructions
 
 #include <stdint.h>
-#define DEF_I386 static inline
 
-DEF_I386 unsigned char inb(unsigned short port) {
+static inline unsigned char inb(unsigned short port) {
     unsigned char data;
 
     asm volatile("in %1, %0" : "=a"(data) : "d"(port));
     return data;
 }
 
-DEF_I386 void cli() {
+static inline void cli() {
     __asm__ volatile("cli");
 }
 
-DEF_I386 void sti() {
+static inline void sti() {
     __asm__ volatile("sti");
 }
 
 #define int_(interrupt) __asm__ volatile("int %0" : : "i" (interrupt))
 
-DEF_I386 uint32_t xchg(volatile uint32_t *addr, uint32_t newval) {
+static inline uint32_t xchg(volatile uint32_t *addr, uint32_t newval) {
   uint32_t result;
   // The + in "+m" denotes a read-modify-write operand.
   asm volatile("lock; xchgl %0, %1" 
@@ -31,13 +30,13 @@ DEF_I386 uint32_t xchg(volatile uint32_t *addr, uint32_t newval) {
   return result;
 }
 
-DEF_I386 void lidt(void *addr) {
+static inline void lidt(void *addr) {
     // m should be r and it needs to be derefenced for whatever reason.
     // __asm__ volatile("lidt %0":: "m"(addr));
     __asm__ volatile("lidt (%0)":: "r"(addr));
 }
 
-DEF_I386 void insl(int port, void *addr, int cnt) {
+static inline void insl(int port, void *addr, int cnt) {
     __asm__ volatile("cld; rep insl"
                      : "=m"(addr), "=c"(cnt)
                      : "d"(port), "0"(addr), "1"(cnt)
@@ -49,18 +48,18 @@ static inline void outb(uint16_t port, uint8_t val)
     __asm__ volatile ( "outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
 }
 
-DEF_I386 void outw(unsigned short port, uint16_t data) {
+static inline void outw(unsigned short port, uint16_t data) {
     __asm__ volatile("out %0, %1" :: "a"(data), "d"(port));
 }
 
-DEF_I386 void outsl(int port, void const *addr, int cnt) {
+static inline void outsl(int port, void const *addr, int cnt) {
     __asm__ volatile("cld; rep outsl"
                      : "=S"(addr), "=c"(cnt)
                      : "d"(port), "0"(addr), "1"(cnt)
                      : "cc");
 }
 
-DEF_I386 void stosb(void *addr, int data, int cnt) {
+static inline void stosb(void *addr, int data, int cnt) {
     __asm__ volatile("cld; rep stosb"
                      : "=D"(addr), "=c"(cnt)
                      : "0"(addr), "1"(cnt), "a"(data)
@@ -71,7 +70,33 @@ DEF_I386 void stosb(void *addr, int data, int cnt) {
 #define iret() __asm__ volatile ("iret");
 
 
+/* Wait for a small amount of time by outputting data to an unused port 0x80 */
+static inline void io_wait() { outb(0x80, 0); }
+
+
+/* Request for the cpu id */
+static inline void cpuid(int code, uint32_t* a, uint32_t* d)
+{
+    __asm__ volatile ( "cpuid" : "=a"(*a), "=d"(*d) : "0"(code) : "ebx", "ecx" );
+}
+
+
+/* read current cpu timestamp */
+static inline uint64_t rdtsc() {
+    uint64_t ret;
+    __asm__ volatile ( "rdtsc" : "=A"(ret) );
+    return ret;
+}
+
+
+/* save EFLAGS */
+static inline void pushfd() { __asm__ volatile ("pushfd"); }
+
+/* restore EFLAGS */
+static inline void popfd() { __asm__ volatile ("popfd"); }
+
+
 /* write a value to edi for debugging purpose */
-DEF_I386 void debug_efi(uint32_t val) {
+static inline void debug_efi(uint32_t val) {
     __asm__ volatile("movl %0,  %%edi\n" : "=r"(val): ); 
 }

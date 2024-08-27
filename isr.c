@@ -1,6 +1,7 @@
 #include "isr.h"
 #include "idt.h"
 #include "tty.h"
+#include "kbd.h"
 
 
 void handle_I_DIVBYZERO() {
@@ -58,13 +59,15 @@ void handle_I_MACHINE() {
     vga_tty_write_string("machine check\n");
 }
 void handle_I_SIMDERR() {
-    vga_tty_write_string("simde rror\n");
+    vga_tty_write_string("simd error\n");
 }
 void handle_I_IRQ_TIMER() {
     vga_tty_write_string("irq timer\n");
 }
 void handle_I_IRQ_KBD() {
     vga_tty_write_string("irq kbd\n");
+    char n = inb(KBD_DATA);
+    vga_tty_printf("%x", n);
 }
 void handle_I_IRQ_COM1() {
     vga_tty_write_string("irq com1\n");
@@ -81,7 +84,6 @@ void handle_I_IRQ_SPURIOUS() {
 void handle_I_SYSCALL() {
     vga_tty_write_string("syscall\n");
 }
-__attribute__((noreturn))
 void handle_I_DEFAULT() {
 }
 
@@ -147,12 +149,12 @@ void isr_register() {
     regist_idt_handler(I_ALIGN, &isr_I_ALIGN, InterruptGate);
     regist_idt_handler(I_MACHINE, &isr_I_MACHINE, InterruptGate);
     regist_idt_handler(I_SIMDERR, &isr_I_SIMDERR, InterruptGate);
-    regist_idt_handler(I_IRQ_TIMER, &isr_I_IRQ_TIMER, InterruptGate);
-    regist_idt_handler(I_IRQ_KBD, &isr_I_IRQ_KBD, InterruptGate);
-    regist_idt_handler(I_IRQ_COM1, &isr_I_IRQ_COM1, InterruptGate);
-    regist_idt_handler(I_IRQ_IDE, &isr_I_IRQ_IDE, InterruptGate);
-    regist_idt_handler(I_IRQ_ERR, &isr_I_IRQ_ERR, InterruptGate);
-    regist_idt_handler(I_IRQ_SPURIOUS, &isr_I_IRQ_SPURIOUS, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_TIMER), &isr_I_IRQ_TIMER, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_KBD), &isr_I_IRQ_KBD, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_COM1), &isr_I_IRQ_COM1, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_IDE), &isr_I_IRQ_IDE, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_ERR), &isr_I_IRQ_ERR, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_SPURIOUS), &isr_I_IRQ_SPURIOUS, InterruptGate);
 
     regist_idt_handler(I_SYSCALL, &isr_I_SYSCALL, TrapGate);
     regist_idt_handler(I_DEFAULT, &isr_I_DEFAULT, TrapGate);

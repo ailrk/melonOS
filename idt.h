@@ -33,41 +33,54 @@ enum IDTFlags {
 
 void *get_handler_from_idt(uint8_t vector);
 void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags);
-void load_idt();
+void idt_init();
 
 
-#define IRQ0        32
-enum {
-    /* processor defined */
-    I_DIVBYZERO    =  0,   // devide by zero
-    I_DEBUG        =  1,   // debug interrupt
-    I_NMI          =  2,   // non maskable interrupt
-    I_BRKPNT       =  3,   // breakpoint
-    I_OVERFLOW     =  4,   // overflow
-    I_BOUND        =  5,   // boud check exceed
-    I_ILLEGALOP    =  6,   // ilegal op
-    I_COPNOAVIL    =  7,   // coprocessor not available
-    I_DOUBLEFLT    =  8,   // double fault
-    I_COPSEG       =  9,   // coprocessor sement overrun
-    I_TSS          = 10,   // invalid tss 
-    I_SEGNP        = 11,   // segment not present
-    I_STKSGFLT     = 12,   // stack segment fault
-    I_GPFLT        = 13,   // general protection fault
-    I_PGFLT        = 14,   // page fault
-                           // reserved
-    I_FPERR        = 16,   // floating point error 
-    I_ALIGN        = 17,   // alignment check 
-    I_MACHINE      = 18,   // machine check
-    I_SIMDERR      = 19,   // simd floating point error
-    
-    I_IRQ_TIMER    = IRQ0,        // IRQ timer
-    I_IRQ_KBD      = IRQ0 + 1,    // IRQ keyboard
-    I_IRQ_COM1     = IRQ0 + 4,    // IRQ com1 serial port
-    I_IRQ_IDE      = IRQ0 + 14,   // IRQ ide device
-    I_IRQ_ERR      = IRQ0 + 19,   // IRQ error
-    I_IRQ_SPURIOUS = IRQ0 + 31,   // IRQ error
+/* IRQ is the device interrupt that comes from PIC/APIC. 
+ * APIC will forward it to the LAPIC which is the CPU interrupt.
+ */
 
-    /* melonos specific vectors */
-    I_SYSCALL    =  64,   // system call 
-    I_DEFAULT    = 255,   // catch all
-};
+
+/* CPU exceptions */
+#define I_DIVBYZERO      0x00   // devide by zero
+#define I_DEBUG          0x01   // debug interrupt
+#define I_NMI            0x02   // non maskable interrupt
+#define I_BRKPNT         0x03   // breakpoint
+#define I_OVERFLOW       0x04   // overflow
+#define I_BOUND          0x05   // boud check exceed
+#define I_ILLEGALOP      0x06   // ilegal op
+#define I_COPNOAVIL      0x07   // coprocessor not available
+#define I_DOUBLEFLT      0x08   // double fault
+#define I_COPSEG         0x09   // coprocessor sement overrun
+#define I_TSS            0x0A   // invalid tss 
+#define I_SEGNP          0x0B   // segment not present
+#define I_STKSGFLT       0x0C   // stack segment fault
+#define I_GPFLT          0x0D   // general protection fault
+#define I_PGFLT          0x0E   // page fault
+                                //  15 is reserved
+#define I_FPERR          0x10   // floating point error 
+#define I_ALIGN          0x11   // alignment check 
+#define I_MACHINE        0x12   // machine check
+#define I_SIMDERR        0x13   // simd floating point error
+
+/* hardware interrupts
+ *
+ * by default PIC/APIC IRQ overlaps with the default CPU interrupt vectors,
+ * a common way to handle this is to remap them to some unused vectors.  
+ *
+ * Usually IRQ0 goes to 0x20 (32).
+ * */
+#define IRQ0             0x20
+#define MAP_IRQ(irq_line)        (IRQ0 + irq_line)
+
+#define I_IRQ_TIMER      0x00    // IRQ timer
+#define I_IRQ_KBD        0x01    // IRQ keyboard
+                                 // 0x02 is used internally by pic chips
+#define I_IRQ_COM1       0x04    // IRQ com1 serial port
+#define I_IRQ_IDE        0x0E    // IRQ ide device
+#define I_IRQ_ERR        0x13    // IRQ error
+#define I_IRQ_SPURIOUS   0x1F    // IRQ error
+
+/* melonos specific vectors */
+#define I_SYSCALL        0x40    // system call 
+#define I_DEFAULT        0xff    // catch all
