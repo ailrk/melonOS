@@ -2,6 +2,7 @@
 #include "idt.h"
 #include "tty.h"
 #include "kbd.h"
+#include "pic.h"
 
 
 void handle_I_DIVBYZERO() {
@@ -61,26 +62,34 @@ void handle_I_MACHINE() {
 void handle_I_SIMDERR() {
     vga_tty_write_string("simd error\n");
 }
+
+/* hardware interrupts */
 void handle_I_IRQ_TIMER() {
-    vga_tty_write_string("irq timer\n");
+    pic_send_eoi(I_IRQ_TIMER);
 }
 void handle_I_IRQ_KBD() {
-    vga_tty_write_string("irq kbd\n");
     char n = inb(KBD_DATA);
-    vga_tty_printf("%x", n);
+    vga_tty_putchar(n);
+    pic_send_eoi(I_IRQ_KBD);
 }
 void handle_I_IRQ_COM1() {
     vga_tty_write_string("irq com1\n");
+    pic_send_eoi(I_IRQ_COM1);
 }
 void handle_I_IRQ_IDE() {
     vga_tty_write_string("irq ide\n");
+    pic_send_eoi(I_IRQ_IDE);
 }
 void handle_I_IRQ_ERR() {
     vga_tty_write_string("irq err\n");
+    pic_send_eoi(I_IRQ_ERR);
 }
 void handle_I_IRQ_SPURIOUS() {
     vga_tty_write_string("irq spurious\n");
+    pic_send_eoi(I_IRQ_SPURIOUS);
 }
+
+/* custom interrupt handlers */
 void handle_I_SYSCALL() {
     vga_tty_write_string("syscall\n");
 }
