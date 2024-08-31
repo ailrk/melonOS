@@ -84,4 +84,4 @@ qemu:
 	$(QEMU) -drive format=raw,file=$(OUT) -device virtio-vga,xres=640,yres=320
 
 qemu-debug:
-	$(QEMU) -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -D .qemu.log -monitor stdio
+	$(QEMU) -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -no-reboot -D .qemu.log -monitor stdio

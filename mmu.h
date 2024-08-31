@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "mem.h"
 
 /* MMU translates virutal address to physical address. We need to setup MMU to
  * enable paging.
@@ -13,6 +14,7 @@
  * page directory, then locate the page table in that page directory, then finally we 
  * can add offset from the page table address to find teh actual physical address.
  */
+
 
 /* PD and PT entries (PTE) are the same:
  * 
@@ -43,8 +45,23 @@ typedef uint32_t PTE;
  * For 32-bit linux, e.g PD and PT are both 10 bits long, and each page is 4096 bytes.
  * So in total, PD and PT can index (2**10)**2, or , or 1MB pages, and together with
  * offset it addresses 1MB * 4096, or 4GB memory of a 32bit RAM.
- *
- * The structure of a 32 bit virtual address:
+ */
+
+
+#define NPDES           1024    // # directory entries per page directory
+#define NPTES           1024    // # PTEs per page table
+
+
+/* The structure of a 32 bit virtual address:
  * | 10             | 10               |  12     |
  * | Page dir index | page table index |  offset |
  */
+
+#define PT_IDX_SHIFT       12     // offset of PT_IDX in a linear address
+#define PD_IDX_SHIFT       22     // offset of PD_IDX in a linear address
+
+/* page directory index */
+#define PD_IDX(vaddr)   (((uint32_t)(vaddr) >> PD_IDX_SHIFT) & 0x3FF)
+
+/* page table index */
+#define PT_IDX(vaddr)   (((uint32_t)(vaddr) >> PT_IDX_SHIFT) & 0x3FF)

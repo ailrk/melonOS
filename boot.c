@@ -94,5 +94,6 @@ void boot3() {
     entry = (void(*)(void))(V2P_C(elf->e_entry));
     vga_tty_printf("[boot3] jumping to the entry at paddr %p...\n", entry);
     entry();
-    vga_tty_printf("should not run");
+    vga_tty_printf("[boot3] exit from entry point");
+    __asm__ volatile ("cli; hlt");
 }

@@ -18,7 +18,7 @@ boot1:
     cli                         ; clean interrupt.
                                 ; enable 32 bit instructions
 
-    lgdt [gdt_pointer]          ; load gdt table
+    lgdt [gdtr]                 ; load gdt table
 
     call enter_protected_mode
     call set_segment_registers
@@ -57,12 +57,14 @@ set_segment_registers:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; gdt definition 
+;; 16 bits gdt definition 
 ;; we need at least have null descriptor, code seg and data seg.
+;; once the kernel is loaded and virtual memory is setup we need to
+;; create a new gdt to use the full range of 32 bits memory.
 gdt_null:                       ; setup gdt table.
     dq 0x0                      ; - null descriptor
 gdt_code:                       ; code segment (CS)
-    dw 0xffff                   ; - segment_limit (enable 4G for 32 bit )
+    dw 0xffff                   ; - segment_limit
     dw 0x0                      ; - base 0 - 15 bits
     db 0x0                      ; - base 16 - 23
     db 0x9a                     ; - access byte
@@ -76,7 +78,7 @@ gdt_data:                       ; data segment (DS)
     db 1101111b
     db 0x0
 gdt_end:
-gdt_pointer:
+gdtr:
     dw gdt_end - gdt_null       ; limit
     dd gdt_null                 ; base
 disk:

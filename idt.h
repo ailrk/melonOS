@@ -14,8 +14,7 @@ typedef struct IDTEntry {
 } __attribute__((packed)) IDTEntry;
 
 
-typedef struct IDTRecord
-{
+typedef struct IDTRecord {
     uint16_t  limit;      // size of IDT array - 1
     uint32_t  base;       // pointer to IDT array
 } __attribute__((packed)) IDTRecord ;
