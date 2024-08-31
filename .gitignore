@@ -36,8 +36,16 @@ sysroot
 *.bin
 
 
+*.pp.ld
+*.pp.s
+
 .qemu.log
 .ccls-cache
 .vim-session
 
+
 .local.mk
+
+melonos-bootloader
+melonos-kernel
+melonos-img
