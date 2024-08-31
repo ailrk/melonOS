@@ -1,22 +1,11 @@
-;; general sequence:
-;;  - enter real mode
-;;  - setup gdt and A20 bit
-;;  - read extra memory (after 512bytes)
-;;  - enter protected mode
-;;  - setup paging
-;;  - setup C stack
-;;  - setup interrupt
-;;  - call kmain
-
-
-section .boot
+section .boot1
     bits 16                     ; x86 real mode is 16 bit
     ; org 0x7c00                ; the bootloader start from 0x7c00.
-    global boot
+    global boot1
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; boot : () -> !
     ; boot into VGA text mode
-boot:
+boot1:
 
     mov ax, 0x2401
     int 0x15                    ; enable A20 bit
@@ -24,6 +13,19 @@ boot:
     mov ax, 0x3
     int 0x10                    ; set VGA text mode to 0x3
 
+    call fetch_disk             ; fetch the next sector
+
+    cli                         ; clean interrupt.
+                                ; enable 32 bit instructions
+
+    lgdt [gdt_pointer]          ; load gdt table
+
+    call enter_protected_mode
+    call set_segment_registers
+
+    jmp CODE_SEG:boot2          ; long jump to code segment
+
+fetch_disk:
     ; BIOS only loads the first 512 bytes of the
     ; boot sector. We need to mannually load more
     ; memory.
@@ -36,53 +38,27 @@ boot:
     mov dl, [disk]              ; disk index
     mov bx, next_512_bytes      ; target pointer
     int 0x13                    ; call disk bios interrupt
+    ret
 
-    cli                         ; clean interrupt.
-                                ; enable 32 bit instructions
-    lgdt [gdt_pointer]          ; load gdt table
-    mov eax, cr0                ;
-    or eax, 0x1                 ; set protected mode bit on eax
-    mov cr0, eax                ; mv it to cr0 register.
-                                ; this enables protected mode
-    ;lidt [idtr]
+enter_protected_mode:
+    mov eax, cr0
+    or eax, 0x1
+    mov cr0, eax
+    ret
 
+set_segment_registers:
     mov ax, DATA_SEG            ; set seg reg points to data segment.
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    jmp CODE_SEG:boot2          ; long jump to code segment
-
-                                ; a descritor is another name for struct..
-
-    ; gdt table decides:
-    ; - how big a mem area is
-    ; - what's the access privilege
-    ; - where the base address starts 
-    ; etc.
-
-    ; we define the table ahead of time, then call lgdt [table] to have
-    ; cpu read the config.
-
-    ; 16 bit x86 didn't have builtin paging, addressing are based on
-    ; segmentation. 
-
-    ; there is a LDT which is a local version of GDT being
-    ; used to separate address space between multiple processes. e.g The
-    ; os switch the current LDT when scheduling a new process.
-
-    ; Today's os doesn't need LDT anymore because CPU itself already
-    ; support paging direclty.
-
-    ; In some way you can think a descriptor table as a fat pointer point
-    ; to a chunk of memory, with some meta info of this memory.
+    ret
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; gdt definition
-
-                                ; we need at least have null descriptor, code seg and data seg.
+;; gdt definition 
+;; we need at least have null descriptor, code seg and data seg.
 gdt_null:                       ; setup gdt table.
     dq 0x0                      ; - null descriptor
 gdt_code:                       ; code segment (CS)
@@ -109,9 +85,6 @@ CODE_SEG equ gdt_code - gdt_null
 DATA_SEG equ gdt_data - gdt_null
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; idt definition
-
 msg:
     db "[- Entering OS -]", 0
 
@@ -131,27 +104,22 @@ boot2:
     push msg
     call output
     ; setup an initial C stack for C++ code.
-    mov esp, kernel_stack_top
-    extern kmain
-    call kmain
+    mov esp, boot_stack_top
+    extern boot3
+    call boot3
     cli
     hlt
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; IDT definition
-
-
-output:                             ; can't use bios anymore. use VGA here.
+;; vga based output
+;; write to directed mapped VGA memory.
+;; VGA character are represented as
+;; |0               |8            16
+;; |bg clr |fg clr  |ascii char
+output:
     push ebp
     mov ebp, esp
     mov esi, [esp + 8]              ; address of the message
-    mov ebx, 0xb8000                ; VGA text buffer starts at 0xb800
-
-                                    ; write to directed mapped VGA memory.
-                                    ; VGA character are represented as
-                                    ; |0               |8            16
-                                    ; |bg clr |fg clr  |ascii char
-
+    mov ebx, 0xb8000                ; VGA buffer starts at 0xb800
 output_loop:
     lodsb                           ; read next byte
     cmp al, 0                       ; if it's null
@@ -160,14 +128,9 @@ output_loop:
     mov word [ebx], ax              ;
     add ebx, 2
     jmp output_loop
-
 output_end:
     pop ebp
     ret
-
-int_handler:
-    jmp int_handler                ; hang
-    iret
 
 times 1024 - ($-$$) db 0           ; pad til 510 bytes
 ;; end of the second 512 bytes
@@ -176,6 +139,6 @@ times 1024 - ($-$$) db 0           ; pad til 510 bytes
 section .bss
 align 4
 
-kernel_stack_bottom: equ $
+boot_stack_bottom: equ $
         resb 16384                 ; 16kb
-kernel_stack_top:
+boot_stack_top:

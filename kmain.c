@@ -2,15 +2,17 @@
 #include "idt.h"
 #include "i386.h"
 #include "kbd.h"
+#include "mmu.h"
 
-/* sample C function.
- * We need to establish a stack from the bool sector to run this function.
- */
+PDE *page_dir;      // page directory for paging. initailized in entry.s
+char *kstack;       // kernel stack. userd in entry.s
+
 int kmain(void) {
-    idt_init();
+    // idt_init();
     vga_tty_init();
-    vga_tty_printf("this is int %d %d, this is %p\n", 123, -123, &idt_init);
 
+    vga_tty_printf("kmain\n");
+    __asm__ volatile ("cli; hlt");
     for (;;) {
     }
 

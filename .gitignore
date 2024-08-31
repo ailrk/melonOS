@@ -16,10 +16,6 @@
 *.dylib
 *.dll
 
-# Fortran module files
-*.mod
-*.smod
-
 # Compiled Static libraries
 *.lai
 *.la
@@ -31,18 +27,17 @@
 *.out
 *.app
 
-.ccls-cache
-
 
 ### OS ###
 *.iso
 *.img
 isodir
 sysroot
-
-.vim-session
+*.bin
 
 
 .qemu.log
-*.img
-*.bin
+.ccls-cache
+.vim-session
+
+.local.mk

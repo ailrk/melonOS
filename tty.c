@@ -4,13 +4,9 @@
 #include "defs.h"
 #include <stdarg.h>
 
-#if defined(__linux__)
-#error "wrong targat"
-#endif
-
-#if !defined(__i386__)
-#error "wrong target. require i386"
-#endif
+/**
+ * VGA buffer starts at 0xb8000 and provides 256k display memory.
+ */
 
 static inline uint8_t 
 vga_entry_color(VgaColor fg, VgaColor bg) {
@@ -35,37 +31,15 @@ static size_t const VGA_HEIGHT = 25;
 Terminal term;
 
 void vga_tty_clear() {
+    term.row = 0;
+    term.column = 0;
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
         for (size_t x = 0; x < VGA_WIDTH; ++x)
             term.buffer[y * VGA_WIDTH + x] = vga_entry(' ', term.color);
 }
 
-void vga_tty_save_buffer() {
-    uint16_t *page_history = (uint16_t *)(HISTORY_START + TERMBUF_SIZE * term.pagen);
-}
-
 void vga_tty_load_page(uint16_t page) {
     memcpy(term.buffer, (char *)(HISTORY_START + TERMBUF_SIZE * page), TERMBUF_SIZE);
-}
-
-void vga_tty_page_up() {
-    vga_tty_save_buffer();
-    int new_pagen = term.pagen - 1;
-    if (new_pagen < 0)
-        term.pagen = 0;
-    else
-        term.pagen = new_pagen;
-    vga_tty_load_page(term.pagen);
-}
-
-void vga_tty_page_down() {
-    vga_tty_save_buffer();
-    int new_pagen = term.pagen + 1;
-    if (new_pagen > MAX_PAGE)
-        term.pagen = MAX_PAGE;
-    else 
-        term.pagen = new_pagen;
-    vga_tty_load_page(term.pagen);
 }
 
 void newline() {
@@ -78,7 +52,6 @@ void vga_tty_init() {
     term.column = 0;
     term.color = vga_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
     term.buffer = (uint16_t *)(TERMBUF_START);
-    term.pagen = 0;
     vga_tty_clear();
     vga_tty_write_string("melonos 0.0.1\n");
 }
@@ -97,7 +70,7 @@ void put_entry_at(char c) {
 
 void vga_tty_putchar(char c) {
     if (term.row > VGA_HEIGHT) {
-        vga_tty_page_down();
+        vga_tty_clear();
     }
 
     if (c == '\n') {
@@ -186,7 +159,7 @@ void vga_tty_printf(const char *fmt, ...) {
             if (*fmt == 'd') {
                 print_int(va_arg(args, int), 10);
             } else if (*fmt == 'x') {
-                print_hex(va_arg(args, int));
+                print_uhex(va_arg(args, int));
             } else if (*fmt == 'p') {
                 print_uhex(va_arg(args, uint32_t));
             } else if (*fmt == 's') {

@@ -33,17 +33,13 @@ typedef struct Terminal {
     size_t    column;
     uint8_t   color;
     uint16_t *buffer;
-    uint16_t  pagen;
     uint16_t *cursor;
 }Terminal;
 
 
 void vga_tty_init();
 void vga_tty_clear();
-void vga_tty_save_buffer();
 void vga_tty_load_page(uint16_t page);
-void vga_tty_page_up();
-void vga_tty_page_down();
 void vga_tty_newline();
 void vga_tty_set_cursor(uint16_t x, uint16_t y);
 void vga_tty_set_color(uint8_t color);

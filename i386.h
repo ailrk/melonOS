@@ -36,11 +36,12 @@ static inline void lidt(void *addr) {
     __asm__ volatile("lidt (%0)":: "r"(addr));
 }
 
+
 static inline void insl(int port, void *addr, int cnt) {
-    __asm__ volatile("cld; rep insl"
-                     : "=m"(addr), "=c"(cnt)
-                     : "d"(port), "0"(addr), "1"(cnt)
-                     : "memory", "cc");
+  __asm__ volatile("cld; rep insl" :
+               "=D" (addr), "=c" (cnt) :
+               "d" (port), "0" (addr), "1" (cnt) :
+               "memory", "cc");
 }
 
 static inline void outb(uint16_t port, uint8_t val)
@@ -100,3 +101,4 @@ static inline void popfd() { __asm__ volatile ("popfd"); }
 static inline void debug_efi(uint32_t val) {
     __asm__ volatile("movl %0,  %%edi\n" : "=r"(val): ); 
 }
+
