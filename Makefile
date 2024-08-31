@@ -1,8 +1,8 @@
-CC 				= i686-elf-gcc
-AS 				= nasm -f elf32
-CPP 			= cpp
-CFLAGS 	  		= -ffreestanding -g -nostdlib
-CWARNS  		= -Wall -Wextra -fno-exceptions
+CC				= i686-elf-gcc
+AS				= nasm -f elf32
+CPP				= cpp
+CFLAGS			= -ffreestanding -g -nostdlib
+CWARNS			= -Wall -Wextra -fno-exceptions
 
 # We use c preprocessor to process both nasm assembly files and linker files. 
 # because they are not supported by gcc, we need to process them manually with
@@ -10,21 +10,21 @@ CWARNS  		= -Wall -Wextra -fno-exceptions
 # A preprocessed file will have `.pp` extension being added before it's suffix.
 # For example, linker.ld will become linker.pp.ld, and the  linker.pp.ld will be
 # used in the following linking process.
-K_CFILES   		= $(filter-out boot.c,$(wildcard *.c))
-K_ASMFILES 		= $(filter-out bootld.s $(wildcard *.pp.s),$(wildcard *.s))
-K_LINKER 	    = kernel.ld
-K_OBJS 			= $(K_CFILES:.c=.o) $(K_ASMFILES:.s=.o)
+K_CFILES		= $(filter-out boot.c,$(wildcard *.c))
+K_ASMFILES		= $(filter-out bootld.s $(wildcard *.pp.s),$(wildcard *.s))
+K_LINKER		= kernel.ld
+K_OBJS			= $(K_CFILES:.c=.o) $(K_ASMFILES:.s=.o)
 
-B_CFILES 		= boot.c ata.c tty.c string.c
-B_ASMFILES 	    = bootld.s
-B_LINKER 		= boot.ld
-B_OBJS 			= $(B_CFILES:.c=.o) $(B_ASMFILES:.s=.o)
+B_CFILES		= boot.c ata.c tty.c string.c
+B_ASMFILES		= bootld.s
+B_LINKER		= boot.ld
+B_OBJS			= $(B_CFILES:.c=.o) $(B_ASMFILES:.s=.o)
 
-BOOT 			= melonos-bootloader
-KERNEL 			= melonos-kernel
-OUT 			= melonos.img
+BOOT			= melonos-bootloader
+KERNEL			= melonos-kernel
+OUT				= melonos.img
 
-QEMU 			= qemu-system-i386
+QEMU			= qemu-system-i386
 
 
 .PHONY: boot kernel out
@@ -67,18 +67,18 @@ clean:
 	rm -rf *.o *.pp.* $(OUT) $(BOOT) $(KERNEL)
 
 echo:
-	@echo 'CC 		  $(CC)'
-	@echo 'AS 		  $(AS)'
-	@echo 'OUT 		  $(OUT)'
-	@echo 'BOOT 	  $(BOOT)'
+	@echo 'CC		  $(CC)'
+	@echo 'AS		  $(AS)'
+	@echo 'OUT		  $(OUT)'
+	@echo 'BOOT		  $(BOOT)'
 	@echo 'KERNEL     $(KERNEL)'
-	@echo 'K_OBJS 	  $(K_OBJS)'
+	@echo 'K_OBJS	  $(K_OBJS)'
 	@echo 'K_ASMFILES $(K_ASMFILES)'
 	@echo 'K_LINKER   $(K_LINKER)'
-	@echo 'B_OBJS 	  $(B_OBJS)'
+	@echo 'B_OBJS	  $(B_OBJS)'
 	@echo 'B_ASMFILES $(B_ASMFILES)'
-	@echo 'CFLAGS 	  $(CFLAGS)'
-	@echo 'CWARNS 	  $(CWARNS)'
+	@echo 'CFLAGS	  $(CFLAGS)'
+	@echo 'CWARNS	  $(CWARNS)'
 
 qemu:
 	$(QEMU) -drive format=raw,file=$(OUT) -device virtio-vga,xres=640,yres=320
