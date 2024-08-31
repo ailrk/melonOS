@@ -65,3 +65,8 @@ typedef uint32_t PTE;
 
 /* page table index */
 #define PT_IDX(vaddr)   (((uint32_t)(vaddr) >> PT_IDX_SHIFT) & 0x3FF)
+
+
+/* */
+#define PG_ROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
+#define PG_ROUNDDOWN(addr) (((addr)) & ~(PGSIZE-1))

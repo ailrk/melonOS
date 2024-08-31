@@ -4,6 +4,8 @@
 #include "tty.h"
 #include "string.h"
 
+/* ATA is the standard interface for hard drives */
+
 #define SECTSZ      512
 
 static inline uint8_t read_status_register() { return inb(ATA_P_7); }

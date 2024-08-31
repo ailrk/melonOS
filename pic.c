@@ -1,5 +1,6 @@
 #include "i386.h"
 #include <stdint.h>
+#include "idt.h"
 
 /* handles hardware interrupts and map them to the system interrupt.
  *
@@ -134,4 +135,15 @@ void pic_irq_unmask(uint8_t irq_line) {
         irq_line -= 8;
     }
     outb(port, inb(port) & ~(1 << irq_line));
+}
+
+
+void pic_init() {
+    pic_remap(0x20, 0x20 + 8);
+    pic_irq_unmask(I_IRQ_TIMER);
+    pic_irq_unmask(I_IRQ_KBD);
+    pic_irq_unmask(I_IRQ_COM1);
+    pic_irq_unmask(I_IRQ_IDE);
+    pic_irq_unmask(I_IRQ_ERR);
+    pic_irq_unmask(I_IRQ_SPURIOUS);
 }

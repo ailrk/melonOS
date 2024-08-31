@@ -7,7 +7,7 @@
     global _start
     extern kmain
     extern kstack
-    extern page_dir
+    extern bootstrap_page_dir
 
 ; _start is the conventinal elf entry point
 ; we haven't enable paging yet, but the linker is using the 

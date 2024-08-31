@@ -37,13 +37,6 @@ void idt_init() {
     idtr.base = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     isr_register();
-    pic_remap(0x20, 0x20 + 8);
-    pic_irq_unmask(I_IRQ_TIMER);
-    pic_irq_unmask(I_IRQ_KBD);
-    pic_irq_unmask(I_IRQ_COM1);
-    pic_irq_unmask(I_IRQ_IDE);
-    pic_irq_unmask(I_IRQ_ERR);
-    pic_irq_unmask(I_IRQ_SPURIOUS);
     lidt((void*)&idtr);
     sti();
 }

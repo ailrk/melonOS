@@ -10,7 +10,7 @@ PDE *kpage_dir;     // for scheduler
 
 extern CPU cpu;
 
-void segment_init() {
+void gdt_init() {
     cpu.gdtr.base = (uint32_t)&cpu.gdt;
     cpu.gdtr.limit = sizeof(GDTEntry) * NSEGS - 1;
     cpu.gdt[SEG_KCODE] = create_segment_entry(0, 0xffffffff, ST_X | ST_R, 0);

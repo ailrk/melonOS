@@ -3,8 +3,6 @@
 
 #define SECTSZ      512
 
-/* ATA is the standard interface for hard drives */
-
 #define ATA_S_ERR  0
 #define ATA_S_DFE  (1 << 5)
 #define ATA_S_RDY  (1 << 6) // 0 when drive is spun down, or after an error.

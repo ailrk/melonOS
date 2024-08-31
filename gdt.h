@@ -66,3 +66,6 @@ typedef struct GDTEntry {
 
 
  #define DPL_USER    0x3       // User DPL
+
+
+void gdt_init();
