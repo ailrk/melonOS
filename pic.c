@@ -11,12 +11,12 @@
  * - OCW (operation command word)
  * */
 
-#define PIC1		    0x20		// master pic port
-#define PIC2		    0xA0		// slave pic port
-#define PIC1_COMMAND	PIC1
-#define PIC1_DATA	    (PIC1+1)
-#define PIC2_COMMAND	PIC2
-#define PIC2_DATA	    (PIC2+1)
+#define PIC1            0x20        // master pic port
+#define PIC2            0xA0        // slave pic port
+#define PIC1_COMMAND    PIC1
+#define PIC1_DATA       (PIC1+1)
+#define PIC2_COMMAND    PIC2
+#define PIC2_DATA       (PIC2+1)
 
 
 #define ICW1_ICW4       0x01        // ICW4 will be present
@@ -25,11 +25,11 @@
 #define ICW1_LEVEL      0x08        // edge trigged mode
 #define ICW1_INIT       0x10        // initialiation
 
-#define ICW4_8086	    0x01		// 8086 mod
-#define ICW4_AUTO	    0x02		// auto EOI
-#define ICW4_BUF_SLAVE	0x08		// slave buffered mode
-#define ICW4_BUF_MASTER	0x0C		// master buffered mode
-#define ICW4_SFNM	    0x10		// special fully nested
+#define ICW4_8086       0x01        // 8086 mod
+#define ICW4_AUTO       0x02        // auto EOI
+#define ICW4_BUF_SLAVE  0x08        // slave buffered mode
+#define ICW4_BUF_MASTER 0x0C        // master buffered mode
+#define ICW4_SFNM       0x10        // special fully nested
 
 #define PIC_EOI         0x20 
 
@@ -40,10 +40,10 @@
  * If IRQ comes from slave, master needs to be notified too.
  * */
 void pic_send_eoi(uint8_t irq) {
-	if(irq >= 8)
-		outb(PIC2_COMMAND, PIC_EOI);
-	
-	outb(PIC1_COMMAND, PIC_EOI);
+    if(irq >= 8)
+        outb(PIC2_COMMAND, PIC_EOI);
+    
+    outb(PIC1_COMMAND, PIC_EOI);
 }
 
 

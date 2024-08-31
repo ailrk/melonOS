@@ -1,7 +1,5 @@
 #include "tty.h"
 #include "string.h"
-#include "i386.h"
-#include "defs.h"
 #include <stdarg.h>
 
 /**
