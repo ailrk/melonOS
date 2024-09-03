@@ -36,7 +36,7 @@ fetch_disk:
     mov dh, 0                   ; head index
     mov cl, 2                   ; sector index
     mov dl, [disk]              ; disk index
-    mov bx, next_512_bytes      ; target pointer
+    mov bx, next_sector         ; target pointer
     int 0x13                    ; call disk bios interrupt
     ret
 
@@ -87,24 +87,19 @@ CODE_SEG equ gdt_code - gdt_null
 DATA_SEG equ gdt_data - gdt_null
 
 
-msg:
-    db "[- Entering OS -]", 0
-
 times 510 - ($-$$) db 0             ; pad til 510 bytes
 dw 0xaa55                           ; magic word 0x55AA, little endian for x86.
                                     ; this indicates the end of the 512 bytes sector
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; The second 512 bytes sector
-next_512_bytes:
+next_sector:
     ; entering 32 bit mode.
     ; in protected mode we can't use bios anymore
     bits 32
 
     ; boot2 : () -> ()
 boot2:
-    push msg
-    call output
     ; setup an initial C stack for C++ code.
     mov esp, boot_stack_top
     extern boot3
@@ -112,29 +107,6 @@ boot2:
     cli
     hlt
 
-;; vga based output
-;; write to directed mapped VGA memory.
-;; VGA character are represented as
-;; |0               |8            16
-;; |bg clr |fg clr  |ascii char
-output:
-    push ebp
-    mov ebp, esp
-    mov esi, [esp + 8]              ; address of the message
-    mov ebx, 0xb8000                ; VGA buffer starts at 0xb800
-output_loop:
-    lodsb                           ; read next byte
-    cmp al, 0                       ; if it's null
-    je output_end                   ; protect
-    or eax, 0x0100                  ; set bit 0x0100
-    mov word [ebx], ax              ;
-    add ebx, 2
-    jmp output_loop
-output_end:
-    pop ebp
-    ret
-
-times 1024 - ($-$$) db 0           ; pad til 510 bytes
 ;; end of the second 512 bytes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

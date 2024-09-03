@@ -40,7 +40,7 @@ kernel: $(KERNEL)
 $(OUT): $(BOOT) $(KERNEL)
 	dd if=/dev/zero of=$(OUT) count=10000
 	dd if=$(BOOT) of=$(OUT) conv=notrunc
-	dd if=$(KERNEL) of=$(OUT) seek=80 conv=notrunc
+	dd if=$(KERNEL) of=$(OUT) seek=20 conv=notrunc
 
 $(BOOT): $(B_OBJS)
 	@echo "Building Melon OS Boot loader..."

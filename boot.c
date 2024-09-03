@@ -7,33 +7,35 @@
 #include <stdalign.h>
 #include <stdint.h>
 
-static uint32_t elf_offset = SECTSZ * 80; 
+static uint32_t elf_offset = SECTSZ * 20;
 
 void ata_read_offset_from_kernel(void *dst, uint32_t n, uint32_t offset) {
     ata_read_offset(dst, n, offset + elf_offset);
 }
 
 
-/* The boot loader setup a temporary virtual memory so we can use virtual address.
- * The kernel will switch to a different virtual memory later.
- * */
 PDE pagedir[NPDES] __attribute__((aligned(PAGE_SZ)));
 PDE pagetbl[NPTES] __attribute__((aligned(PAGE_SZ)));
 
 
-void enable_paging() {
+void enable_paging(PDE *p) {
+    set_cr3(p);
     set_cr0(get_cr0() | CR0_WP | CR0_PG);
 }
 
 
+/*! The boot loader setup a temporary virtual memory so we can use virtual address.
+ *  The kernel will switch to a different page table.
+ *
+ *  Only setup a single page table which gives 4MB virtual memory.
+ * */
 void pagedir_init() {
     for (int i = 0; i < NPDES; ++i) pagedir[i] = 0 | PDE_W;
     for (int i = 0; i < NPTES; ++i) pagetbl[i] = (i * 0x1000) | PTE_P | PTE_W;
     pagedir[0] = (uint32_t)pagetbl| PDE_P | PDE_W; 
     pagedir[KERN_BASE>>PD_IDX_SHIFT] = (uint32_t)pagetbl | PDE_P | PDE_W; 
 
-    set_cr3(&pagedir);
-    enable_paging();
+    enable_paging(pagedir);
 }
 
 
