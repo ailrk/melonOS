@@ -49,10 +49,20 @@ char *palloc() {
  *  @param v  virtual address
  * */
 void pfree(char *v) {
-    if (V2P_C(v) > PHYSTOP || v < end || (uint32_t)v % PAGE_SZ ) {
-        panic("pfree");
+
+    if (V2P_C(v) > PHYSTOP) {
+        panic("pfree, physical address exceed PHYSTOP");
     }
-    
+
+    if (v < end) {
+        panic("pfree, invalid virtual address");
+    }
+
+    if ((uint32_t)v % PAGE_SZ ) {
+        panic("pfree, address not on page boundry");
+    }
+
+   
     // fill page with junks.
     memset(v, 1, PAGE_SZ);
 
