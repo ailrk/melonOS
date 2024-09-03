@@ -13,7 +13,7 @@
 extern PDE *kernel_page_dir;
 extern uint32_t data;  // defined by kernel.ld
 
-KernelMap kmap[4]; 
+KernelMap kmap[4];
 
 
 /*! There is one page table on each process. On top of that 
@@ -108,11 +108,11 @@ static bool map_pages(PDE *page_dir, void *vaddr, uint32_t size, physical_addr p
 }
 
 
-/*! Initalize the kernel virutal memory
+/*! setup the kernel part of the page table.
  *
  *  @return initialized page directory
  * */
-PDE* setup_kernel_vmem() {
+PDE *setup_kernel_vmem() {
     PDE *page_dir;
     void init_kmap();
     int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
@@ -136,24 +136,32 @@ PDE* setup_kernel_vmem() {
 
 
 
+/*! setup kernel virtual memory */
+void kernel_vmem_alloc() {
+    kernel_page_dir = setup_kernel_vmem();
+    switch_kernel_vmem();
+}
+
+
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running 
  * */
-void switch_vmem() {
-    kernel_page_dir = setup_kernel_vmem();
+void switch_kernel_vmem() {
     set_cr3(V2P(kernel_page_dir));
 }
 
 
 
-/*! Bring down the 
+/*! 
  * */
-int deallocate_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
+int deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
 
 }
 
 
-/*! Free a page table and all the pages used in the user part */
+/*! Free a page table.
+ *  This will free all memory used in the user part.
+ * */
 void free_vmem(PDE *page_dir) {
     if (page_dir == 0) 
         panic("free_vmem");

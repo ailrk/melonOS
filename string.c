@@ -36,9 +36,9 @@ void memcpy(void *dest, const void *src, uint32_t n) {
 
 
 void* memset(void* tgt, int v, uint32_t n) {
-    unsigned char *t = tgt;
+    char *p = (char*)tgt;
     while(n--) {
-        t[n] = (unsigned char)v;
+        *p++ = (unsigned char)v & 0xff;
     }
     return tgt;
 }

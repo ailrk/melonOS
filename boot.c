@@ -18,24 +18,25 @@ PDE pagedir[NPDES] __attribute__((aligned(PAGE_SZ)));
 PDE pagetbl[NPTES] __attribute__((aligned(PAGE_SZ)));
 
 
-void enable_paging(PDE *p) {
-    set_cr3(p);
-    set_cr0(get_cr0() | CR0_WP | CR0_PG);
-}
-
-
 /*! The boot loader setup a temporary virtual memory so we can use virtual address.
  *  The kernel will switch to a different page table.
  *
- *  Only setup a single page table which gives 4MB virtual memory.
+ *  Only setup 1 page table which gives 4MB virtual memory.
  * */
-void pagedir_init() {
+void paging_init() {
     for (int i = 0; i < NPDES; ++i) pagedir[i] = 0 | PDE_W;
+
+    // page table for PA [0, 4096 * 1024)
     for (int i = 0; i < NPTES; ++i) pagetbl[i] = (i * 0x1000) | PTE_P | PTE_W;
-    pagedir[0] = (uint32_t)pagetbl| PDE_P | PDE_W; 
+
+    // map VA [0, 4MB) to PA [0, 4MB)
+    pagedir[0] = (uint32_t)pagetbl | PDE_P | PDE_W; 
+
+    // map VA [KERN_BASE, KERN_BASE+4MB) to PA [0, 4MB)
     pagedir[KERN_BASE>>PD_IDX_SHIFT] = (uint32_t)pagetbl | PDE_P | PDE_W; 
 
-    enable_paging(pagedir);
+    set_cr3(pagedir);
+    set_cr0(get_cr0() | CR0_WP | CR0_PG);
 }
 
 
@@ -69,7 +70,7 @@ void boot3() {
             stosb(paddr + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
     }
 
-    pagedir_init();
+    paging_init();
 
     void(*entry)();
     entry = (void(*)(void))(V2P_C(elf->e_entry));

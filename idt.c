@@ -1,6 +1,7 @@
 #include "idt.h"
 #include "isr.h"
 #include "pic.h"
+#include "tty.h"
 #include <stdint.h>
 
 /* an array of IDT entries; */
@@ -34,9 +35,11 @@ void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
 }
 
 void idt_init() {
+    tty_printf("[boot] idt...");
     idtr.base = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     isr_register();
     lidt((void*)&idtr);
     sti();
+    tty_printf("ok\n");
 }

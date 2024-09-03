@@ -81,7 +81,10 @@ typedef uint32_t PTE;
 #define PG_ALIGNDOWN(addr) ((addr) & ~(PAGE_SZ-1))
 
 
-// Address in page table or page directory entry
+/* Address in page table or page directory entry */
 #define PTE_ADDR(pte)   ((unsigned int)(pte) & ~0xFFF)
 
 #define PTE_FLAGS(pte)  ((unsigned int)(pte) &  0xFFF)
+
+/* construct virtual address from indexes and offsets */
+#define PG_ADDR(pde, pte, offset) ((uint32_t)((pde) << PDXSHIFT | (pte) << PTXSHIFT | (offset)))

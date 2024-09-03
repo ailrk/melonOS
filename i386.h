@@ -65,6 +65,14 @@ static inline void outsl(int port, void const *addr, int cnt) {
                      : "cc");
 }
 
+static inline void stosl(void *addr, int data, int cnt) {
+  asm volatile("cld; rep stosl" :
+               "=D" (addr), "=c" (cnt) :
+               "0" (addr), "1" (cnt), "a" (data) :
+               "memory", "cc");
+}
+
+
 static inline void stosb(void *addr, int data, int cnt) {
     __asm__ volatile("cld; rep stosb"
                      : "=D"(addr), "=c"(cnt)
@@ -91,6 +99,17 @@ static inline uint32_t get_cr0() {
 
 static inline void set_cr0(uint32_t cr0) {
   __asm__ volatile("mov %0, %%cr0" : : "r"(cr0));
+}
+
+
+static inline uint32_t get_cr4() {
+  uint32_t v;
+  __asm__ volatile("mov %%cr4, %0" : "=r"(v));
+  return v;
+}
+
+static inline void set_cr4(uint32_t cr4) {
+  __asm__ volatile("mov %0, %%cr4" : : "r"(cr4));
 }
 
 

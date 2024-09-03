@@ -2,10 +2,11 @@
 #include "mem.h"
 #include "err.h"
 #include "string.h"
+#include "tty.h"
 #include <stdint.h>
 
 
-extern char* end;
+extern char end[];
 
 
 /* memory list */
@@ -15,21 +16,23 @@ typedef struct KernelMem {
     Run *freelist;
 } KernelMem;
 
-KernelMem kernel_mem;
-
+KernelMem kernel_mem; 
 
 /*! free the memory from vstart to vend 
  * */
 void pfree_range(void *vstart, void *vend) {
     char *p = (char*)vstart;
-    for (; p + PAGE_SZ <= (char*)vend; p += PAGE_SZ)
+    for (; p + PAGE_SZ <= (char*)vend; p += PAGE_SZ) {
         pfree(p);
+    }
 }
 
 
 /*! free the memory from vstart to vend */
 void palloc_init(void *vstart, void *vend) {
+    tty_printf("[boot] palloc_init (%p, %p]...", vstart, vend);
     pfree_range(vstart, vend);
+    tty_printf("ok\n");
 }
 
 /*! alloc a PAGE_SZ memory aligned at page boundry
@@ -49,16 +52,15 @@ char *palloc() {
  *  @param v  virtual address
  * */
 void pfree(char *v) {
-
-    if (V2P_C(v) > PHYSTOP) {
-        panic("pfree, physical address exceed PHYSTOP");
+    if (V2P_C(v) >= PHYSTOP) {
+        panic("pfree, physical address exceeds PHYSTOP");
     }
 
     if (v < end) {
         panic("pfree, invalid virtual address");
     }
 
-    if ((uint32_t)v % PAGE_SZ ) {
+    if ((uint32_t)v % PAGE_SZ) {
         panic("pfree, address not on page boundry");
     }
 

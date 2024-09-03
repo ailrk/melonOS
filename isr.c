@@ -89,11 +89,9 @@ void handle_I_IRQ_TIMER() {
 void handle_I_IRQ_KBD() {
     char n = inb(KBD_DATA);
     tty_putchar(n);
-
     pic_send_eoi(I_IRQ_KBD);
 }
 void handle_I_IRQ_COM1() {
-
     tty_write_string("irq com1\n");
     pic_send_eoi(I_IRQ_COM1);
 }
@@ -101,7 +99,6 @@ void handle_I_IRQ_COM1() {
 void handle_I_IRQ_IDE() {
     tty_write_string("irq ide\n");
     pic_send_eoi(I_IRQ_IDE);
-
 }
 
 void handle_I_IRQ_ERR() {

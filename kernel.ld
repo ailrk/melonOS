@@ -52,11 +52,12 @@ SECTIONS {
 
     PROVIDE(edata = .);  /* end of data */    
 
+    . = ALIGN(PAGE_SZ);
     .bss :
     {
         *(.bss)
     }
 
+    . = ALIGN(PAGE_SZ);
     PROVIDE(end = .);    /* the end */
-
 }
