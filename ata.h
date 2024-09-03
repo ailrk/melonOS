@@ -23,6 +23,6 @@
 #define ATA_C_WRITESECTOR  0x30   // write sector
 
 
-void wait_disk();
-void read_sector(void *dst, uint32_t lba);
-void read_offset(void *dst, uint32_t n, uint32_t offset);
+void ata_wait_disk();
+void ata_read_sector(void *dst, uint32_t lba);
+void ata_read_offset(void *dst, uint32_t n, uint32_t offset);

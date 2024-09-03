@@ -83,5 +83,19 @@ echo:
 qemu:
 	$(QEMU) -drive format=raw,file=$(OUT) -device virtio-vga,xres=640,yres=320
 
-qemu-debug:
+qemu-log:
 	$(QEMU) -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -no-reboot -D .qemu.log -monitor stdio
+
+qemu-debug:
+	$(QEMU)  -gdb tcp::1234 -S -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -no-reboot
+
+
+elf-headers:
+	readelf -headers $(KERNEL)
+
+d:
+	objdump -d $(KERNEL)
+
+hex:
+	hexdump -C $(OUT)
+

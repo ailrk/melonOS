@@ -79,6 +79,20 @@ static inline void stosb(void *addr, int data, int cnt) {
 /* Wait for a small amount of time by outputting data to an unused port 0x80 */
 static inline void io_wait() { outb(0x80, 0); }
 
+/* Switch the current page table entry */
+static inline void set_cr3(void *page_dir) { __asm__ volatile("movl %0, %%cr3" : : "r"(page_dir)); }
+
+
+static inline uint32_t get_cr0() {
+  uint32_t v;
+  __asm__ volatile("mov %%cr0, %0" : "=r"(v));
+  return v;
+}
+
+static inline void set_cr0(uint32_t cr0) {
+  __asm__ volatile("mov %0, %%cr0" : : "r"(cr0));
+}
+
 
 /* Request for the cpu id */
 static inline void cpuid(int code, uint32_t* a, uint32_t* d)

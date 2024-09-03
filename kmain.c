@@ -1,3 +1,4 @@
+#include "defs.h"
 #include "mem.h"
 #include "palloc.h"
 #include "pic.h"
@@ -14,17 +15,17 @@
  */
 extern char *end;        
 
-PDE *bootstrap_page_dir;  // page directory for paging. initailized in entry.s
+PDE *kernel_page_dir;     // kernel only page directory. 
 char *kstack;             // kernel stack. userd in entry.s
 
 
 int kmain(void) {
-    palloc_init(0, P2V_C(4 * NPDES * NPTES));
     vga_tty_init();
+    palloc_init(0, P2V_C(PTESZ * NPDES * NPTES));
     pic_init();
     idt_init();
     gdt_init();
-    palloc_init(P2V_C(4 * NPDES * NPTES), (void*)PHYSTOP);
+    palloc_init(P2V_C(PTESZ * NPDES * NPTES), (void*)PHYSTOP);
 
     __asm__ volatile ("cli; hlt");
     for (;;) {

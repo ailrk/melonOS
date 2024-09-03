@@ -5,6 +5,43 @@
  * NOTE: this file is used with CPP on the linker file as well, 
  * so please don't add comment after #define because CPP will
  * not remove C comment by itself.
+ *  
+ *
+ * The virtual memory mapping looks like this:
+ *
+ *
+ *
+ *
+ *          <Virtual memory>                       <Physical memory>
+ *  
+ *       4GB +------------------+             4GB +------------------+               
+ *           |  device memory   |                 |  device memory   |
+ *           |                  |                 |                  |
+ * DEV_SPACE +------------------+----->   PHYSTOP +------------------+         
+ *           |  free memory     |                 |                  |
+ *           |                  |                 |                  |
+ *           +------------------+                 |                  |
+ *           |  kernel data     |                 |                  |
+ *           |                  |                 |                  |
+ *       end +------------------+                 |                  |
+ *           |  kernel text     |                 |                  |
+ * +0x100000 +------------------+----->  0x100000 +------------------+
+ *           |                  |                 |                  |
+ *           |                  |           640k  +------------------+
+ *           |                  |                 |                  |
+ * KERN_BASE +------------------+ ---------->   0 +------------------+
+ *           |                  |
+ *           |                  |
+ *           |  program data    |
+ *           |     & heap       |
+ *           |                  |
+ *           +------------------+
+ *   PAGE_SZ |  user stack      |
+ *           +------------------+
+ *           |  user data       |
+ *           +------------------+
+ *           |  user text       |
+ *         0 +------------------+
  * */
 
 // Start of extended memory

@@ -35,11 +35,19 @@ typedef uint32_t PDE;
 typedef uint32_t PTE;
 
 
-#define PTE_P   (1 << 0)
-#define PTE_W   (1 << 1)
-#define PTE_U   (1 << 2)
-#define PTE_A   (1 << 5)
-#define PTE_D   (1 << 6)
+/* PTE flags */
+#define PTE_P           0x01   // 1 = present in physical memory
+#define PTE_W           0x02   // 1 = read/write, 0 = read only
+#define PTE_U           0x04   // 1 = user, 0 = supervisor only
+#define PTE_D           0x20   // 1 = dirty, 0 has not been written to
+
+
+/* PDE flags are the same as PTE except no dirty bit */
+#define PDE_P           PTE_P  // 1 = present in physical memory
+#define PDE_W           PTE_W  // 1 = read/write, 0 = read only
+#define PDE_U           PTE_U  // 1 = user, 0 = supervisor only
+#define PDE_PS          0x80   // 1 = 4MB page size, 0 = 4Kb page size
+
 
 /*
  * For 32-bit linux, e.g PD and PT are both 10 bits long, and each page is 4096 bytes.
@@ -48,6 +56,7 @@ typedef uint32_t PTE;
  */
 
 
+#define PTESZ           4       // size of PTE
 #define NPDES           1024    // # directory entries per page directory
 #define NPTES           1024    // # PTEs per page table
 
@@ -60,6 +69,7 @@ typedef uint32_t PTE;
 #define PT_IDX_SHIFT       12     // offset of PT_IDX in a linear address
 #define PD_IDX_SHIFT       22     // offset of PD_IDX in a linear address
 
+
 /* page directory index */
 #define PD_IDX(vaddr)   (((uint32_t)(vaddr) >> PD_IDX_SHIFT) & 0x3FF)
 
@@ -67,6 +77,11 @@ typedef uint32_t PTE;
 #define PT_IDX(vaddr)   (((uint32_t)(vaddr) >> PT_IDX_SHIFT) & 0x3FF)
 
 
-/* */
-#define PG_ROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
-#define PG_ROUNDDOWN(addr) (((addr)) & ~(PGSIZE-1))
+#define PG_ALIGNUP(sz)  (((sz)+PGSIZE-1) & ~(PAGE_SZ-1))
+#define PG_ALIGNDOWN(addr) ((addr) & ~(PAGE_SZ-1))
+
+
+// Address in page table or page directory entry
+#define PTE_ADDR(pte)   ((unsigned int)(pte) & ~0xFFF)
+
+#define PTE_FLAGS(pte)  ((unsigned int)(pte) &  0xFFF)

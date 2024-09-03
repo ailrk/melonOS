@@ -1,7 +1,6 @@
 #include "ata.h"
 #include "i386.h"
 #include <stdint.h>
-#include "tty.h"
 #include "string.h"
 
 /* ATA is the standard interface for hard drives */
@@ -17,7 +16,7 @@ static inline uint8_t read_status_register() { return inb(ATA_P_7); }
  *
  * The disk is ready when BSY = 1 && RDY = 0
  * */
-void wait_disk() {
+void ata_wait_disk() {
     uint8_t mask = ATA_S_RDY | ATA_S_BSY; 
     uint8_t ready = ATA_S_RDY;
     while((read_status_register() & mask) != ready);
@@ -25,9 +24,9 @@ void wait_disk() {
 
 
 /* read a single sector at offset into dst LBA style. */
-void read_sector(void *dst, uint32_t lba) {
+void ata_read_sector(void *dst, uint32_t lba) {
     // send command
-    wait_disk();
+    ata_wait_disk();
     outb(ATA_P_2, 1);
     outb(ATA_P_3, lba);
     outb(ATA_P_4, lba >> 8);
@@ -36,7 +35,7 @@ void read_sector(void *dst, uint32_t lba) {
     outb(ATA_P_7, ATA_C_READSECTOR);
     
     // read data
-    wait_disk();
+    ata_wait_disk();
     insl(ATA_P_0, dst, SECTSZ/4);     // /4 because insl read words
 }
 
@@ -45,7 +44,7 @@ void read_sector(void *dst, uint32_t lba) {
  *
  * The dst buffer size should be greater than (n/SECTSZ)+1.
  * */
-void read_offset(void *dst, uint32_t n, uint32_t offset) {
+void ata_read_offset(void *dst, uint32_t n, uint32_t offset) {
     char *p = dst;
     uint32_t lba = offset / SECTSZ;
     int remained = (n / SECTSZ) + 1;
@@ -54,14 +53,14 @@ void read_offset(void *dst, uint32_t n, uint32_t offset) {
         char buf[SECTSZ];
         int trash = offset % SECTSZ;
         int rest = SECTSZ - trash;
-        read_sector(buf, lba++);
+        ata_read_sector(buf, lba++);
         memcpy(p, &buf[trash], rest);
         remained--;
         p += rest;
     }
 
     while (remained) {
-        read_sector(p, lba++);
+        ata_read_sector(p, lba++);
         p += SECTSZ;
         remained--;
     }
