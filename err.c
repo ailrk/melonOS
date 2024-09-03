@@ -5,7 +5,7 @@
 
 __attribute__((noreturn))
 void panic(const char *msg) {
-    vga_tty_printf("[PANIC] %s", msg);
+    tty_printf("[PANIC] %s", msg);
     cli();
     for(;;);
 }

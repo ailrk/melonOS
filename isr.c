@@ -6,79 +6,79 @@
 
 
 void handle_I_DIVBYZERO() {
-    vga_tty_write_string("divided by zero \n");
+    tty_write_string("divided by zero \n");
 }
 
 void handle_I_DEBUG() {
-    vga_tty_write_string("debug \n");
+    tty_write_string("debug \n");
 }
 
 void handle_I_NMI() {
-    vga_tty_write_string("NMI \n");
+    tty_write_string("NMI \n");
 }
 
 void handle_I_BRKPNT() {
-    vga_tty_write_string("breakpoint\n");
+    tty_write_string("breakpoint\n");
 }
 
 void handle_I_OVERFLOW() {
-    vga_tty_write_string("overflow\n");
+    tty_write_string("overflow\n");
 }
 
 void handle_I_BOUND() {
-    vga_tty_write_string("bound\n");
+    tty_write_string("bound\n");
 }
 
 void handle_I_ILLEGALOP() {
-    vga_tty_write_string("illegal op\n");
+    tty_write_string("illegal op\n");
 }
 
 void handle_I_COPNOAVIL() {
-    vga_tty_write_string("coprocessor not available\n");
+    tty_write_string("coprocessor not available\n");
 }
 
 void handle_I_DOUBLEFLT() {
-    vga_tty_write_string("double fault \n");
+    tty_write_string("double fault \n");
 }
 
 void handle_I_COPSEG() {
-    vga_tty_write_string("coprocessor sement overrun\n");
+    tty_write_string("coprocessor sement overrun\n");
 }
 
 void handle_I_TSS() {
-    vga_tty_write_string("invalid tss\n");
+    tty_write_string("invalid tss\n");
 }
 
 void handle_I_SEGNP() {
-    vga_tty_write_string("segment not present\n");
+    tty_write_string("segment not present\n");
 }
 
 void handle_I_STKSGFLT() {
-    vga_tty_write_string("stack segment fault\n");
+    tty_write_string("stack segment fault\n");
 }
 
 void handle_I_GPFLT() {
-    vga_tty_write_string("general protection fault\n");
+    tty_write_string("general protection fault\n");
 }
 
 void handle_I_PGFLT() {
-    vga_tty_write_string("page fault\n");
+    tty_write_string("page fault\n");
 }
 
 void handle_I_FPERR() {
-    vga_tty_write_string("floating point error\n");
+    tty_write_string("floating point error\n");
 }
 
 void handle_I_ALIGN() {
-    vga_tty_write_string("alignment check\n");
+    tty_write_string("alignment check\n");
 }
 
 void handle_I_MACHINE() {
-    vga_tty_write_string("machine check\n");
+    tty_write_string("machine check\n");
 }
 
 void handle_I_SIMDERR() {
-    vga_tty_write_string("simd error\n");
+    tty_write_string("simd error\n");
 }
 
 /* hardware interrupts */
@@ -88,35 +88,35 @@ void handle_I_IRQ_TIMER() {
 
 void handle_I_IRQ_KBD() {
     char n = inb(KBD_DATA);
-    vga_tty_putchar(n);
+    tty_putchar(n);
 
     pic_send_eoi(I_IRQ_KBD);
 }
 void handle_I_IRQ_COM1() {
 
-    vga_tty_write_string("irq com1\n");
+    tty_write_string("irq com1\n");
     pic_send_eoi(I_IRQ_COM1);
 }
 
 void handle_I_IRQ_IDE() {
-    vga_tty_write_string("irq ide\n");
+    tty_write_string("irq ide\n");
     pic_send_eoi(I_IRQ_IDE);
 
 }
 
 void handle_I_IRQ_ERR() {
-    vga_tty_write_string("irq err\n");
+    tty_write_string("irq err\n");
     pic_send_eoi(I_IRQ_ERR);
 }
 
 void handle_I_IRQ_SPURIOUS() {
-    vga_tty_write_string("irq spurious\n");
+    tty_write_string("irq spurious\n");
     pic_send_eoi(I_IRQ_SPURIOUS);
 }
 
 /* custom interrupt handlers */
 void handle_I_SYSCALL() {
-    vga_tty_write_string("syscall\n");
+    tty_write_string("syscall\n");
 }
 
 void handle_I_DEFAULT() {
@@ -125,7 +125,7 @@ void handle_I_DEFAULT() {
 // default exception handler 
 __attribute__((noreturn))
 void exception_handler() {
-    vga_tty_printf("\n[ERR] unhandled exception\n");
+    tty_printf("\n[ERR] unhandled exception\n");
     __asm__ volatile ("cli; hlt"); // hangs the computer
 }
 

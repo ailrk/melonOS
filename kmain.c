@@ -20,7 +20,7 @@ char *kstack;             // kernel stack. userd in entry.s
 
 
 int kmain(void) {
-    vga_tty_init();
+    tty_init();
     palloc_init(0, P2V_C(PTESZ * NPDES * NPTES));
     pic_init();
     idt_init();

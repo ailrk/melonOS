@@ -28,7 +28,7 @@ static size_t const VGA_HEIGHT = 25;
 
 Terminal term;
 
-void vga_tty_clear() {
+void tty_clear() {
     term.row = 0;
     term.column = 0;
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
@@ -36,7 +36,7 @@ void vga_tty_clear() {
             term.buffer[y * VGA_WIDTH + x] = vga_entry(' ', term.color);
 }
 
-void vga_tty_load_page(uint16_t page) {
+void tty_load_page(uint16_t page) {
     memcpy(term.buffer, (char *)(HISTORY_START + TERMBUF_SIZE * page), TERMBUF_SIZE);
 }
 
@@ -45,20 +45,20 @@ void newline() {
     term.row += 1;
 }
 
-void vga_tty_init() {
+void tty_init() {
     term.row = 0;
     term.column = 0;
     term.color = vga_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
     term.buffer = (uint16_t *)(TERMBUF_START);
-    vga_tty_clear();
-    vga_tty_write_string("melonos 0.0.1\n");
+    tty_clear();
+    tty_write_string("melonos 0.0.1\n");
 }
 
-void vga_tty_set_cursor(uint16_t x, uint16_t y) {
+void tty_set_cursor(uint16_t x, uint16_t y) {
     term.cursor = term.buffer + (y * VGA_WIDTH + x );
 }
 
-void vga_tty_set_color(uint8_t color) { term.color = color; }
+void tty_set_color(uint8_t color) { term.color = color; }
 
 void put_entry_at(char c) {
     size_t x = term.column;
@@ -66,9 +66,9 @@ void put_entry_at(char c) {
     term.buffer[y * VGA_WIDTH + x] = vga_entry(c, term.color);
 }
 
-void vga_tty_putchar(char c) {
+void tty_putchar(char c) {
     if (term.row > VGA_HEIGHT) {
-        vga_tty_clear();
+        tty_clear();
     }
 
     if (c == '\n') {
@@ -84,13 +84,13 @@ void vga_tty_putchar(char c) {
     }
 }
 
-void vga_tty_write(char const *data, size_t size) {
+void tty_write(char const *data, size_t size) {
     for (size_t i = 0; i < size; ++i) {
-        vga_tty_putchar(data[i]);
+        tty_putchar(data[i]);
     }
 }
 
-void vga_tty_write_string(char const *data) { vga_tty_write(data, strlen(data)); }
+void tty_write_string(char const *data) { tty_write(data, strlen(data)); }
 
 
 static void print_uint(uint32_t n, int base) {
@@ -122,14 +122,14 @@ static void print_uint(uint32_t n, int base) {
     }
     buf[i++] = '\0';
 
-    vga_tty_write_string(strrev(buf));
+    tty_write_string(strrev(buf));
 }
 
 
 static void print_int(int n, int base) {
     if (n < 0) {
         n = -n;
-        vga_tty_putchar('-');
+        tty_putchar('-');
     }
     print_uint(n, base);
 }
@@ -148,7 +148,7 @@ static void print_uhex(uint32_t n) {
 /* printf on vga tty.
  * supports %d, %x, %p, %s.
  * */ 
-void vga_tty_printf(const char *fmt, ...) {
+void tty_printf(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     while(*fmt) {
@@ -161,10 +161,10 @@ void vga_tty_printf(const char *fmt, ...) {
             } else if (*fmt == 'p') {
                 print_uhex(va_arg(args, uint32_t));
             } else if (*fmt == 's') {
-                vga_tty_write_string(va_arg(args, const char *));
+                tty_write_string(va_arg(args, const char *));
             }
         } else {
-            vga_tty_putchar(*fmt);
+            tty_putchar(*fmt);
         }
         fmt++;
     }
@@ -172,5 +172,5 @@ void vga_tty_printf(const char *fmt, ...) {
 }
 
 void repl() {
-    vga_tty_write_string("msh 0.0.1\n");
+    tty_write_string("msh 0.0.1\n");
 }

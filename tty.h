@@ -37,15 +37,15 @@ typedef struct Terminal {
 }Terminal;
 
 
-void vga_tty_init();
-void vga_tty_clear();
-void vga_tty_load_page(uint16_t page);
-void vga_tty_newline();
-void vga_tty_set_cursor(uint16_t x, uint16_t y);
-void vga_tty_set_color(uint8_t color);
-void vga_tty_put_entry_at(char c);
-void vga_tty_putchar(char c);
-void vga_tty_write(const char *data, size_t size);
-void vga_tty_write_string(const char *data);
-void vga_tty_printf(const char *fmt, ...);
-void vga_tty_repl();
+void tty_init();
+void tty_clear();
+void tty_load_page(uint16_t page);
+void tty_newline();
+void tty_set_cursor(uint16_t x, uint16_t y);
+void tty_set_color(uint8_t color);
+void tty_put_entry_at(char c);
+void tty_putchar(char c);
+void tty_write(const char *data, size_t size);
+void tty_write_string(const char *data);
+void tty_printf(const char *fmt, ...);
+void tty_repl();
