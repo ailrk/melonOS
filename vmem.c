@@ -12,7 +12,7 @@
 #include "tty.h"
 
 
-#define DEBUG 0
+#define DEBUG 1 
 
 extern PDE *kernel_page_dir;
 extern char data[];  // defined by kernel.ld

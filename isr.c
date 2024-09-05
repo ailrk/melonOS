@@ -83,6 +83,7 @@ void handle_I_SIMDERR() {
 
 /* hardware interrupts */
 void handle_I_IRQ_TIMER() {
+    tty_printf("irq timer %x\n", &handle_I_IRQ_TIMER);
     pic_send_eoi(I_IRQ_TIMER);
 }
 

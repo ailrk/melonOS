@@ -77,7 +77,7 @@ echo:
 	@echo 'K_LINKER   $(K_LINKER)'
 	@echo 'B_OBJS	  $(B_OBJS)'
 	@echo 'B_ASMFILES $(B_ASMFILES)'
-	@echo 'CFLAGS  $(CFLAGS)'
+	@echo 'CFLAGS     $(CFLAGS)'
 	@echo 'CWARNS	  $(CWARNS)'
 
 qemu:

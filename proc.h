@@ -9,8 +9,8 @@
 /* Per CPU state */
 
 typedef struct CPU {
-    GDTRecord   gdtr;
-    GDTEntry    gdt[NSEGS];
+    GDTRecord       gdtr;
+    GDTEntry        gdt[NSEGS];
     volatile bool   started;
     volatile bool   interrupt_enabled;
 } CPU;

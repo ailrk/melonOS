@@ -18,7 +18,8 @@ typedef struct KernelMem {
 
 KernelMem kernel_mem; 
 
-/*! free the memory from vstart to vend */
+/*! free the memory from vstart to vend 
+ * */
 void pfree_range(void *vstart, void *vend) {
     char *p = (char*)vstart;
     for (; p + PAGE_SZ <= (char*)vend; p += PAGE_SZ) {
@@ -65,7 +66,7 @@ void pfree(char *v) {
 
    
     // fill page with junks.
-    memset(v, 1, PAGE_SZ);
+    // memset(v, 1, PAGE_SZ);
 
     Run* r = (Run *)v;
     r->next = kernel_mem.freelist; 

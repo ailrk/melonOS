@@ -1,3 +1,4 @@
+#include "isr.h"
 #include "mem.h"
 #include "palloc.h"
 #include "pic.h"
@@ -21,12 +22,10 @@ int kmain(void) {
     tty_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
     kernel_vmem_alloc();
+    gdt_init();
     pic_init();
     idt_init();
-    gdt_init();
-    // palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
-
-    __asm__ volatile("cli; hlt");
+    palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
 
     for (;;) {
     }
