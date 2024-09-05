@@ -4,12 +4,13 @@
 #include "defs.h"
 
 
-typedef struct KernelMap {
+/* Virtual addrses mapping */
+typedef struct VMap {
     void *        virt;
     physical_addr pstart; 
     physical_addr pend;
     int           perm;
-} KernelMap;
+} VMap;
 
 
 

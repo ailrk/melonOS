@@ -1,6 +1,7 @@
 #pragma once 
 // x86 specific instructions
 
+#include "defs.h"
 #include <stdint.h>
 
 static inline unsigned char inb(unsigned short port) {
@@ -87,8 +88,9 @@ static inline void stosb(void *addr, int data, int cnt) {
 /* Wait for a small amount of time by outputting data to an unused port 0x80 */
 static inline void io_wait() { outb(0x80, 0); }
 
+
 /* Switch the current page table entry */
-static inline void set_cr3(void *page_dir) { __asm__ volatile("movl %0, %%cr3" : : "r"(page_dir)); }
+static inline void set_cr3(physical_addr page_dir) { __asm__ volatile("movl %0, %%cr3" : : "r"(page_dir)); }
 
 
 static inline uint32_t get_cr0() {

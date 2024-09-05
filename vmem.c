@@ -1,4 +1,5 @@
 #include "vmem.h"
+#include "ctrlregs.h"
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
@@ -8,20 +9,29 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "string.h"
+#include "tty.h"
 
+
+#define DEBUG 0
 
 extern PDE *kernel_page_dir;
-extern uint32_t data;  // defined by kernel.ld
+extern char data[];  // defined by kernel.ld
 
-KernelMap kmap[4];
+VMap kmap[4];
 
 
 /*! There is one page table on each process. On top of that 
  *  kernel also has it's own page table `kernel_page_dir`.
+ *
+ *      KERN_BASE..KERN_BASE+EXTMEM => 0..EXTMEM
+ *      KERN_BASE+EXTMEM..data      => EXTMEM..V2P(data)
+ *      data..KERN_BASE+PHYSTOP     => V2P(data)..PHYSTOP
+ *      DEV_SPACE..0                => DEV_SPACE..0
+ *
  * */
 static void init_kmap() {
     // IO space
-    kmap[0] = (KernelMap)
+    kmap[0] = (VMap)
         { .virt   = (void*)KERN_BASE,
           .pstart = 0,
           .pend   = EXTMEM,
@@ -29,14 +39,14 @@ static void init_kmap() {
         };
 
     // kernel text & rodata
-    kmap[1] = (KernelMap)
+    kmap[1] = (VMap)
         { .virt   = (void*)KERN_LINK,
           .pstart = V2P_C(KERN_LINK),
           .pend   = V2P_C(data), 
           .perm   = 0
         };
 
-    kmap[2] = (KernelMap)
+    kmap[2] = (VMap)
         // kernel data & memory
         { .virt   = (void*)(data),
           .pstart = V2P_C(data),
@@ -44,102 +54,137 @@ static void init_kmap() {
           .perm   = PTE_W
         };
 
-    kmap[3] = (KernelMap)
+    kmap[3] = (VMap)
         // devices is mapped to identical address.
         { .virt   = (void*)(DEV_SPACE),
           .pstart = DEV_SPACE,
-          .pend   = 0,
+          .pend   = 0, // wraps over
           .perm   = PTE_W
         };
 }
 
+/*! Some untilities for handling page table access */
+static PDE* get_pde(const PDE *page_dir, const void *vaddr) {
+    return &page_dir[PD_IDX(vaddr)];
+}
 
-/*! Return the PTE in page dir corresponding to the virtual address. 
- *
- *  @param page_dir    the page directory
- *  @param vaddr       virtual addess
- *  @param alloc       allocation flag.
- * */
-static PTE *get_pte(PDE *page_dir, void *vaddr, bool alloc) {
-    PTE *pt;
-    PDE *pde = &page_dir[PD_IDX(vaddr)];
 
-    if (*pde & PDE_P) {
-        pt = (PTE *)P2V(PTE_ADDR(*pde));
-    } else {
-        if (!alloc)
-            return 0;
-        if ((pt = (PTE *)palloc()) == 0)
-            return 0;
-        memset(pt, 0, PAGE_SZ);
-        *pde = V2P((unsigned int)pt | PDE_P | PDE_W | PDE_U);
-    }
+static PTE* get_pt(const PDE *page_dir, const void *vaddr) {
+    PDE *pde = get_pde(page_dir, vaddr);
+    return (PTE *)P2V(PTE_ADDR(*pde));
+}
+
+
+static PTE* get_pt1(const PDE *pde, const void *vaddr) {
+    return (PTE *)P2V(PTE_ADDR(*pde));
+}
+
+
+static PTE* get_pte(const PDE *page_dir, const void *vaddr) {
+    PTE *pt = get_pt(page_dir, vaddr); 
+    return &pt[PT_IDX(vaddr)];
+}
+
+static PTE* get_pte1(const PDE *pde, const void *vaddr) {
+    PTE *pt = get_pt1(pde, vaddr); 
     return &pt[PT_IDX(vaddr)];
 }
 
 
-/*! Create PTE for virtual addresses starting at vaddr mapped to paddr
- *  virtual address will be round down to the page boundry.
+/*! Translate a vaddr to physical address. It assumes the page table is already set up */
+static physical_addr translate(const PDE *page_dir, const void *vaddr) {
+    PTE *pte = get_pte(page_dir, vaddr);
+    return (uint32_t)(*pte & ~(0xfff) | (uint32_t)VADDR_OFFSET(vaddr));
+}
+
+
+/*! Walk the page directory, return the PTE corresponding to the virtual address. 
  *
- *  @param page_dir    page directory   
- *  @param vaddr       virtual address
- *  @param size        the size of the page
- *  @param paddr       physical address being mapped to
- *  @param perm        the page permission
+ *  @param page_dir    the page directory
+ *  @param vaddr       virtual addess
+ *  @param alloc       allocation flag.
+ *  @return the address of the page table entry. 0 indicates failed to find pte
  * */
-static bool map_pages(PDE *page_dir, void *vaddr, uint32_t size, physical_addr paddr, int perm) {
-    char *vbegin = (char *)PG_ALIGNDOWN((uint32_t)vaddr);
-    char *vend = (char *)PG_ALIGNDOWN((uint32_t)vaddr + size - 1); 
-    PTE *pte;
+static PTE *walk(const PDE *page_dir, const void *vaddr) {
+    PDE *pde = get_pde(page_dir, vaddr);
+    PTE *pt;
 
-    for (;;) {
-        if ((pte = get_pte(page_dir, vaddr, 1)) == 0)
+    if (*pde & PDE_P)
+        return get_pte1(pde, vaddr);
+
+    if ((pt = (PTE *)palloc()) == 0)
+        return 0;
+
+    memset(pt, 0, PAGE_SZ);
+
+    *pde = V2P_C((uint32_t)pt | PDE_P | PDE_W | PDE_U);
+    return get_pte1(pde, vaddr);
+}
+
+
+
+/*! Create PTE for virtual addresses starting at vaddr mapped to paddr
+ *  virtual address doesn't need to align on page boundry, `map_pages1
+ *  will automatically round down the address.
+ *
+ *  @return true if pages are mapped successfully. false otherwise.
+ * */
+static bool map_pages(const PDE *page_dir, const VMap* k) {
+    int           size   = k->pend - k->pstart;
+    char *        vstart = (char *)PG_ALIGNDOWN((uint32_t)k->virt);
+    char *        vend   = (char *)PG_ALIGNDOWN((uint32_t)k->virt + size); 
+    physical_addr pstart = k->pstart;
+    PTE *         pte;
+
+#if DEBUG
+    tty_printf("\nmap_pages> <VMap %x, (%x, %x), %x>", k->virt, k->pstart, k->pend, k->perm);
+    tty_printf("\n           <vstart %x, vend %x>\n", vstart, vend);
+#endif
+
+    if ((uint32_t)vstart % PAGE_SZ > 0 || (uint32_t)vend % PAGE_SZ > 0)
+        panic("map_pages, not on page boundry");
+
+    for (; vstart != vend; vstart+=PAGE_SZ, pstart+=PAGE_SZ) {
+        if ((pte = walk(page_dir, vstart)) == 0)
             return false;
-        if (*pte & PTE_P)
-            panic("remap");
 
-        *pte = paddr | PTE_P | perm;
-        if (vbegin == vend) 
-            break;
-        vbegin += PAGE_SZ;
-        vend += PAGE_SZ;
+        if (*pte & PTE_P) {
+            panic("remap");
+        }
+
+        *pte = pstart | PTE_P | k->perm;
     }
     return true;
 }
 
 
 /*! setup the kernel part of the page table.
+ *  we allocate the first page to hold the PD. Then
+ *  we map pages base on the `kmap`. PT is allocated as 
+ *  needed.
  *
  *  @return initialized page directory
  * */
 PDE *setup_kernel_vmem() {
-    PDE *page_dir;
-    void init_kmap();
+    PDE *page;
     int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
 
-    if ((page_dir = (PDE*)palloc()) == 0)
+    if ((page = (PDE*)palloc()) == 0)
         return 0;
 
-    memset(page_dir, 0, PAGE_SZ);
+    memset(page, 0, PAGE_SZ);
 
     if ((void*)P2V(PHYSTOP) > (void*)DEV_SPACE)
         panic("PHYSTOP is too high");
         
-    for (KernelMap *k = kmap; k < &kmap[kmap_sz]; k++) {
-        if (map_pages(page_dir, k->virt, k->pend - k->pstart, k->pstart, k->perm)) {
-            free_vmem(page_dir);
+    for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
+        if (!map_pages(page, k)) {
+            free_vmem(page);
             return 0;
         }
     }
-    return page_dir;
-}
 
-
-
-/*! setup kernel virtual memory */
-void kernel_vmem_alloc() {
-    kernel_page_dir = setup_kernel_vmem();
-    switch_kernel_vmem();
+    return page;
 }
 
 
@@ -147,9 +192,8 @@ void kernel_vmem_alloc() {
  *  when there is no process running 
  * */
 void switch_kernel_vmem() {
-    set_cr3(V2P(kernel_page_dir));
+   set_cr3(V2P_C(kernel_page_dir));
 }
-
 
 
 /*! 
@@ -173,4 +217,14 @@ void free_vmem(PDE *page_dir) {
         }
     }
     pfree((char *)page_dir);
+}
+
+
+/*! setup kernel virtual memory */
+void kernel_vmem_alloc() {
+    tty_printf("[boot] kernel_vmem_alloc...");
+    init_kmap();
+    kernel_page_dir = setup_kernel_vmem();
+    switch_kernel_vmem();
+    tty_printf("ok\n");
 }

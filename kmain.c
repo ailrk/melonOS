@@ -26,7 +26,8 @@ int kmain(void) {
     gdt_init();
     // palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
 
-    __asm__ volatile ("cli; hlt");
+    __asm__ volatile("cli; hlt");
+
     for (;;) {
     }
 

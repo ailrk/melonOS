@@ -1,4 +1,5 @@
 #include "tty.h"
+#include "mem.h"
 #include "string.h"
 #include <stdarg.h>
 
@@ -20,11 +21,9 @@ vga_entry(unsigned char uc, uint8_t color) {
 static size_t const VGA_WIDTH = 80;
 static size_t const VGA_HEIGHT = 25;
 
-#define TERMBUF_START 0xb8000
+/* after set up paging the IO space is mapped from KERN_BASE. */
+#define TERMBUF_START (KERN_BASE + 0xb8000)
 #define TERMBUF_SIZE (VGA_HEIGHT * VGA_WIDTH)
-#define HISTORY_START (TERMBUF_START + TERMBUF_SIZE)
-#define HISTORY_END (HISTORY_START + TERMBUF_SIZE * 8)
-#define MAX_PAGE 7
 
 Terminal term;
 
@@ -34,10 +33,6 @@ void tty_clear() {
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
         for (size_t x = 0; x < VGA_WIDTH; ++x)
             term.buffer[y * VGA_WIDTH + x] = vga_entry(' ', term.color);
-}
-
-void tty_load_page(uint16_t page) {
-    memcpy(term.buffer, (char *)(HISTORY_START + TERMBUF_SIZE * page), TERMBUF_SIZE);
 }
 
 void newline() {

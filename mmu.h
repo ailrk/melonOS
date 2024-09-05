@@ -70,6 +70,8 @@ typedef uint32_t PTE;
 #define PD_IDX_SHIFT       22     // offset of PD_IDX in a linear address
 
 
+#define VADDR_OFFSET(vaddr)  ((uint32_t)vaddr & 0xfff)
+
 /* page directory index */
 #define PD_IDX(vaddr)   (((uint32_t)(vaddr) >> PD_IDX_SHIFT) & 0x3FF)
 

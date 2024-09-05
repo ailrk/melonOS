@@ -1,3 +1,4 @@
+#include "defs.h"
 #include "i386.h"
 #include "elf.h"
 #include "mem.h"
@@ -35,7 +36,7 @@ void paging_init() {
     // map VA [KERN_BASE, KERN_BASE+4MB) to PA [0, 4MB)
     pagedir[KERN_BASE>>PD_IDX_SHIFT] = (uint32_t)pagetbl | PDE_P | PDE_W; 
 
-    set_cr3(pagedir);
+    set_cr3((physical_addr)pagedir);
     set_cr0(get_cr0() | CR0_WP | CR0_PG);
 }
 
@@ -52,7 +53,6 @@ void boot3() {
     // put elf at some unused space. After kernel is loaded
     // this memory is not used.
     ELF32Header *elf = (ELF32Header *)0x10000;
-    // read_sector_n((char*)elf, PAGE_SZ, 80);
     
     ata_read_offset_from_kernel(elf, PAGE_SZ, 0);
 

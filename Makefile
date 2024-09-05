@@ -77,7 +77,7 @@ echo:
 	@echo 'K_LINKER   $(K_LINKER)'
 	@echo 'B_OBJS	  $(B_OBJS)'
 	@echo 'B_ASMFILES $(B_ASMFILES)'
-	@echo 'CFLAGS	  $(CFLAGS)'
+	@echo 'CFLAGS  $(CFLAGS)'
 	@echo 'CWARNS	  $(CWARNS)'
 
 qemu:
@@ -85,6 +85,9 @@ qemu:
 
 qemu-log:
 	$(QEMU) -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -no-reboot -D .qemu.log -monitor stdio
+
+qemu-monitor:
+	$(QEMU) -drive format=raw,file=$(OUT) -monitor stdio
 
 qemu-debug:
 	$(QEMU)  -gdb tcp::1234 -S -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -no-reboot
@@ -99,3 +102,4 @@ d:
 hex:
 	hexdump -C $(OUT)
 
+-include .local.mk
