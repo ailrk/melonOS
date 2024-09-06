@@ -8,20 +8,22 @@
 
 
 typedef enum VgaColor {
-    VGA_COLOR_BLACK = 0,
-    VGA_COLOR_BLUE,
-    VGA_COLOR_GREEN,
-    VGA_COLOR_CYAN,
-    VGA_COLOR_RED,
-    VGA_COLOR_MAGENTA,
-    VGA_COLOR_BROWN,
-    VGA_COLOR_LIGHT_GREY,
-    VGA_COLOR_DARK_GREY,
-    VGA_COLOR_LIGHT_BLUE,
-    VGA_COLOR_LIGHT_CYAN,
-    VGA_COLOR_LIGHT_RED,
-    VGA_COLOR_LIGHT_MAGENTA,
-    VGA_COLOR_WHITE,
+	VGA_COLOR_BLACK = 0,
+	VGA_COLOR_BLUE = 1,
+	VGA_COLOR_GREEN = 2,
+	VGA_COLOR_CYAN = 3,
+	VGA_COLOR_RED = 4,
+	VGA_COLOR_MAGENTA = 5,
+	VGA_COLOR_BROWN = 6,
+	VGA_COLOR_LIGHT_GREY = 7,
+	VGA_COLOR_DARK_GREY = 8,
+	VGA_COLOR_LIGHT_BLUE = 9,
+	VGA_COLOR_LIGHT_GREEN = 10,
+	VGA_COLOR_LIGHT_CYAN = 11,
+	VGA_COLOR_LIGHT_RED = 12,
+	VGA_COLOR_LIGHT_MAGENTA = 13,
+	VGA_COLOR_LIGHT_BROWN = 14,
+	VGA_COLOR_WHITE = 15,
 }VgaColor;
 
 
@@ -37,15 +39,15 @@ typedef struct Terminal {
 }Terminal;
 
 
-void tty_init();
-void tty_clear();
-void tty_load_page(uint16_t page);
-void tty_newline();
-void tty_set_cursor(uint16_t x, uint16_t y);
-void tty_set_color(uint8_t color);
-void tty_put_entry_at(char c);
-void tty_putchar(char c);
-void tty_write(const char *data, size_t size);
-void tty_write_string(const char *data);
-void tty_printf(const char *fmt, ...);
-void tty_repl();
+void        tty_init();
+void        tty_clear();
+void        tty_load_page(uint16_t page);
+void        tty_newline();
+void        tty_set_cursor(uint16_t x, uint16_t y);
+void        tty_set_color(uint8_t color);
+void        tty_put_entry_at(char c);
+void        tty_putchar(char c);
+const char *tty_write(const char *data, size_t size);
+void        tty_write_string(const char *data);
+void        tty_printf(const char *fmt, ...);
+void        tty_repl();

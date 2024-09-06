@@ -12,7 +12,7 @@
 #include "tty.h"
 
 
-#define DEBUG 1 
+#define DEBUG 0
 
 extern PDE *kernel_page_dir;
 extern char data[];  // defined by kernel.ld
@@ -100,10 +100,10 @@ static physical_addr translate(const PDE *page_dir, const void *vaddr) {
 
 /*! Walk the page directory, return the PTE corresponding to the virtual address. 
  *
- *  @param page_dir    the page directory
- *  @param vaddr       virtual addess
- *  @param alloc       allocation flag.
- *  @return the address of the page table entry. 0 indicates failed to find pte
+ *  @page_dir:  the page directory
+ *  @vaddr:     virtual addess
+ *  @alloc:     allocation flag.
+ *  @return:    the address of the page table entry. 0 indicates failed to find pte
  * */
 static PTE *walk(const PDE *page_dir, const void *vaddr) {
     PDE *pde = get_pde(page_dir, vaddr);
@@ -196,8 +196,6 @@ void switch_kernel_vmem() {
 }
 
 
-/*! 
- * */
 int deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
 
 }
@@ -222,9 +220,9 @@ void free_vmem(PDE *page_dir) {
 
 /*! setup kernel virtual memory */
 void kernel_vmem_alloc() {
-    tty_printf("[boot] kernel_vmem_alloc...");
+    tty_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
     init_kmap();
     kernel_page_dir = setup_kernel_vmem();
     switch_kernel_vmem();
-    tty_printf("ok\n");
+    tty_printf("\033[32mok\033[0m\n");
 }

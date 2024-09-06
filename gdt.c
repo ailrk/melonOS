@@ -59,10 +59,8 @@ extern CPU cpu;
                      SEG_PRIV(3)     | SEG_DATA_RDWR
  
 
-uint64_t
-create_descriptor(uint32_t base, uint32_t limit, uint16_t flag)
-{
-    uint64_t descriptor;
+GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag) {
+    GDTEntry descriptor;
  
     // Create the high 32 bit segment
     descriptor  =  limit       & 0x000f0000;         // set limit bits 19:16
@@ -81,7 +79,7 @@ create_descriptor(uint32_t base, uint32_t limit, uint16_t flag)
 
 
 void gdt_init() {
-    tty_printf("[boot] gdt...");
+    tty_printf("[\033[32mboot\033[0m] gdt...");
     cpu.gdtr.limit = sizeof(GDTEntry) * NSEGS - 1;
     cpu.gdtr.base = (uint32_t)&cpu.gdt;
 
@@ -92,5 +90,5 @@ void gdt_init() {
     cpu.gdt[SEG_UDATA] = create_descriptor(0, 0x000fffff, (GDT_DATA_PL3));
 
     lgdt((void*)&cpu.gdtr);
-    tty_printf("ok\n");
+    tty_printf("\033[32mok\033[0m\n");
 }

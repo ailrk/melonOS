@@ -15,7 +15,7 @@ K_ASMFILES		= $(filter-out bootld.s $(wildcard *.pp.s),$(wildcard *.s))
 K_LINKER		= kernel.ld
 K_OBJS			= $(K_CFILES:.c=.o) $(K_ASMFILES:.s=.o)
 
-B_CFILES		= boot.c ata.c tty.c string.c
+B_CFILES		= boot.c ata.c string.c
 B_ASMFILES		= bootld.s
 B_LINKER		= boot.ld
 B_OBJS			= $(B_CFILES:.c=.o) $(B_ASMFILES:.s=.o)

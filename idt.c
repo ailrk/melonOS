@@ -35,11 +35,11 @@ void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
 }
 
 void idt_init() {
-    tty_printf("[boot] idt...");
+    tty_printf("[\033[32mboot\033[0m] idt...");
     idtr.base = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     isr_register();
     lidt((void*)&idtr);
     sti();
-    tty_printf("ok\n");
+    tty_printf("\033[32mok\033[0m\n");
 }

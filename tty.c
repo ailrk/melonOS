@@ -1,7 +1,11 @@
 #include "tty.h"
+#include "ctype.h"
 #include "mem.h"
+#include "ansi.h"
 #include "string.h"
 #include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /**
  * VGA buffer starts at 0xb8000 and provides 256k display memory.
@@ -27,6 +31,15 @@ static size_t const VGA_HEIGHT = 25;
 
 Terminal term;
 
+static void set_bg_color(VgaColor bg) {
+    term.color |= bg << 4;
+}
+
+static void set_fg_color(VgaColor fg) {
+    term.color = vga_entry_color(fg, VGA_COLOR_BLACK);
+}
+
+
 void tty_clear() {
     term.row = 0;
     term.column = 0;
@@ -43,7 +56,7 @@ void newline() {
 void tty_init() {
     term.row = 0;
     term.column = 0;
-    term.color = vga_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+    term.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     term.buffer = (uint16_t *)(TERMBUF_START);
     tty_clear();
     tty_write_string("melonos 0.0.1\n");
@@ -79,13 +92,104 @@ void tty_putchar(char c) {
     }
 }
 
-void tty_write(char const *data, size_t size) {
-    for (size_t i = 0; i < size; ++i) {
-        tty_putchar(data[i]);
+static void ansi_cntl(const ANSIState * ansi) {
+    switch(ansi->tag) {
+        case ANSI_COLOR: 
+            switch (ansi->value.color) {
+            case ANSIColor_BBLK: 
+                set_bg_color(VGA_COLOR_BLACK);
+                break;
+            case ANSIColor_BRED: 
+                set_bg_color(VGA_COLOR_RED);
+                break;
+            case ANSIColor_BGRN: 
+                set_bg_color(VGA_COLOR_GREEN);
+                break;
+            case ANSIColor_BYLW: 
+                set_bg_color(VGA_COLOR_LIGHT_BROWN);
+                break;
+            case ANSIColor_BBLU: 
+                set_bg_color(VGA_COLOR_BLUE);
+                break;
+            case ANSIColor_BMAG:
+                set_bg_color(VGA_COLOR_LIGHT_MAGENTA);
+                break;
+            case ANSIColor_BCYA:
+                set_bg_color(VGA_COLOR_CYAN);
+                break;
+            case ANSIColor_BWHT:
+                set_bg_color(VGA_COLOR_WHITE);
+                break;
+            case ANSIColor_BDEF:
+                set_bg_color(VGA_COLOR_BLACK);
+                break;
+            case ANSIColor_FBLK:
+                set_fg_color(VGA_COLOR_BLACK);
+                break;
+            case ANSIColor_FRED:
+                set_fg_color(VGA_COLOR_RED);
+                break;
+            case ANSIColor_FGRN:
+                set_fg_color(VGA_COLOR_GREEN);
+                break;
+            case ANSIColor_FYLW:
+                set_fg_color(VGA_COLOR_LIGHT_BROWN);
+                break;
+            case ANSIColor_FBLU:
+                set_fg_color(VGA_COLOR_BLUE);
+                break;
+            case ANSIColor_FMAG:
+                set_fg_color(VGA_COLOR_LIGHT_MAGENTA);
+                break;
+            case ANSIColor_FCYA:
+                set_fg_color(VGA_COLOR_CYAN);
+                break;
+            case ANSIColor_FWHT:
+                set_fg_color(VGA_COLOR_WHITE);
+                break;
+            case ANSIColor_FDEF:
+                set_fg_color(VGA_COLOR_WHITE);
+                break;
+            case ANSIColor_RES:
+                set_fg_color(VGA_COLOR_WHITE);
+                set_bg_color(VGA_COLOR_BLACK);
+                break;
+            default: break;
+            }
+
+            break;
+        case ANSI_CURSOR : break;
+        case ANSI_ERASE : break;
     }
+
 }
 
-void tty_write_string(char const *data) { tty_write(data, strlen(data)); }
+
+/*! Write `size` characters to the tty. When encounters escape code, 
+ *  consume the escape code first.
+ *
+ *  @data
+ *  @size
+ *  @return
+ * */
+const char *tty_write(const char *data, size_t size) {
+    ANSIState ansi;
+
+    if (*data == '\033') { // ansi
+        const char *p;
+        if ((p = ansi_parse(&ansi, data)) != 0) {
+            ansi_cntl(&ansi);
+            data = p;
+        }
+    }
+
+    for (int i = 0; i < size; ++i) {
+        tty_putchar(*data++);
+    }
+    return data;
+}
+
+void tty_write_string(const char *data) { tty_write(data, strlen(data)); }
 
 
 static void print_uint(uint32_t n, int base) {
@@ -140,8 +244,12 @@ static void print_uhex(uint32_t n) {
 }
 
 
-/* printf on vga tty.
- * supports %d, %x, %p, %s.
+/*! printf on vga tty. supports %d, %x, %p, %s.
+ *  The implementation should always use `tty_write` because it handles
+ *  ansi escapes properly.
+ *
+ *  @fmt formatted string
+ *  @... data to be formatted
  * */ 
 void tty_printf(const char *fmt, ...) {
     va_list args;
@@ -158,10 +266,10 @@ void tty_printf(const char *fmt, ...) {
             } else if (*fmt == 's') {
                 tty_write_string(va_arg(args, const char *));
             }
+            fmt++;
         } else {
-            tty_putchar(*fmt);
+            fmt = tty_write(fmt, 1);
         }
-        fmt++;
     }
     va_end(args);
 }
