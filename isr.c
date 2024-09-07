@@ -87,7 +87,7 @@ void handle_I_IRQ_TIMER() {
 }
 
 void handle_I_IRQ_KBD() {
-    char n = inb(KBD_DATA);
+    char n = kbd_getc();
     tty_putchar(n);
     pic_send_eoi(I_IRQ_KBD);
 }
@@ -126,7 +126,6 @@ void exception_handler() {
     tty_printf("\n[ERR] unhandled exception\n");
     __asm__ volatile ("cli; hlt"); // hangs the computer
 }
-
 
 
 extern void* isr_I_DIVBYZERO;

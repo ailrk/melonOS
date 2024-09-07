@@ -1,10 +1,7 @@
 #include "kbd.h"
+#include "tty.h"
 
+/* support p/s2 keyboard */
 
-uint32_t kbd_get_status() {
-    return inb(KBD_DATA);
-}
-
-uint32_t kbd_get_data() {
-    return inb(KBD_STATP); 
+char kbd_getc() {
 }

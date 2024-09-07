@@ -25,6 +25,7 @@ int kmain(void) {
     gdt_init();
     pic_init();
     idt_init();
+    tty_printf("\033[33mHELLO \033[42m\033[31mWORLD\033[0m\n");
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
 
     for (;;) {

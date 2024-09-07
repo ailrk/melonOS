@@ -11,6 +11,8 @@
  * VGA buffer starts at 0xb8000 and provides 256k display memory.
  */
 
+Terminal term;
+
 static inline uint8_t 
 vga_entry_color(VgaColor fg, VgaColor bg) {
     return fg | bg << 4;
@@ -29,14 +31,12 @@ static size_t const VGA_HEIGHT = 25;
 #define TERMBUF_START (KERN_BASE + 0xb8000)
 #define TERMBUF_SIZE (VGA_HEIGHT * VGA_WIDTH)
 
-Terminal term;
-
 static void set_bg_color(VgaColor bg) {
     term.color |= bg << 4;
 }
 
 static void set_fg_color(VgaColor fg) {
-    term.color = vga_entry_color(fg, VGA_COLOR_BLACK);
+    term.color = vga_entry_color(fg, term.color >> 4);
 }
 
 
@@ -151,26 +151,23 @@ static void ansi_cntl(const ANSIState * ansi) {
                 set_fg_color(VGA_COLOR_WHITE);
                 break;
             case ANSIColor_RES:
-                set_fg_color(VGA_COLOR_WHITE);
-                set_bg_color(VGA_COLOR_BLACK);
+                term.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
                 break;
             default: break;
             }
-
             break;
         case ANSI_CURSOR : break;
         case ANSI_ERASE : break;
     }
-
 }
 
 
 /*! Write `size` characters to the tty. When encounters escape code, 
  *  consume the escape code first.
  *
- *  @data
- *  @size
- *  @return
+ *  @data   the string to write
+ *  @size   size of character to write
+ *  @return the pointer to the character one after the last character been printed.
  * */
 const char *tty_write(const char *data, size_t size) {
     ANSIState ansi;

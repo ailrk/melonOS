@@ -114,7 +114,6 @@ static bool set_state(ANSIState *s, char c) {
 }
 
 
-
 /*! Parse list in form of `n1;n2;..` where nx is an integer.
  *
  *  @top      top pointer of the integer stack.
@@ -134,6 +133,7 @@ static int *parse_list(int *top, const char **cbegin) {
         return top;
     }
 }
+
 
 /*! Parse an ansi escape code and return the `ANSIState` indicate the escape
  *  code content.
@@ -158,6 +158,5 @@ const char *ansi_parse(ANSIState *state, const char *c) {
             }
         }
    }
-
     return 0;
 }
