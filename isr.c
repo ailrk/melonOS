@@ -3,6 +3,7 @@
 #include "tty.h"
 #include "kbd.h"
 #include "pic.h"
+#include <stdint.h>
 
 
 void handle_I_DIVBYZERO() {
@@ -87,15 +88,36 @@ void handle_I_IRQ_TIMER() {
 }
 
 void handle_I_IRQ_KBD() {
-    char n = kbd_getc();
-    tty_putchar(n);
+    unsigned char c = kbd_getc();
+    tty_putchar(c);
     pic_send_eoi(I_IRQ_KBD);
+}
+
+void handle_I_IRQ_COM2() {
+    tty_write_string("irq com2\n");
+    pic_send_eoi(I_IRQ_COM2);
 }
 
 void handle_I_IRQ_COM1() {
     tty_write_string("irq com1\n");
     pic_send_eoi(I_IRQ_COM1);
 }
+
+void handle_I_IRQ_LPT1() {
+    tty_write_string("irq lpt1\n");
+    pic_send_eoi(I_IRQ_LPT1);
+}
+
+void handle_I_IRQ_CMOS() {
+    tty_write_string("irq cmos timer\n");
+    pic_send_eoi(I_IRQ_CMOS);
+}
+
+void handle_I_IRQ_MOUSE() {
+    tty_write_string("irq mouse\n");
+    pic_send_eoi(I_IRQ_MOUSE);
+}
+
 
 void handle_I_IRQ_IDE() {
     tty_write_string("irq ide\n");
@@ -149,7 +171,11 @@ extern void* isr_I_MACHINE;
 extern void* isr_I_SIMDERR;
 extern void* isr_I_IRQ_TIMER;
 extern void* isr_I_IRQ_KBD;
+extern void* isr_I_IRQ_COM2;
 extern void* isr_I_IRQ_COM1;
+extern void* isr_I_IRQ_LPT1;
+extern void* isr_I_IRQ_CMOS;
+extern void* isr_I_IRQ_MOUSE;
 extern void* isr_I_IRQ_IDE;
 extern void* isr_I_IRQ_ERR;
 extern void* isr_I_IRQ_SPURIOUS;
@@ -183,7 +209,11 @@ void isr_register() {
     regist_idt_handler(I_SIMDERR, &isr_I_SIMDERR, InterruptGate);
     regist_idt_handler(MAP_IRQ(I_IRQ_TIMER), &isr_I_IRQ_TIMER, InterruptGate);
     regist_idt_handler(MAP_IRQ(I_IRQ_KBD), &isr_I_IRQ_KBD, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_COM2), &isr_I_IRQ_COM2, InterruptGate);
     regist_idt_handler(MAP_IRQ(I_IRQ_COM1), &isr_I_IRQ_COM1, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_LPT1), &isr_I_IRQ_LPT1, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_CMOS), &isr_I_IRQ_CMOS, InterruptGate);
+    regist_idt_handler(MAP_IRQ(I_IRQ_MOUSE), &isr_I_IRQ_MOUSE, InterruptGate);
     regist_idt_handler(MAP_IRQ(I_IRQ_IDE), &isr_I_IRQ_IDE, InterruptGate);
     regist_idt_handler(MAP_IRQ(I_IRQ_ERR), &isr_I_IRQ_ERR, InterruptGate);
     regist_idt_handler(MAP_IRQ(I_IRQ_SPURIOUS), &isr_I_IRQ_SPURIOUS, InterruptGate);

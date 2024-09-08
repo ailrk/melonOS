@@ -1,5 +1,4 @@
 #include "tty.h"
-#include "ctype.h"
 #include "mem.h"
 #include "ansi.h"
 #include "string.h"
@@ -162,14 +161,11 @@ static void ansi_cntl(const ANSIState * ansi) {
 }
 
 
-/*! Write `size` characters to the tty. When encounters escape code, 
- *  consume the escape code first.
- *
- *  @data   the string to write
- *  @size   size of character to write
- *  @return the pointer to the character one after the last character been printed.
+
+/*! Write a single char to the screen. If it encounters an escape code, consume 
+ *  it first then print the next character.
  * */
-const char *tty_write(const char *data, size_t size) {
+const char *tty_writec(const char *data) {
     ANSIState ansi;
 
     if (*data == '\033') { // ansi
@@ -180,13 +176,26 @@ const char *tty_write(const char *data, size_t size) {
         }
     }
 
-    for (int i = 0; i < size; ++i) {
-        tty_putchar(*data++);
-    }
+    tty_putchar(*data++);
     return data;
 }
 
-void tty_write_string(const char *data) { tty_write(data, strlen(data)); }
+/*! Write null terminated string to the tty. When encounters escape code, 
+ *  consume the escape code first.
+ *
+ *  @data   the string to write
+ *  @size   size of character to write
+ *  @return the pointer to the character one after the last character been printed.
+ * */
+const char *tty_write_string(const char *data) {
+    const char *end = data + strlen(data);
+    const char *p;
+    while (data < end) {
+        p =  tty_writec(data); 
+        data = p;
+    }
+    return data;
+}
 
 
 static void print_uint(uint32_t n, int base) {
@@ -241,8 +250,8 @@ static void print_uhex(uint32_t n) {
 }
 
 
-/*! printf on vga tty. supports %d, %x, %p, %s.
- *  The implementation should always use `tty_write` because it handles
+/*! printf on vga tty. supports %d, %x, %p, %s, %c.
+ *  The implementation should always use `tty_write_string` because it handles
  *  ansi escapes properly.
  *
  *  @fmt formatted string
@@ -256,16 +265,21 @@ void tty_printf(const char *fmt, ...) {
             fmt++;
             if (*fmt == 'd') {
                 print_int(va_arg(args, int), 10);
+                fmt++;
             } else if (*fmt == 'x') {
                 print_uhex(va_arg(args, int));
+                fmt++;
             } else if (*fmt == 'p') {
                 print_uhex(va_arg(args, uint32_t));
+                fmt++;
+            } else if (*fmt == 'c') {
+                tty_putchar(va_arg(args, int));
+                fmt++;
             } else if (*fmt == 's') {
-                tty_write_string(va_arg(args, const char *));
+                fmt = tty_write_string(va_arg(args, const char *));
             }
-            fmt++;
         } else {
-            fmt = tty_write(fmt, 1);
+            fmt = tty_writec(fmt);
         }
     }
     va_end(args);

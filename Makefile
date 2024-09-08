@@ -80,6 +80,10 @@ echo:
 	@echo 'CFLAGS     $(CFLAGS)'
 	@echo 'CWARNS	  $(CWARNS)'
 
+qemu-boot:
+	$(QEMU) -drive format=raw,file=$(BOOT)
+
+
 qemu:
 	$(QEMU) -drive format=raw,file=$(OUT) -device virtio-vga,xres=640,yres=320
 

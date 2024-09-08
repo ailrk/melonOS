@@ -8,6 +8,28 @@
 #include <stdalign.h>
 #include <stdint.h>
 
+#define DEBUG 0
+
+#if DEBUG
+/* simple print util for debugging */
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+uint16_t *vgabuf = (uint16_t *)0xb8000; int x = 0; int y = 0;
+void putc(char c) {
+    vgabuf[y * VGA_WIDTH + x] = c | (15 << 8);
+    if (x == VGA_WIDTH) { x=0; y= (y+1) % VGA_HEIGHT; } else x++;
+}
+void puts(char* c) { while(*c) putc(*c++); }
+void phex(uint32_t n) {
+    static const char digits[] = "0123456789ABCDEF";
+    char buf[32]; int i = 0; int base = 16;
+    do { buf[i++] = digits[n % base]; n /= base; } while(n);
+    buf[i++] = 'x'; buf[i++] = 'b'; buf[i++] = '\0';
+    puts(strrev(buf));
+}
+#endif
+
+
 static uint32_t elf_offset = SECTSZ * 20;
 
 void ata_read_offset_from_kernel(void *dst, uint32_t n, uint32_t offset) {
@@ -63,11 +85,11 @@ void boot3() {
     ELF32ProgramHeader* ph = (ELF32ProgramHeader*)((char*)elf + elf->e_phoff);
     for (ELF32ProgramHeader* p = ph; p < ph + elf->e_phnum; ++p) {
         paddr = (char*)p->p_paddr;
-        ata_read_offset_from_kernel(paddr, ph->p_filesz, ph->p_offset);
+        ata_read_offset_from_kernel(paddr, p->p_filesz, p->p_offset);
 
         // pad till memsz
-        if (ph->p_memsz > ph->p_filesz)
-            stosb(paddr + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
+        if (p->p_memsz > p->p_filesz)
+            stosb(paddr + p->p_filesz, 0, p->p_memsz - p->p_filesz);
     }
 
     paging_init();

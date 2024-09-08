@@ -75,7 +75,12 @@ void idt_init();
 #define I_IRQ_TIMER      0x00    // IRQ timer
 #define I_IRQ_KBD        0x01    // IRQ keyboard
                                  // 0x02 is used internally by pic chips
+
+#define I_IRQ_COM2       0x03    // IRQ com2 serial port
 #define I_IRQ_COM1       0x04    // IRQ com1 serial port
+#define I_IRQ_LPT1       0x05    // IRQ parallel port
+#define I_IRQ_CMOS       0x08    // IRQ cmos clock
+#define I_IRQ_MOUSE      0x0C    // IRQ mouse
 #define I_IRQ_IDE        0x0E    // IRQ ide device
 #define I_IRQ_ERR        0x13    // IRQ error
 #define I_IRQ_SPURIOUS   0x1F    // IRQ error

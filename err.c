@@ -9,3 +9,8 @@ void panic(const char *msg) {
     cli();
     for(;;);
 }
+
+
+void perror(const char *msg) {
+    tty_printf("[\033[31mERROR\033[0m] %s", msg);
+}

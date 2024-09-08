@@ -30,7 +30,11 @@ extern handle_I_MACHINE
 extern handle_I_SIMDERR
 extern handle_I_IRQ_TIMER
 extern handle_I_IRQ_KBD
+extern handle_I_IRQ_COM2
 extern handle_I_IRQ_COM1
+extern handle_I_IRQ_LPT1
+extern handle_I_IRQ_CMOS
+extern handle_I_IRQ_MOUSE
 extern handle_I_IRQ_IDE
 extern handle_I_IRQ_ERR
 extern handle_I_IRQ_SPURIOUS
@@ -60,7 +64,13 @@ isr_wrapper I_SIMDERR,      19
 
 isr_wrapper I_IRQ_TIMER,    32
 isr_wrapper I_IRQ_KBD,      (32 + 1)
+
+isr_wrapper I_IRQ_COM2,     (32 + 3)
 isr_wrapper I_IRQ_COM1,     (32 + 4)
+isr_wrapper I_IRQ_LPT1,     (32 + 5)
+isr_wrapper I_IRQ_CMOS,     (32 + 8)
+isr_wrapper I_IRQ_MOUSE,    (32 + 12)
+
 isr_wrapper I_IRQ_IDE,      (32 + 14)
 isr_wrapper I_IRQ_ERR,      (32 + 19)
 isr_wrapper I_IRQ_SPURIOUS, (32 + 31)

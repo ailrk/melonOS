@@ -1,5 +1,6 @@
-#include "isr.h"
+#include "kbd.h"
 #include "mem.h"
+#include "ps2.h"
 #include "palloc.h"
 #include "pic.h"
 #include "tty.h"
@@ -17,17 +18,18 @@ extern char end[];
 PDE *kernel_page_dir;     // kernel only page directory. 
 char *kstack;             // kernel stack. userd in entry.s
 
+extern char data[];
 
 int kmain(void) {
     tty_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
     kernel_vmem_alloc();
+    tty_printf("data: %x\n", data);
     gdt_init();
     pic_init();
     idt_init();
-    tty_printf("\033[33mHELLO \033[42m\033[31mWORLD\033[0m\n");
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
-
+    ps2_init();
     for (;;) {
     }
 
