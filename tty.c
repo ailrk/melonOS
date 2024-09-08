@@ -91,7 +91,7 @@ void tty_putchar(char c) {
     }
 }
 
-static void ansi_cntl(const ANSIState * ansi) {
+static void ansi_cntl(const ANSIState *ansi) {
     switch(ansi->tag) {
         case ANSI_COLOR: 
             switch (ansi->value.color) {

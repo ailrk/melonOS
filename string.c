@@ -1,6 +1,6 @@
 #include "string.h"
 
-int memcmp(const void* v1, const void* v2, uint32_t n) {
+int memcmp(const void *v1, const void *v2, uint32_t n) {
     const char* s1 = v1;
     const char* s2 = v2;
 
@@ -12,7 +12,7 @@ int memcmp(const void* v1, const void* v2, uint32_t n) {
 }
 
 
-void *memmove(void *dest, const void* src, uint32_t n) {
+void *memmove(void *dest, const void *src, uint32_t n) {
     char* d = dest;
     const char* s = src;
 
@@ -35,7 +35,7 @@ void memcpy(void *dest, const void *src, uint32_t n) {
 
 
 
-void* memset(void* tgt, int v, uint32_t n) {
+void* memset(void *tgt, int v, uint32_t n) {
     char *p = (char*)tgt;
     while(n--) {
         *p++ = (unsigned char)v & 0xff;
@@ -45,7 +45,7 @@ void* memset(void* tgt, int v, uint32_t n) {
 
 
 
-int strlen(const char*s) {
+int strlen(const char *s) {
     int n = 0;
     for (; s[n]; n++);
     return n;
@@ -62,7 +62,7 @@ int strncmp(const char *s1, const char *s2, uint32_t n) {
 
 
 
-char *strncpy(char *dest, const char* src, uint32_t n) {
+char *strncpy(char *dest, const char *src, uint32_t n) {
     while (n-- && (*dest = *src) != 0);
     while (n-- > 0) *dest++ = 0;
     return dest;

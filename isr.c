@@ -3,7 +3,6 @@
 #include "tty.h"
 #include "kbd.h"
 #include "pic.h"
-#include <stdint.h>
 
 
 void handle_I_DIVBYZERO() {

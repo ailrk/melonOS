@@ -57,10 +57,10 @@ set_segment_registers:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 16 bits gdt definition 
+;; gdt definition
 ;; we need at least have null descriptor, code seg and data seg.
-;; once the kernel is loaded and virtual memory is setup we need to
-;; create a new gdt to use the full range of 32 bits memory.
+;; NOTE This gdb is only for the bootloader. The kernel needs to set up
+;; a new gdt on a virtual address.
 gdt_null:                       ; setup gdt table.
     dq 0x0                      ; - null descriptor
 gdt_code:                       ; code segment (CS)

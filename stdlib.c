@@ -33,7 +33,7 @@ int atoi(const char *p) {
  *
  *  @return:    0 if error
  * */
-long int strtol (const char* str, char** endptr) {
+long int strtol (const char * str, char **endptr) {
     long int k = 0;
     int neg = 0; 
     const char *p = str;  

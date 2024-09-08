@@ -1,5 +1,4 @@
 #include "vmem.h"
-#include "ctrlregs.h"
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
@@ -129,7 +128,7 @@ static PTE *walk(const PDE *page_dir, const void *vaddr) {
  *
  *  @return true if pages are mapped successfully. false otherwise.
  * */
-static bool map_pages(const PDE *page_dir, const VMap* k) {
+static bool map_pages(const PDE *page_dir, const VMap *k) {
     int           size   = k->pend - k->pstart;
     char *        vstart = (char *)PG_ALIGNDOWN((uint32_t)k->virt);
     char *        vend   = (char *)PG_ALIGNDOWN((uint32_t)k->virt + size); 
@@ -195,10 +194,6 @@ void switch_kernel_vmem() {
    set_cr3(V2P_C(kernel_page_dir));
 }
 
-
-int deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
-
-}
 
 
 /*! Free a page table.

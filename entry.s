@@ -1,5 +1,3 @@
-/* self contained entry for the kernel */
-
 #include "mem.h"
 
 KSTACKSZ equ 16384      ; kernel stack size is 16kb

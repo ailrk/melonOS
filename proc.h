@@ -6,24 +6,6 @@
 #include "gdt.h"
 #include "mmu.h"
 
-/* Per CPU state */
-
-typedef struct CPU {
-    GDTRecord       gdtr;
-    GDTEntry        gdt[NSEGS];
-    volatile bool   started;
-    volatile bool   interrupt_enabled;
-} CPU;
-
-
-typedef struct Process {
-    uint32_t        size;        // size of process memory
-    PDE*            page_table;  // per process page table
-    char*           kstack;      // bottom of kernel stack for this process
-    uint32_t        pid;         // process id
-    char*           name[16];    // name of the process
-} Process;
-
 
 typedef enum ProcState {
     PROC_CREATED,
@@ -34,3 +16,24 @@ typedef enum ProcState {
     PROC_SWP_WAITING,            // swapped out and waiting 
     PROC_SWP_BLOCKED,            // swapped out and blocked
 } ProcState;
+
+
+typedef struct Process {
+    uint32_t        size;        // size of process memory
+    PDE*            page_table;  // per process page table
+    char*           kstack;      // bottom of kernel stack for this process
+    uint32_t        pid;         // process id
+    ProcState       state;       // process state
+    char*           name[16];    // name of the process
+} Process;
+
+
+/* Per CPU state */
+typedef struct CPU {
+    GDTRecord       gdtr;
+    GDTEntry        gdt[NSEGS];
+    volatile bool   started;
+    bool            interrupt_enabled;
+    Process *       proc; 
+} CPU;
+
