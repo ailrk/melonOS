@@ -17,19 +17,8 @@
 #define K_DEL           0xE9
 
 
-/* Keycode */
-#define SHIFT           (1<<0)
-#define CTL             (1<<1)
-#define ALT             (1<<2)
-#define CAPSLOCK        (1<<3)
-#define NUMLOCK         (1<<4)
-#define SCROLLLOCK      (1<<5)
-#define ESC             (1<<6)
-
-
 /* control `x` */
 #define C(x) (x - '@')
-
 
 
 void kbd_init();

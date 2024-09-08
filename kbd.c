@@ -1,6 +1,7 @@
 #include "kbd.h"
 #include "ps2.h"
 #include "tty.h"
+#include <stdbool.h>
 #include <stdint.h>
 #define DEBUG 1
 
@@ -91,7 +92,17 @@
 #define SC_M_KPDOT     0x53
 #define SC_M_F11       0x57
 
-#define SC_B(b)        (b | 0x80)
+#define BREAK(b)        (b | 0x80)
+
+
+/* Keycode */
+#define SHIFT           (1<<0)
+#define CTL             (1<<1)
+#define ALT             (1<<2)
+#define CAPSLOCK        (1<<3)
+#define NUMLOCK         (1<<4)
+#define SCROLLLOCK      (1<<5)
+#define ESC             (1<<6)
 
 
 char normalmap[256] = {
@@ -124,11 +135,69 @@ char shiftmap[256] = {
 };
 
 
+uint16_t modifier = 0; 
+
+
+static bool is_break_code(uint8_t scancode) {
+    return scancode & 0x80;
+}
+
+/*! modify keycode j
+ *  @scancode  SET 1 scancode recived from the keyboard. 
+ *  @return    true if any modifier is updated, false otherwise.
+ * */
+static bool update_modifier (uint8_t scancode) {
+    switch (scancode) {
+        case SC_M_LSHIFT:
+        case SC_M_RSHIFT:
+            modifier |= SHIFT;
+            break;
+        case SC_M_LCTL:
+            modifier |= CTL;
+            break;
+        case SC_M_CAPSLCK:
+            modifier |= CAPSLOCK;
+            break;
+        case SC_M_LALT:
+            modifier |= ALT;
+            break;
+        case BREAK(SC_M_LSHIFT):
+        case BREAK(SC_M_RSHIFT):
+            modifier &= ~SHIFT;
+            break;
+        case BREAK(SC_M_LCTL):
+            modifier &= ~CTL;
+            break;
+        case BREAK(SC_M_CAPSLCK):
+            modifier &= ~CAPSLOCK;
+            break;
+        case BREAK(SC_M_LALT):
+            modifier &= ~ALT;
+            break;
+        default:
+            return false;
+    }
+    return true;
+}
+
+
 char kbd_getc() {
     uint8_t data = ps2in(KBP_DATA);
-    static uint16_t keycode = 0; 
+    unsigned char c;
 
-    unsigned char c = normalmap[data];
+    if (update_modifier(data)) {
+        return -1;
+    }
+
+    if (is_break_code(data))
+        return -1;
+
+    if (!modifier) {
+        c = normalmap[data];
+    } else if (modifier & SHIFT) {
+        c = shiftmap[data];
+    } else 
+        return -1;
 
     return c;
 }

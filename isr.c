@@ -88,8 +88,9 @@ void handle_I_IRQ_TIMER() {
 }
 
 void handle_I_IRQ_KBD() {
-    unsigned char c = kbd_getc();
-    tty_putchar(c);
+    char c;
+    if ((c = kbd_getc()) != -1) 
+        tty_putchar(c);
     pic_send_eoi(I_IRQ_KBD);
 }
 
