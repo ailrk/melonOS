@@ -285,6 +285,9 @@ void tty_printf(const char *fmt, ...) {
     va_end(args);
 }
 
-void repl() {
+void tty_repl() {
     tty_write_string("msh 0.0.1\n");
+    while(1) {
+        tty_printf("kernel>");
+    }
 }

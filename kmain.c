@@ -24,14 +24,11 @@ int kmain(void) {
     tty_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
     kernel_vmem_alloc();
-    tty_printf("data: %x\n", data);
     gdt_init();
     pic_init();
     idt_init();
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
     ps2_init();
-    for (;;) {
-    }
-
+    tty_repl();
     return 0;
 }

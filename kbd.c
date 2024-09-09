@@ -1,6 +1,5 @@
 #include "kbd.h"
 #include "ps2.h"
-#include "tty.h"
 #include <stdbool.h>
 #include <stdint.h>
 #define DEBUG 1
@@ -135,7 +134,75 @@ char shiftmap[256] = {
 };
 
 
+char capslockmap[256] = {
+    [SC_M_A] = 'A',
+    [SC_M_B] = 'B',
+    [SC_M_C] = 'C',
+    [SC_M_D] = 'D',
+    [SC_M_E] = 'E',
+    [SC_M_F] = 'F',
+    [SC_M_G] = 'G',
+    [SC_M_H] = 'H',
+    [SC_M_I] = 'I',
+    [SC_M_J] = 'J',
+    [SC_M_K] = 'K',
+    [SC_M_L] = 'L',
+    [SC_M_M] = 'M',
+    [SC_M_N] = 'N',
+    [SC_M_O] = 'O',
+    [SC_M_P] = 'P',
+    [SC_M_Q] = 'Q',
+    [SC_M_R] = 'R',
+    [SC_M_S] = 'S',
+    [SC_M_T] = 'T',
+    [SC_M_U] = 'U',
+    [SC_M_V] = 'V',
+    [SC_M_W] = 'W',
+    [SC_M_X] = 'X',
+    [SC_M_Y] = 'Y',
+    [SC_M_Z] = 'Z',
+};
+
+
 uint16_t modifier = 0; 
+
+#define SCBUFFER_SZ 8
+
+/* Circular buffer scancode for further consumption */
+typedef struct ScancodeBuffer {
+    uint16_t data[SCBUFFER_SZ];
+    uint8_t head;
+    uint8_t tail;
+} ScancodeBuffer;
+
+
+ScancodeBuffer sc_buffer;
+
+
+void sc_buffer_init() {
+    sc_buffer.head = 0;
+    sc_buffer.tail = 0;
+}
+
+void sc_buffer_put(uint16_t value) {
+     sc_buffer.tail = (sc_buffer.tail + 1) % SCBUFFER_SZ;
+    if (sc_buffer.tail == sc_buffer.head) {
+        sc_buffer.head = (sc_buffer.head + 1) % SCBUFFER_SZ;
+    }
+    sc_buffer.data[sc_buffer.tail] = value;
+}
+
+bool sc_buffer_get(uint16_t *value) {
+    if (sc_buffer.head == sc_buffer.tail) {
+        return false;
+    }
+    *value = sc_buffer.data[sc_buffer.head % SCBUFFER_SZ];
+
+    sc_buffer.head = (sc_buffer.head + 1)  % SCBUFFER_SZ;
+    return true;
+}
+
+bool sc_buffer_empty(uint16_t *value) { return sc_buffer.head == sc_buffer.tail; }
 
 
 static bool is_break_code(uint8_t scancode) {
@@ -156,7 +223,11 @@ static bool update_modifier (uint8_t scancode) {
             modifier |= CTL;
             break;
         case SC_M_CAPSLCK:
-            modifier |= CAPSLOCK;
+            if (modifier & CAPSLOCK) {
+                modifier &= ~CAPSLOCK;
+            } else {
+                modifier |= CAPSLOCK;
+            }
             break;
         case SC_M_LALT:
             modifier |= ALT;
@@ -168,12 +239,10 @@ static bool update_modifier (uint8_t scancode) {
         case BREAK(SC_M_LCTL):
             modifier &= ~CTL;
             break;
-        case BREAK(SC_M_CAPSLCK):
-            modifier &= ~CAPSLOCK;
-            break;
         case BREAK(SC_M_LALT):
             modifier &= ~ALT;
             break;
+
         default:
             return false;
     }
@@ -181,23 +250,34 @@ static bool update_modifier (uint8_t scancode) {
 }
 
 
-char kbd_getc() {
-    uint8_t data = ps2in(KBP_DATA);
-    unsigned char c;
-
-    if (update_modifier(data)) {
+/*! Translate scan code into character */
+char translate(uint16_t scancode) {
+    if (update_modifier(scancode)) {
         return -1;
     }
 
-    if (is_break_code(data))
+    if (is_break_code(scancode))
         return -1;
 
-    if (!modifier) {
-        c = normalmap[data];
-    } else if (modifier & SHIFT) {
-        c = shiftmap[data];
-    } else 
-        return -1;
+    if (modifier & SHIFT) return shiftmap[scancode];
+    if (modifier & CAPSLOCK) return capslockmap[scancode];
+    return normalmap[scancode];
+}
 
-    return c;
+
+void kbd_handler() {
+    uint8_t data = ps2in(KBP_DATA);
+    sc_buffer_put(data);
+}
+
+
+char kbd_getc() {
+    uint8_t data = ps2in(KBP_DATA);
+
+    return translate(data);
+}
+
+
+void kbd_init() {
+    sc_buffer_init();
 }

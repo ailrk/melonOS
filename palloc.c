@@ -63,11 +63,7 @@ void pfree(char *v) {
     if ((uint32_t)v % PAGE_SZ) {
         panic("pfree, address not on page boundry");
     }
-
    
-    // fill page with junks.
-    memset(v, 1, PAGE_SZ);
-
     Run* r = (Run *)v;
     r->next = kernel_mem.freelist; 
     kernel_mem.freelist = r;
