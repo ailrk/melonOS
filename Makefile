@@ -48,6 +48,7 @@ $(BOOT): $(B_OBJS)
 
 $(KERNEL): $(K_OBJS)
 	@echo "Building Melon OS Kernel..."
+	@./vectors.py > vectors.s
 	@$(CPP) $(K_LINKER) | tools/pptrim > $(K_LINKER:.ld=.pp.ld)
 	$(CC) -T $(K_LINKER:.ld=.pp.ld) -o $@ $(CFLAGS) $(CWARNS) $(K_OBJS) -lgcc
 
@@ -59,7 +60,7 @@ $(KERNEL): $(K_OBJS)
 	@echo "> preprocessing $<... "
 	@$(CPP) $^ | tools/pptrim > $(^:.s=.pp.s)
 	@echo "> compiling $(^:.s=.pp.s) (from $^)... "
-	$(AS) $(^:.s=.pp.s) -o $@
+	@$(AS) $(^:.s=.pp.s) -o $@
 
 
 .PHONY: clean qemu-debug copy echo

@@ -14,7 +14,7 @@ typedef struct VMap {
 
 
 
-void kernel_vmem_alloc();
+void allocae_kernel_vmem();
 PDE *setup_kernel_vmem();
 void switch_kernel_vmem();
 int  deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz);

@@ -3,6 +3,7 @@
 #include "ps2.h"
 #include "palloc.h"
 #include "pic.h"
+#include "trap.h"
 #include "tty.h"
 #include "idt.h"
 #include "mmu.h"
@@ -23,12 +24,14 @@ extern char data[];
 int kmain(void) {
     tty_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
-    kernel_vmem_alloc();
+    allocae_kernel_vmem();
     gdt_init();
+    trap_init();
     pic_init();
-    idt_init();
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
     ps2_init();
-    tty_repl();
+    idt_init();
+    sti();
+    for (;;);
     return 0;
 }

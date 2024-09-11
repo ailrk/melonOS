@@ -15,9 +15,7 @@ static inline void cli() {
     __asm__ volatile("cli");
 }
 
-static inline void sti() {
-    __asm__ volatile("sti");
-}
+#define sti() __asm__ volatile("sti")
 
 #define int_(interrupt) __asm__ volatile("int %0" : : "i" (interrupt))
 
@@ -127,6 +125,13 @@ static inline uint64_t rdtsc() {
     uint64_t ret;
     __asm__ volatile ( "rdtsc" : "=A"(ret) );
     return ret;
+}
+
+
+static inline unsigned int readeflags(void) {
+  unsigned int eflags;
+  __asm__ volatile("pushfl; popl %0" : "=r" (eflags));
+  return eflags;
 }
 
 

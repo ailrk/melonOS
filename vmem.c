@@ -214,7 +214,7 @@ void free_vmem(PDE *page_dir) {
 
 
 /*! setup kernel virtual memory */
-void kernel_vmem_alloc() {
+void allocae_kernel_vmem() {
     tty_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
     init_kmap();
     kernel_page_dir = setup_kernel_vmem();

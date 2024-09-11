@@ -1,7 +1,8 @@
 #include "i386.h"
-#include <stdint.h>
 #include "idt.h"
+#include "trap.h"
 #include "tty.h"
+#include <stdint.h>
 
 /* handles hardware interrupts and map them to the system interrupt.
  *
@@ -39,12 +40,11 @@
 
 /* send a EOI to pic to indicate end of interrupt handler.
  *
- * If IRQ comes from slave, master needs to be notified too.
+ * If IRQ comes from slave, master needs to be notified too. We simply
+ * send to both all the time.
  * */
-void pic_send_eoi(uint8_t irq) {
-    if(irq >= 8)
-        outb(PIC2_COMMAND, PIC_EOI);
-    
+void pic_eoi() {
+    outb(PIC2_COMMAND, PIC_EOI);
     outb(PIC1_COMMAND, PIC_EOI);
 }
 

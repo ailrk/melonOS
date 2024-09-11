@@ -7,3 +7,5 @@
 #define VERSION MAJOR_VER "." MINOR_VER "." PATCH_VER
 
 typedef uint32_t physical_addr; 
+
+#define KSTACK_SZ 4096

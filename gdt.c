@@ -1,7 +1,7 @@
 #include "gdt.h"
 #include "i386.h"
-#include "mmu.h"
 #include "proc.h"
+#include "mem.h"
 #include "tty.h"
 
 

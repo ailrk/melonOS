@@ -1,5 +1,4 @@
 #include "idt.h"
-#include "isr.h"
 #include "pic.h"
 #include "tty.h"
 #include <stdint.h>
@@ -10,9 +9,6 @@ IDTEntry idt[IDT_MAX_VECTOR];
 
 /* IDT pointer for `lidt` */
 IDTRecord idtr;
-
-/* indicate available vectors. */
-int vectors[IDT_MAX_VECTOR];
 
 
 /* reconstruct the handler ptr from the IDT table. */
@@ -38,8 +34,7 @@ void idt_init() {
     tty_printf("[\033[32mboot\033[0m] idt...");
     idtr.base = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
-    isr_register();
     lidt((void*)&idtr);
-    sti();
     tty_printf("\033[32mok\033[0m\n");
+    sti();
 }

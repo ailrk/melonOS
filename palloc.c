@@ -30,7 +30,7 @@ void pfree_range(void *vstart, void *vend) {
 
 /*! free the memory from vstart to vend */
 void palloc_init(void *vstart, void *vend) {
-    tty_printf("[\033[32mboot\033[0m] palloc_init (%p, %p]...", vstart, vend);
+    tty_printf("[\033[32mboot\033[0m] palloc_init...");
     pfree_range(vstart, vend);
     tty_printf("\033[32mok\033[0m\n");
 }

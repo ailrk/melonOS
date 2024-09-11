@@ -1,5 +1,6 @@
 #include "kbd.h"
 #include "ps2.h"
+#include "tty.h"
 #include <stdbool.h>
 #include <stdint.h>
 #define DEBUG 1
@@ -166,46 +167,44 @@ char capslockmap[256] = {
 
 uint16_t modifier = 0; 
 
-#define SCBUFFER_SZ 8
+typedef uint16_t Scancode;
+
+#define SCBUFFER_SZ 256
 
 /* Circular buffer scancode for further consumption */
 typedef struct ScancodeBuffer {
-    uint16_t data[SCBUFFER_SZ];
+    Scancode data[SCBUFFER_SZ];
     uint8_t head;
     uint8_t tail;
 } ScancodeBuffer;
 
 
-ScancodeBuffer sc_buffer;
+ScancodeBuffer sc_buffer = {
+    .head = 0, 
+    .tail = 0
+};
 
+bool sc_buffer_empty() { return sc_buffer.head == sc_buffer.tail; }
 
-void sc_buffer_init() {
-    sc_buffer.head = 0;
-    sc_buffer.tail = 0;
-}
-
-void sc_buffer_put(uint16_t value) {
-     sc_buffer.tail = (sc_buffer.tail + 1) % SCBUFFER_SZ;
-    if (sc_buffer.tail == sc_buffer.head) {
-        sc_buffer.head = (sc_buffer.head + 1) % SCBUFFER_SZ;
-    }
+bool sc_buffer_put(Scancode value) {
+    uint8_t tail = (sc_buffer.tail + 1) % SCBUFFER_SZ;
+    if (tail == sc_buffer.head) return false;
+    sc_buffer.tail = tail;
     sc_buffer.data[sc_buffer.tail] = value;
+    return true;
 }
 
-bool sc_buffer_get(uint16_t *value) {
-    if (sc_buffer.head == sc_buffer.tail) {
+bool sc_buffer_get(Scancode *value) {
+    if (sc_buffer_empty()) {
         return false;
     }
     *value = sc_buffer.data[sc_buffer.head % SCBUFFER_SZ];
-
     sc_buffer.head = (sc_buffer.head + 1)  % SCBUFFER_SZ;
     return true;
 }
 
-bool sc_buffer_empty(uint16_t *value) { return sc_buffer.head == sc_buffer.tail; }
 
-
-static bool is_break_code(uint8_t scancode) {
+static bool is_break_code(Scancode scancode) {
     return scancode & 0x80;
 }
 
@@ -213,7 +212,7 @@ static bool is_break_code(uint8_t scancode) {
  *  @scancode  SET 1 scancode recived from the keyboard. 
  *  @return    true if any modifier is updated, false otherwise.
  * */
-static bool update_modifier (uint8_t scancode) {
+static bool update_modifier (Scancode scancode) {
     switch (scancode) {
         case SC_M_LSHIFT:
         case SC_M_RSHIFT:
@@ -272,12 +271,9 @@ void kbd_handler() {
 
 
 char kbd_getc() {
-    uint8_t data = ps2in(KBP_DATA);
-
-    return translate(data);
-}
-
-
-void kbd_init() {
-    sc_buffer_init();
+    uint16_t value;
+    if (sc_buffer_get(&value)) {
+        return translate(value);
+    }
+    return -1;
 }

@@ -21,5 +21,5 @@
 #define C(x) (x - '@')
 
 
-void kbd_init();
+void kbd_handler();
 char kbd_getc();

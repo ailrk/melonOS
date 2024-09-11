@@ -35,7 +35,7 @@ isodir
 sysroot
 *.bin
 
-
+# Proprocessed nasm assemblies
 *.pp.ld
 *.pp.s
 
@@ -43,9 +43,14 @@ sysroot
 .ccls-cache
 .vim-session
 
-
+# Allows you to append your local dev commands
 .local.mk
 
+# Targets
 melonos-bootloader
 melonos-kernel
 melonos-img
+
+# Generated files should be obtained from the
+# Makefile
+vectors.s
