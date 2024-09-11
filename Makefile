@@ -1,4 +1,6 @@
-CC				= i686-elf-gcc
+ARCH ?= i686
+CC				= $(ARCH)-elf-gcc
+LD				= $(ARCH)-elf-ld
 AS				= nasm -f elf32
 CPP				= cpp
 CFLAGS			= -ffreestanding -g -nostdlib
@@ -42,19 +44,20 @@ $(OUT): $(BOOT) $(KERNEL)
 	dd if=$(BOOT) of=$(OUT) conv=notrunc
 	dd if=$(KERNEL) of=$(OUT) seek=20 conv=notrunc
 
-$(BOOT): $(B_OBJS)
-	@echo "Building Melon OS Boot loader..."
-	$(CC) -T $(B_LINKER) -o $@ $(CFLAGS) $(CWARNS) $(B_OBJS) -lgcc
-
 $(KERNEL): $(K_OBJS)
 	@echo "Building Melon OS Kernel..."
 	@./vectors.py > vectors.s
 	@$(CPP) $(K_LINKER) | tools/pptrim > $(K_LINKER:.ld=.pp.ld)
-	$(CC) -T $(K_LINKER:.ld=.pp.ld) -o $@ $(CFLAGS) $(CWARNS) $(K_OBJS) -lgcc
+	$(CC) -T $(K_LINKER:.ld=.pp.ld) $(CFLAGS) $(CWARNS) $(K_OBJS) -lgcc -o $@
+
+$(BOOT): $(B_OBJS)
+	@echo "Building Melon OS Boot loader..."
+	$(CC) -T $(B_LINKER) -o $@ $(CFLAGS) $(CWARNS) $(B_OBJS) -lgcc
+
 
 %.o: %.c
 	@echo "> compiling $<..."
-	$(CC) $(CFLAGS) $(CWARNS) -c -o $@ $^
+	$(CC) $(CFLAGS) $(CWARNS) -c -o $@ $*.c
 
 %.o: %.s
 	@echo "> preprocessing $<... "
@@ -84,19 +87,14 @@ echo:
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
 
-
 qemu:
 	$(QEMU) -drive format=raw,file=$(OUT) -device virtio-vga,xres=640,yres=320
 
 qemu-log:
-	$(QEMU) -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -no-reboot -D .qemu.log -monitor stdio
-
-qemu-monitor:
-	$(QEMU) -drive format=raw,file=$(OUT) -monitor stdio
-
-qemu-debug:
-	$(QEMU)  -gdb tcp::1234 -S -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' -no-reboot
-
+	$(QEMU) -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' \
+		-no-reboot -D .qemu.log \
+		-serial file:.uart.log \
+		-monitor stdio
 
 elf-headers:
 	readelf -headers $(KERNEL)

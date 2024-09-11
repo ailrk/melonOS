@@ -9,8 +9,10 @@
 #include "idt.h"
 #include "mmu.h"
 #include "gdt.h"
+#include "uart.h"
 #include "vmem.h"
 
+#define DBG 0
 
 /* defined in `kernel.ld.
  *`first address after kernel loaded from ELF file
@@ -33,6 +35,7 @@ int kmain(void) {
     ps2_init();
     idt_init();
     init_pid1();
+    uart_putc('a');
     for(;;);
     return 0;
 }

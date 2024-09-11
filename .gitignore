@@ -40,6 +40,7 @@ sysroot
 *.pp.s
 
 .qemu.log
+.uart.log
 .ccls-cache
 .vim-session
 
