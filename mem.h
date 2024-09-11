@@ -52,7 +52,7 @@
 #define MAXVA      0xFFFFFFFF
 
 /* Top physical memory */
-#define PHYSTOP    0xE000000
+#define PHYSTOP    0x8000000
 
 /* peripheral device at high address */
 #define DEV_SPACE  0xFE000000
@@ -73,18 +73,3 @@
 
 /* page size is 4kb */
 #define PAGE_SZ    0x1000
-
-
-/* Segments */
-
-#define SEG_NULL  0     // null descriptor
-#define SEG_KCODE 1     // kernel code 
-#define SEG_KDATA 2     // kernel data & stack
-#define SEG_UCODE 3     // user code
-#define SEG_UDATA 4     // user data & stack
-#define SEG_TSS   5     // process task state.
-
-#define NSEGS     6
-
-
-

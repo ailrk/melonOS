@@ -10,7 +10,6 @@ extern char end[];
 
 
 /* memory list */
-typedef struct Run { struct Run *next; } Run;
 
 typedef struct KernelMem {
     Run *freelist;
@@ -40,10 +39,17 @@ void palloc_init(void *vstart, void *vend) {
  * */
 char *palloc() {
     Run *r = kernel_mem.freelist;
+
     if (r) {
         kernel_mem.freelist = r->next;
+    } else {
+        perror("palloc: no memory available\n");
     }
     return (char*)r;
+}
+
+Run *r() {
+    return kernel_mem.freelist;
 }
 
 /*! free a page of physical memory pointed by v 
@@ -65,6 +71,7 @@ void pfree(char *v) {
     }
    
     Run* r = (Run *)v;
+
     r->next = kernel_mem.freelist; 
     kernel_mem.freelist = r;
 }

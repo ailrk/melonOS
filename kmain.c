@@ -1,5 +1,6 @@
 #include "kbd.h"
 #include "mem.h"
+#include "proc.h"
 #include "ps2.h"
 #include "palloc.h"
 #include "pic.h"
@@ -24,14 +25,14 @@ extern char data[];
 int kmain(void) {
     tty_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
-    allocae_kernel_vmem();
+    allocate_kernel_vmem();
     gdt_init();
     trap_init();
     pic_init();
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
     ps2_init();
     idt_init();
-    sti();
-    for (;;);
+    init_pid1();
+    for(;;);
     return 0;
 }

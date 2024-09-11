@@ -45,7 +45,7 @@ typedef struct Process {
     Context *       context;     // process context
     void *          chan;        // sleep on chan if it's not zero
     bool            killed;      // is process killed
-    char *          name[16];    // name of the process
+    char            name[16];    // name of the process
 } Process;
 
 
@@ -58,3 +58,5 @@ typedef struct CPU {
     Process *       proc; 
 } CPU;
 
+
+void init_pid1();

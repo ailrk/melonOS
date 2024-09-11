@@ -30,6 +30,8 @@ p("extern trapgo")
 for i in range(0, 256):
     p(f"global vector{i}")
     p(f"vector{i}:")
+    # if the interrupt doesn't push and error code we manually
+    # insert an 0
     if not ((i == 8 or (i >= 10 and i <= 14)) or i == 17):
         p1(f"push 0x0")
     p1(f"push {i}")

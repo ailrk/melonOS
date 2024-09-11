@@ -276,7 +276,8 @@ void tty_printf(const char *fmt, ...) {
                 tty_putchar(va_arg(args, int));
                 fmt++;
             } else if (*fmt == 's') {
-                fmt = tty_write_string(va_arg(args, const char *));
+                tty_write_string(va_arg(args, const char *));
+                fmt++;
             }
         } else {
             fmt = tty_writec(fmt);

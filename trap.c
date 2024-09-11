@@ -12,19 +12,21 @@ unsigned int ticks;
 
 
 #if DEBUG
-static void dump_trapframe(const TrapFrame *tf) {
+static void dump_trapframe(const TrapFrame *tf, int verbose) {
     tty_printf("trapframe> \n");
-    tty_printf(" edi:    %x\n", tf->edi);
-    tty_printf(" esi:    %x\n", tf->esi);
-    tty_printf(" ebp:    %x\n", tf->ebp);
-    tty_printf(" ebx:    %x\n", tf->ebx);
-    tty_printf(" edx:    %x\n", tf->edx);
-    tty_printf(" ecx:    %x\n", tf->ecx);
-    tty_printf(" eax:    %x\n", tf->eax);
-    tty_printf(" gs:     %x\n", tf->gs);
-    tty_printf(" fs:     %x\n", tf->fs);
-    tty_printf(" es:     %x\n", tf->es);
-    tty_printf(" ds:     %x\n", tf->ds);
+    if (verbose) {
+        tty_printf(" edi:    %x\n", tf->edi);
+        tty_printf(" esi:    %x\n", tf->esi);
+        tty_printf(" ebp:    %x\n", tf->ebp);
+        tty_printf(" ebx:    %x\n", tf->ebx);
+        tty_printf(" edx:    %x\n", tf->edx);
+        tty_printf(" ecx:    %x\n", tf->ecx);
+        tty_printf(" eax:    %x\n", tf->eax);
+        tty_printf(" gs:     %x\n", tf->gs);
+        tty_printf(" fs:     %x\n", tf->fs);
+        tty_printf(" es:     %x\n", tf->es);
+        tty_printf(" ds:     %x\n", tf->ds);
+    }
     tty_printf(" trapno: %x\n", tf->trapno);
     tty_printf(" err:    %x\n", tf->err);
     tty_printf(" eip:    %x\n", tf->eip);
@@ -137,6 +139,7 @@ void trap(TrapFrame *tf) {
         case I_SYSCALL:
             break;
         default:
+            dump_trapframe(tf, 0);
             panic("trap");
     }
 }

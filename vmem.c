@@ -19,8 +19,9 @@ extern char data[];  // defined by kernel.ld
 VMap kmap[4];
 
 
-/*! There is one page table on each process. On top of that 
- *  kernel also has it's own page table `kernel_page_dir`.
+/*! There is one page table for each process. The following
+ *  mapping for kernel space presents on every processes' 
+ *  page table.
  *
  *      KERN_BASE..KERN_BASE+EXTMEM => 0..EXTMEM
  *      KERN_BASE+EXTMEM..data      => EXTMEM..V2P(data)
@@ -98,6 +99,7 @@ static physical_addr translate(const PDE *page_dir, const void *vaddr) {
 
 
 /*! Walk the page directory, return the PTE corresponding to the virtual address. 
+ *  walk will allocate the page table if it doesn't exists.
  *
  *  @page_dir:  the page directory
  *  @vaddr:     virtual addess
@@ -123,7 +125,7 @@ static PTE *walk(const PDE *page_dir, const void *vaddr) {
 
 
 /*! Create PTE for virtual addresses starting at vaddr mapped to paddr
- *  virtual address doesn't need to align on page boundry, `map_pages1
+ *  virtual address doesn't need to align on page boundry, `map_pages
  *  will automatically round down the address.
  *
  *  @return true if pages are mapped successfully. false otherwise.
@@ -147,9 +149,8 @@ static bool map_pages(const PDE *page_dir, const VMap *k) {
         if ((pte = walk(page_dir, vstart)) == 0)
             return false;
 
-        if (*pte & PTE_P) {
+        if (*pte & PTE_P)
             panic("remap");
-        }
 
         *pte = pstart | PTE_P | k->perm;
     }
@@ -157,7 +158,7 @@ static bool map_pages(const PDE *page_dir, const VMap *k) {
 }
 
 
-/*! setup the kernel part of the page table.
+/*! Setup the kernel part of the page table.
  *  we allocate the first page to hold the PD. Then
  *  we map pages base on the `kmap`. PT is allocated as 
  *  needed.
@@ -213,11 +214,37 @@ void free_vmem(PDE *page_dir) {
 }
 
 
-/*! setup kernel virtual memory */
-void allocae_kernel_vmem() {
+/*! Setup kernel virtual memory */
+void allocate_kernel_vmem() {
     tty_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
     init_kmap();
     kernel_page_dir = setup_kernel_vmem();
     switch_kernel_vmem();
     tty_printf("\033[32mok\033[0m\n");
+}
+
+
+/*! Initialize user space virtual memory 
+ *  @page_dir page table directory for the user space
+ *  @init     address of the binary
+ *  @sz       size of the binary
+ * */
+void init_user_vmem(PDE *page_dir, char *init, unsigned int sz) {
+    char *mem;
+    if (sz > PAGE_SZ)
+        panic("\033[32mvmem\033[0m init_user_vmem: more than a page");
+
+    if ((mem = palloc()) == 0)
+        panic("\033[32mvmem\033[0m init_user_vmem: not enough memory");
+
+    memset(mem, 0, PAGE_SZ);
+
+    VMap mmap = 
+        { .virt = 0,
+          .pstart = V2P_C(mem),
+          .pend = V2P_C(mem + PAGE_SZ),
+          .perm = PTE_W | PTE_U
+        };
+    map_pages(page_dir, &mmap);
+    memmove(mem, init, sz);
 }

@@ -39,6 +39,13 @@ SECTIONS {
 		PROVIDE(__STABSTR_END__ = .);
 	}
 
+    /* init1.s */
+    .init1 : {
+		PROVIDE(__INIT1_BEGIN__ = .);
+		*(.init1);
+		PROVIDE(__INIT1_END__ = .);
+	}
+
     /* align data segment to the next page */
     . = ALIGN(PAGE_SZ);
 

@@ -16,7 +16,7 @@
  */
 
 
-/* PD and PT entries (PTE) are the same:
+/* PD and PT entries (PTE):
  * 
  * | 31              |12  9|7 8| 6 | 5 | 4  | 3  | 2 | 1 | 0 |
  * | PPN             | AVL |   | D | A | CD | WT | U | W | P |
@@ -90,3 +90,62 @@ typedef uint32_t PTE;
 
 /* construct virtual address from indexes and offsets */
 #define PG_ADDR(pde, pte, offset) ((uint32_t)((pde) << PDXSHIFT | (pte) << PTXSHIFT | (offset)))
+
+
+
+/* Segments */
+
+#define SEG_NULL  0     // null descriptor
+#define SEG_KCODE 1     // kernel code 
+#define SEG_KDATA 2     // kernel data & stack
+#define SEG_UCODE 3     // user code
+#define SEG_UDATA 4     // user data & stack
+#define SEG_TSS   5     // process task state.
+
+#define NSEGS     6
+
+// Each define here is for a specific flag in the descriptor.
+// Refer to the intel documentation for a description of what each one does.
+#define SEG_DESCTYPE(x)  ((x) << 0x04) // Descriptor type (0 for system, 1 for code/data)
+#define SEG_PRES(x)      ((x) << 0x07) // Present
+#define SEG_SAVL(x)      ((x) << 0x0c) // Available for system use
+#define SEG_LONG(x)      ((x) << 0x0d) // Long mode
+#define SEG_SIZE(x)      ((x) << 0x0e) // Size (0 for 16-bit, 1 for 32)
+#define SEG_GRAN(x)      ((x) << 0x0f) // Granularity (0 for 1B - 1MB, 1 for 4KB - 4GB)
+#define SEG_PRIV(x)     (((x) &  0x03) << 0x05)   // Set privilege level (0 - 3)
+ 
+#define DPL_K              0x00
+#define DPL_U              0x03
+
+#define SEG_DATA_RD        0x00 // Read-Only
+#define SEG_DATA_RDA       0x01 // Read-Only, accessed
+#define SEG_DATA_RDWR      0x02 // Read/Write
+#define SEG_DATA_RDWRA     0x03 // Read/Write, accessed
+#define SEG_DATA_RDEXPD    0x04 // Read-Only, expand-down
+#define SEG_DATA_RDEXPDA   0x05 // Read-Only, expand-down, accessed
+#define SEG_DATA_RDWREXPD  0x06 // Read/Write, expand-down
+#define SEG_DATA_RDWREXPDA 0x07 // Read/Write, expand-down, accessed
+#define SEG_CODE_EX        0x08 // Execute-Only
+#define SEG_CODE_EXA       0x09 // Execute-Only, accessed
+#define SEG_CODE_EXRD      0x0a // Execute/Read
+#define SEG_CODE_EXRDA     0x0b // Execute/Read, accessed
+#define SEG_CODE_EXC       0x0c // Execute-Only, conforming
+#define SEG_CODE_EXCA      0x0d // Execute-Only, conforming, accessed
+#define SEG_CODE_EXRDC     0x0e // Execute/Read, conforming
+#define SEG_CODE_EXRDCA    0x0f // Execute/Read, conforming, accessed
+ 
+#define GDT_CODE_PL0 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(DPL_K) | SEG_CODE_EXRD
+ 
+#define GDT_DATA_PL0 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(DPL_K) | SEG_DATA_RDWR
+ 
+#define GDT_CODE_PL3 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(DPL_U) | SEG_CODE_EXRD
+ 
+#define GDT_DATA_PL3 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(DPL_U) | SEG_DATA_RDWR
