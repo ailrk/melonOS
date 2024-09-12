@@ -68,7 +68,7 @@
 #define P2V(addr)  (((addr)) + KERN_BASE)
 
 /* casted address conversion */
-#define V2P_C(addr)  ((uint32_t)(addr) - KERN_BASE)
+#define V2P_C(addr)  ((uintptr_t)(addr) - KERN_BASE)
 #define P2V_C(addr)  ((void *)((char *)(addr)) + KERN_BASE)
 
 /* page size is 4kb */

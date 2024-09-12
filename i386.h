@@ -52,6 +52,10 @@ static inline void lgdt(void *addr) {
 }
 
 
+static inline void ltr(uint16_t sel) {
+  asm volatile("ltr %0" : : "r" (sel));
+}
+
 static inline void insl(int port, void *addr, int cnt) {
   __asm__ volatile("cld; rep insl" :
                "=D" (addr), "=c" (cnt) :

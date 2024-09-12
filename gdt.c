@@ -39,10 +39,34 @@ void gdt_init() {
     cpu.gdtr.base = (uint32_t)&cpu.gdt;
 
     cpu.gdt[SEG_NULL]  = create_descriptor(0, 0, 0);
-    cpu.gdt[SEG_KCODE] = create_descriptor(0, 0xffffffff, (GDT_CODE_PL0));
-    cpu.gdt[SEG_KDATA] = create_descriptor(0, 0xffffffff, (GDT_DATA_PL0));
-    cpu.gdt[SEG_UCODE] = create_descriptor(0, 0xffffffff, (GDT_CODE_PL3));
-    cpu.gdt[SEG_UDATA] = create_descriptor(0, 0xffffffff, (GDT_DATA_PL3));
+
+    {
+        uint16_t flag = SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) |
+                        SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) |
+                        SEG_PRIV(DPL_K) | SEG_CODE_EXRD;
+        cpu.gdt[SEG_KCODE] = create_descriptor(0, 0xffffffff, flag);
+    }
+
+    {
+        uint16_t flag = SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) |
+                        SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) |
+                        SEG_PRIV(DPL_K) | SEG_DATA_RDWR;
+        cpu.gdt[SEG_KDATA] = create_descriptor(0, 0xffffffff, flag);
+    }
+
+    {
+        uint16_t flag = SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) |
+                        SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) |
+                        SEG_PRIV(DPL_U) | SEG_CODE_EXRD;
+        cpu.gdt[SEG_UCODE] = create_descriptor(0, 0xffffffff, flag);
+    }
+
+    {
+        uint16_t flag = SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) |
+                        SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) |
+                        SEG_PRIV(DPL_U) | SEG_DATA_RDWR;
+        cpu.gdt[SEG_UDATA] = create_descriptor(0, 0xffffffff, flag);
+    }
 
     lgdt((void*)&cpu.gdtr);
     tty_printf("\033[32mok\033[0m\n");

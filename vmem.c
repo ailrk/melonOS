@@ -1,6 +1,7 @@
 #include "vmem.h"
 #include "defs.h"
 #include "err.h"
+#include "gdt.h"
 #include "i386.h"
 #include "mem.h"
 #include "mmu.h"
@@ -246,6 +247,19 @@ void switch_user_vmem(Process *p) {
 
     push_cli();
     {
+        // setup TSS
+        uint16_t flag = SEG_DESCTYPE(0) | SEG_PRES(1) | SEG_SAVL(0) |
+                        SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) |
+                        SEG_PRIV(DPL_U) | SEG_DATA_RDWR;
+        this_cpu()->gdt[SEG_TSS] =
+            create_descriptor((uintptr_t)&this_cpu()->ts,
+                              sizeof(this_cpu()->ts) - 1,
+                              flag);
+        this_cpu()->ts.ss0 = SEG_KDATA << 3;
+        this_cpu()->ts.esp0 = (uintptr_t)p->kstack + KSTACK_SZ;
+        this_cpu()->ts.iobp = sizeof(TaskState);
+        ltr(SEG_TSS << 3);
+        set_cr3(V2P_C(this_proc()->page_table));
     }
     pop_cli();
 }

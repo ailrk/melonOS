@@ -133,23 +133,6 @@ typedef uint32_t PTE;
 #define SEG_CODE_EXCA      0x0d // Execute-Only, conforming, accessed
 #define SEG_CODE_EXRDC     0x0e // Execute/Read, conforming
 #define SEG_CODE_EXRDCA    0x0f // Execute/Read, conforming, accessed
- 
-#define GDT_CODE_PL0 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
-                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
-                     SEG_PRIV(DPL_K) | SEG_CODE_EXRD
- 
-#define GDT_DATA_PL0 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
-                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
-                     SEG_PRIV(DPL_K) | SEG_DATA_RDWR
- 
-#define GDT_CODE_PL3 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
-                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
-                     SEG_PRIV(DPL_U) | SEG_CODE_EXRD
- 
-#define GDT_DATA_PL3 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
-                     SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
-                     SEG_PRIV(DPL_U) | SEG_DATA_RDWR
-
 
 /*! Task state segment */
 typedef struct TaskState {
@@ -189,7 +172,7 @@ typedef struct TaskState {
     uint16_t _padding9;
     uint16_t ldtr;
     uint16_t _padding10;
-    uint16_t _padding11;
+    uint16_t t;
     uint16_t iobp;
     uint32_t ssp;
 } TaskState;
