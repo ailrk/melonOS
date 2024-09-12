@@ -54,3 +54,10 @@ static void write_serial(char a) {
 void uart_putc(char c) {
     write_serial(c);
 }
+
+const char *uart_write_string(const char *data) {
+    while (*data != '\0') {
+        uart_putc(*data++);
+    }
+    return data;
+}

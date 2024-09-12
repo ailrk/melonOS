@@ -2,5 +2,6 @@
 
 
 void unart_init();
-void uart_putc(char c);
 char uart_getc();
+void uart_putc(char c);
+const char *uart_write_string(const char *data);

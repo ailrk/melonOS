@@ -2,6 +2,7 @@
 #include "mem.h"
 #include "ansi.h"
 #include "string.h"
+#include "fmt.h"
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -58,7 +59,7 @@ void tty_init() {
     term.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     term.buffer = (uint16_t *)(TERMBUF_START);
     tty_clear();
-    tty_write_string("melonos 0.0.1\n");
+    tty_printf("melonos 0.0.1\n");
 }
 
 void tty_set_cursor(uint16_t x, uint16_t y) {
@@ -180,76 +181,6 @@ const char *tty_writec(const char *data) {
     return data;
 }
 
-/*! Write null terminated string to the tty. When encounters escape code, 
- *  consume the escape code first.
- *
- *  @data   the string to write
- *  @size   size of character to write
- *  @return the pointer to the character one after the last character been printed.
- * */
-const char *tty_write_string(const char *data) {
-    const char *end = data + strlen(data);
-    const char *p;
-    while (data < end) {
-        p =  tty_writec(data); 
-        data = p;
-    }
-    return data;
-}
-
-
-static void print_uint(uint32_t n, int base) {
-    static const char digits[] = "0123456789ABCDEF";
-
-    char buf[32];
-    int i = 0;
-
-    do {
-        buf[i++] = digits[n % base];
-        n /= base;
-    } while(n);
-
-    switch (base) {
-        case 2:
-            buf[i++] = 'x';
-            buf[i++] = 'b';
-            break;
-        case 8:
-            buf[i++] = 'o';
-            buf[i++] = '0';
-            break;
-        case 16:
-            buf[i++] = 'x';
-            buf[i++] = '0';
-            break;
-        default:
-            break;
-    }
-    buf[i++] = '\0';
-
-    tty_write_string(strrev(buf));
-}
-
-
-static void print_int(int n, int base) {
-    if (n < 0) {
-        n = -n;
-        tty_putchar('-');
-    }
-    print_uint(n, base);
-}
-
-
-static void print_hex(int n) {
-    print_int(n, 16);
-}
-
-
-static void print_uhex(uint32_t n) {
-    print_uint(n, 16);
-}
-
-
 /*! printf on vga tty. supports %d, %x, %p, %s, %c.
  *  The implementation should always use `tty_write_string` because it handles
  *  ansi escapes properly.
@@ -258,36 +189,16 @@ static void print_uhex(uint32_t n) {
  *  @... data to be formatted
  * */ 
 void tty_printf(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    while(*fmt) {
-        if (*fmt == '%') {
-            fmt++;
-            if (*fmt == 'd') {
-                print_int(va_arg(args, int), 10);
-                fmt++;
-            } else if (*fmt == 'x') {
-                print_uhex(va_arg(args, int));
-                fmt++;
-            } else if (*fmt == 'p') {
-                print_uhex(va_arg(args, uint32_t));
-                fmt++;
-            } else if (*fmt == 'c') {
-                tty_putchar(va_arg(args, int));
-                fmt++;
-            } else if (*fmt == 's') {
-                tty_write_string(va_arg(args, const char *));
-                fmt++;
-            }
-        } else {
-            fmt = tty_writec(fmt);
-        }
-    }
-    va_end(args);
+    FmtIO io = {
+        .putchar = &tty_writec,
+    };
+    va_list args; 
+    va_start (args, fmt);
+    format(io, fmt, args);
+    va_end (args);
 }
 
 void tty_repl() {
-    tty_write_string("msh 0.0.1\n");
     while(1) {
         tty_printf("kernel>");
     }

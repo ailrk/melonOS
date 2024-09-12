@@ -35,7 +35,6 @@ int kmain(void) {
     ps2_init();
     idt_init();
     init_pid1();
-    uart_putc('a');
     for(;;);
     return 0;
 }

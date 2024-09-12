@@ -1,4 +1,5 @@
 #include "trap.h"
+#include "debug.h"
 #include "err.h"
 #include "kbd.h"
 #include "pic.h"
@@ -12,28 +13,26 @@ unsigned int ticks;
 
 
 #if DEBUG
-static void dump_trapframe(const TrapFrame *tf, int verbose) {
-    tty_printf("trapframe> \n");
-    if (verbose) {
-        tty_printf(" edi:    %x\n", tf->edi);
-        tty_printf(" esi:    %x\n", tf->esi);
-        tty_printf(" ebp:    %x\n", tf->ebp);
-        tty_printf(" ebx:    %x\n", tf->ebx);
-        tty_printf(" edx:    %x\n", tf->edx);
-        tty_printf(" ecx:    %x\n", tf->ecx);
-        tty_printf(" eax:    %x\n", tf->eax);
-        tty_printf(" gs:     %x\n", tf->gs);
-        tty_printf(" fs:     %x\n", tf->fs);
-        tty_printf(" es:     %x\n", tf->es);
-        tty_printf(" ds:     %x\n", tf->ds);
-    }
-    tty_printf(" trapno: %x\n", tf->trapno);
-    tty_printf(" err:    %x\n", tf->err);
-    tty_printf(" eip:    %x\n", tf->eip);
-    tty_printf(" cs:     %x\n", tf->cs);
-    tty_printf(" elfags: %x\n", tf->eflags);
-    tty_printf(" esp:    %x\n", tf->esp);
-    tty_printf(" ss:     %x\n", tf->ss);
+static void dump_trapframe(const TrapFrame *tf) {
+    debug_printf("trapframe> \n");
+    debug_printf(" edi:    %x\n", tf->edi);
+    debug_printf(" esi:    %x\n", tf->esi);
+    debug_printf(" ebp:    %x\n", tf->ebp);
+    debug_printf(" ebx:    %x\n", tf->ebx);
+    debug_printf(" edx:    %x\n", tf->edx);
+    debug_printf(" ecx:    %x\n", tf->ecx);
+    debug_printf(" eax:    %x\n", tf->eax);
+    debug_printf(" gs:     %x\n", tf->gs);
+    debug_printf(" fs:     %x\n", tf->fs);
+    debug_printf(" es:     %x\n", tf->es);
+    debug_printf(" ds:     %x\n", tf->ds);
+    debug_printf(" trapno: %x\n", tf->trapno);
+    debug_printf(" err:    %x\n", tf->err);
+    debug_printf(" eip:    %x\n", tf->eip);
+    debug_printf(" cs:     %x\n", tf->cs);
+    debug_printf(" elfags: %x\n", tf->eflags);
+    debug_printf(" esp:    %x\n", tf->esp);
+    debug_printf(" ss:     %x\n", tf->ss);
 }
 #endif
 
@@ -63,48 +62,49 @@ void handle_I_IRQ_KBD() {
 
 
 void handle_I_IRQ_COM2() {
-    tty_write_string("irq com2\n");
+    debug_printf("irq com2\n");
     pic_eoi();
 }
 
 void handle_I_IRQ_COM1() {
-    tty_write_string("irq com1\n");
+    debug_printf("irq com1\n");
     pic_eoi();
 }
 
 void handle_I_IRQ_LPT1() {
-    tty_write_string("irq lpt1\n");
+    debug_printf("irq lpt1\n");
     pic_eoi();
 }
 
 void handle_I_IRQ_CMOS() {
-    tty_write_string("irq cmos timer\n");
+    debug_printf("irq cmos timer\n");
     pic_eoi();
 }
 
 void handle_I_IRQ_MOUSE() {
-    tty_write_string("irq mouse\n");
+    debug_printf("irq mouse\n");
     pic_eoi();
 }
 
 void handle_I_IRQ_IDE() {
-    tty_write_string("irq ide\n");
+    debug_printf("irq ide\n");
     pic_eoi();
 }
 
 void handle_I_IRQ_ERR() {
-    tty_write_string("irq err\n");
+    debug_printf("irq err\n");
     pic_eoi();
 }
 
 void handle_I_IRQ_SPURIOUS(const TrapFrame *tf) {
-    tty_printf("[cpu]: spurious interrupt at %x:%x\n", tf->cs, tf->eip);
+    debug_printf("[cpu]: spurious interrupt at %x:%x\n", tf->cs, tf->eip);
     pic_eoi();
 }
 
 
 /* trap handler */
 void trap(TrapFrame *tf) {
+    dump_trapframe(tf);
     switch (tf->trapno) {
         case MAP_IRQ(I_IRQ_TIMER):
             handle_I_IRQ_TIMER();
@@ -139,7 +139,7 @@ void trap(TrapFrame *tf) {
         case I_SYSCALL:
             break;
         default:
-            dump_trapframe(tf, 0);
+            dump_trapframe(tf);
             panic("trap");
     }
 }

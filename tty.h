@@ -48,6 +48,5 @@ void        tty_set_color(uint8_t color);
 void        tty_put_entry_at(char c);
 void        tty_putchar(char c);
 const char *tty_writec(const char *data);
-const char *tty_write_string(const char *data);
 void        tty_printf(const char *fmt, ...);
 void        tty_repl();

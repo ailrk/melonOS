@@ -1,10 +1,10 @@
 section .init1
 
-extern tty_write_string
+extern tty_printf
 global init1
 init1:
     push msg
-    call tty_write_string
+    call tty_printf
 loop:
     jmp loop
 
