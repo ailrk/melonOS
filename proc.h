@@ -53,6 +53,7 @@ typedef struct Process {
 typedef struct CPU {
     GDTRecord       gdtr;
     GDTEntry        gdt[NSEGS];
+    TaskState       ts;
     volatile bool   started;
     bool            int_on; // was int enabled when ncli = 0
     int             ncli;   // levels of pushcli

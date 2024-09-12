@@ -4,9 +4,11 @@
 #include "i386.h"
 #include "mem.h"
 #include "mmu.h"
+#include "ncli.h"
 #include "palloc.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include "proc.h"
 #include "string.h"
 #include "tty.h"
 
@@ -231,10 +233,28 @@ void init_user_vmem(PDE *page_dir, char *init, unsigned int sz) {
     memmove(mem, init, sz);
 }
 
+
+/*! Switch TSS and page table to process `p`. */
+void switch_user_vmem(Process *p) {
+    if (!p)
+        panic("switch_user_vmem: no process");
+    if (!p->kstack)
+        panic("switch_user_vmem: no kernel stack");
+
+    if (!p->page_table)
+        panic("switch_user_vmem: no page table");
+
+    push_cli();
+    {
+    }
+    pop_cli();
+}
+
+
 /* !Grow process virtual memory from oldsz to newsz, which need not be page 
  * aligned. Returns new size or 0 on error.
  * */
-int  allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
+int allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
     if (newsz > KERN_BASE) 
         return 0;
 

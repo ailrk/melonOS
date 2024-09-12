@@ -149,3 +149,47 @@ typedef uint32_t PTE;
 #define GDT_DATA_PL3 SEG_DESCTYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
                      SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) | \
                      SEG_PRIV(DPL_U) | SEG_DATA_RDWR
+
+
+/*! Task state segment */
+typedef struct TaskState {
+    uint16_t link;
+    uint16_t _padding0;
+    uint32_t esp0;
+    uint16_t ss0;
+    uint16_t _padding1;
+    uint32_t esp1;
+    uint16_t ss1;
+    uint16_t _padding2;
+    uint32_t esp2;
+    uint16_t ss2;
+    uint16_t _padding3;
+    uint32_t cr3;
+    uint32_t eip;
+    uint32_t eflags;
+    uint32_t eax;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t ebx;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esi;
+    uint32_t edi;
+    uint16_t es;
+    uint16_t _padding4;
+    uint16_t cs;
+    uint16_t _padding5;
+    uint16_t ss;
+    uint16_t _padding6;
+    uint16_t ds;
+    uint16_t _padding7;
+    uint16_t fs;
+    uint16_t _padding8;
+    uint16_t gs;
+    uint16_t _padding9;
+    uint16_t ldtr;
+    uint16_t _padding10;
+    uint16_t _padding11;
+    uint16_t iobp;
+    uint32_t ssp;
+} TaskState;

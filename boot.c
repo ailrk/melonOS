@@ -4,7 +4,6 @@
 #include "mem.h"
 #include "mmu.h"
 #include "ata.h"
-#include "ctrlregs.h"
 #include <stdalign.h>
 #include <stdint.h>
 
