@@ -56,6 +56,7 @@ void handle_I_IRQ_KBD() {
     kbd_handler();
     if ((c = kbd_getc()) != -1) {
         tty_printf("%c", c);
+        debug_printf("%c", c);
     }
     pic_eoi();
 }
@@ -104,7 +105,6 @@ void handle_I_IRQ_SPURIOUS(const TrapFrame *tf) {
 
 /* trap handler */
 void trap(TrapFrame *tf) {
-    dump_trapframe(tf);
     switch (tf->trapno) {
         case MAP_IRQ(I_IRQ_TIMER):
             handle_I_IRQ_TIMER();
@@ -139,7 +139,9 @@ void trap(TrapFrame *tf) {
         case I_SYSCALL:
             break;
         default:
+#if DEBUG
             dump_trapframe(tf);
             panic("trap");
+#endif
     }
 }

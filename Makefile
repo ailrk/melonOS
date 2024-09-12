@@ -105,4 +105,7 @@ d:
 hex:
 	hexdump -C $(OUT)
 
+watch:
+	tail -f -n 1 .uart.log
+
 -include .local.mk

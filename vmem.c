@@ -5,6 +5,8 @@
 #include "mem.h"
 #include "mmu.h"
 #include "palloc.h"
+#include <_types/_uint32_t.h>
+#include <cstring>
 #include <stdbool.h>
 #include <stdint.h>
 #include "string.h"
@@ -27,7 +29,6 @@ VMap kmap[4];
  *      KERN_BASE+EXTMEM..data      => EXTMEM..V2P(data)
  *      data..KERN_BASE+PHYSTOP     => V2P(data)..PHYSTOP
  *      DEV_SPACE..0                => DEV_SPACE..0
- *
  * */
 static void init_kmap() {
     // IO space
@@ -197,23 +198,6 @@ void switch_kernel_vmem() {
 
 
 
-/*! Free a page table.
- *  This will free all memory used in the user part.
- * */
-void free_vmem(PDE *page_dir) {
-    if (page_dir == 0) 
-        panic("free_vmem");
-    
-    // deallocate
-    for (int i = 0; i < NPDES; ++i) {
-        if (page_dir[i] & PDE_P) {
-            pfree((char *)P2V(PTE_ADDR(page_dir[i])));
-        }
-    }
-    pfree((char *)page_dir);
-}
-
-
 /*! Setup kernel virtual memory */
 void allocate_kernel_vmem() {
     tty_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
@@ -224,8 +208,8 @@ void allocate_kernel_vmem() {
 }
 
 
-/*! Initialize user space virtual memory 
- *  @page_dir page table directory for the user space
+/*! Load init code to address 0 of virtual space.
+ *  @page_dir process's page table directory
  *  @init     address of the binary
  *  @sz       size of the binary
  * */
@@ -247,4 +231,82 @@ void init_user_vmem(PDE *page_dir, char *init, unsigned int sz) {
         };
     map_pages(page_dir, &mmap);
     memmove(mem, init, sz);
+}
+
+/* !Grow process virtual memory from oldsz to newsz, which need not be page 
+ * aligned. Returns new size or 0 on error.
+ * */
+int  allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
+    if (newsz > KERN_BASE) 
+        return 0;
+
+    if (newsz < oldsz)
+        return oldsz;
+
+    for (uint32_t p = PG_ALIGNDOWN(oldsz); p < newsz; p += PAGE_SZ) {
+        char * mem;
+        if ((mem = palloc()) == 0) {
+            perror("allocate_user_vmem: out of memory");
+            deallocate_user_vmem(page_dir, newsz, oldsz);
+            return 0;
+        }
+
+        memset(mem, 0, PAGE_SZ);
+        VMap mmap = 
+            { .virt = (char *)p,
+              .pstart = V2P_C(mem),
+              .pend = V2P_C(mem + PAGE_SZ),
+              .perm = PTE_W | PTE_U
+            };
+
+        if (!map_pages(page_dir, &mmap)) {
+            perror("allocate_user_vmem: out of memory");
+            deallocate_user_vmem(page_dir, newsz, oldsz);
+            pfree(mem);
+            return 0;
+        }
+    }
+    return newsz;
+}
+
+/* !Shrink process virtual memory from oldsz to newsz, which need not be page 
+ * aligned. Returns new size.
+ * */
+int deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
+    if (oldsz < newsz)
+        return oldsz;
+
+    for (uint32_t p = PG_ALIGNDOWN(newsz); p < oldsz; p += PAGE_SZ) {
+        PTE *pte = get_pte(page_dir, (char *)p);
+
+        if (!pte)
+            p = PG_ADDR(PD_IDX(p) + 1, 0, 0) - PAGE_SZ;
+
+        if (*pte & PTE_P) {
+            physical_addr page_table_addr = PTE_ADDR(*pte);
+            if (page_table_addr == 0)
+                panic("deallocate_user_vmem: trying to pfree invalid physical addr");
+            pfree(P2V_C(page_table_addr));
+            continue;
+        }
+    }
+    return newsz;
+}
+
+
+/*! Free a page table.
+ *  This will free all memory used in the user part.
+ * */
+void free_vmem(PDE *page_dir) {
+    if (page_dir == 0) 
+        panic("free_vmem");
+    
+    // deallocate
+    deallocate_user_vmem(page_dir, KERN_BASE, 0);
+    for (int i = 0; i < NPDES; ++i) {
+        if (page_dir[i] & PDE_P) {
+            pfree((char *)P2V(PTE_ADDR(page_dir[i])));
+        }
+    }
+    pfree((char *)page_dir);
 }

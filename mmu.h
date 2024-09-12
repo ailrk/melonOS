@@ -89,7 +89,7 @@ typedef uint32_t PTE;
 #define PTE_FLAGS(pte)  ((unsigned int)(pte) &  0xFFF)
 
 /* construct virtual address from indexes and offsets */
-#define PG_ADDR(pde, pte, offset) ((uint32_t)((pde) << PDXSHIFT | (pte) << PTXSHIFT | (offset)))
+#define PG_ADDR(pde, pte, offset) ((uint32_t)((pde) << PD_IDX_SHIFT | (pte) << PT_IDX_SHIFT | (offset)))
 
 
 
