@@ -3,6 +3,7 @@
 #include "err.h"
 #include "i386.h"
 #include "mem.h"
+#include "ncli.h"
 #include "palloc.h"
 #include "trap.h"
 #include "tty.h"
@@ -60,6 +61,24 @@ void dump_processes() {
     }
 }
 #endif
+
+
+/* Return the running cpu */
+CPU *this_cpu() {
+    if (readeflags() & FL_IF)
+        panic("interrupt is enabled on `this_cpu` call");
+
+    return &cpu;
+}
+
+/* Return the current process */
+Process *this_proc() {
+    Process *p;
+    push_cli();
+    p = this_cpu()->proc;
+    pop_cli();
+    return p;
+}
 
 /*! Return a forked child process to the user space */
 void forkret() {
@@ -137,4 +156,9 @@ void init_pid1() {
     strncpy(p->name, "init", sizeof(p->name));
     p->state = PROC_READY;
     tty_printf("\033[32mok\033[0m\n");
+}
+
+
+bool grow_process(int n) {
+
 }

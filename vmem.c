@@ -5,8 +5,6 @@
 #include "mem.h"
 #include "mmu.h"
 #include "palloc.h"
-#include <_types/_uint32_t.h>
-#include <cstring>
 #include <stdbool.h>
 #include <stdint.h>
 #include "string.h"

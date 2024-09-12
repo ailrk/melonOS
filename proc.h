@@ -41,7 +41,7 @@ typedef struct Process {
     uint32_t        pid;         // process id
     uint32_t        ppid;        // parent pid
     ProcState       state;       // process state
-    TrapFrame *     trapframe;     // process context
+    TrapFrame *     trapframe;   // process context
     Context *       context;     // process context
     void *          chan;        // sleep on chan if it's not zero
     bool            killed;      // is process killed
@@ -54,9 +54,12 @@ typedef struct CPU {
     GDTRecord       gdtr;
     GDTEntry        gdt[NSEGS];
     volatile bool   started;
-    bool            interrupt_enabled;
+    bool            int_on; // was int enabled when ncli = 0
+    int             ncli;   // levels of pushcli
     Process *       proc; 
 } CPU;
 
 
 void init_pid1();
+CPU *this_cpu();
+Process *this_proc();
