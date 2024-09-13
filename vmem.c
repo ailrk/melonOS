@@ -1,4 +1,5 @@
 #include "vmem.h"
+#include "debug.h"
 #include "defs.h"
 #include "err.h"
 #include "gdt.h"
@@ -246,21 +247,19 @@ void switch_user_vmem(Process *p) {
         panic("switch_user_vmem: no page table");
 
     push_cli();
-    {
-        // setup TSS
-        uint16_t flag = SEG_DESCTYPE(0) | SEG_PRES(1) | SEG_SAVL(0) |
-                        SEG_LONG(0)     | SEG_SIZE(1) | SEG_GRAN(1) |
-                        SEG_PRIV(DPL_U) | SEG_DATA_RDWR;
-        this_cpu()->gdt[SEG_TSS] =
-            create_descriptor((uintptr_t)&this_cpu()->ts,
-                              sizeof(this_cpu()->ts) - 1,
-                              flag);
-        this_cpu()->ts.ss0 = SEG_KDATA << 3;
-        this_cpu()->ts.esp0 = (uintptr_t)p->kstack + KSTACK_SZ;
-        this_cpu()->ts.iobp = sizeof(TaskState);
-        ltr(SEG_TSS << 3);
-        set_cr3(V2P_C(this_proc()->page_table));
-    }
+    // setup TSS
+    uint16_t flag = SEG_S(0)       | SEG_P(1)  | SEG_AVL(0) |
+                    SEG_L(0)       | SEG_DB(1) | SEG_G(1)   |
+                    SEG_DPL(DPL_K) | SEG_TSS_32_AVL;
+    this_cpu()->gdt[SEG_TSS] =
+        create_descriptor((uint32_t)&this_cpu()->ts,
+                          sizeof(this_cpu()->ts) - 1,
+                          flag);
+    this_cpu()->ts.ss0 = SEG_KDATA << 3;
+    this_cpu()->ts.esp0 = (uintptr_t)p->kstack + KSTACK_SZ;
+    this_cpu()->ts.iobp = sizeof(TaskState);
+    ltr(SEG_TSS << 3);
+    set_cr3(V2P_C(this_proc()->page_table));
     pop_cli();
 }
 

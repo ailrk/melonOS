@@ -36,5 +36,4 @@ void idt_init() {
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     lidt((void*)&idtr);
     tty_printf("\033[32mok\033[0m\n");
-    sti();
 }

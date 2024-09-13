@@ -33,8 +33,8 @@ int kmain(void) {
     pic_init();
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
     ps2_init();
-    idt_init();
     init_pid1();
-    for(;;);
+    idt_init();
+    scheduler();
     return 0;
 }

@@ -2,6 +2,7 @@
 #include "err.h"
 #include "i386.h"
 #include "proc.h"
+#include "tty.h"
 #include <stdint.h>
 
 
@@ -13,9 +14,10 @@
 
 void push_cli() {
     uint32_t eflags = readeflags();
-    if (this_cpu()->ncli == 0)
-        this_cpu()->int_on = eflags & FL_IF;
     cli();
+    if (this_cpu()->ncli == 0) {
+        this_cpu()->int_on = eflags & FL_IF;
+    }
     this_cpu()->ncli += 1;
 }
 

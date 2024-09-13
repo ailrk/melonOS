@@ -113,7 +113,7 @@ void trap(TrapFrame *tf) {
             handle_I_IRQ_KBD();
             break;
         case MAP_IRQ(I_IRQ_COM2):
-            handle_I_IRQ_CMOS();
+            handle_I_IRQ_COM2();
             break;
         case MAP_IRQ(I_IRQ_COM1):
             handle_I_IRQ_COM1();

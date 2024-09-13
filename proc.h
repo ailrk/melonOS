@@ -41,7 +41,7 @@ typedef struct Process {
     uint32_t        pid;         // process id
     uint32_t        ppid;        // parent pid
     ProcState       state;       // process state
-    TrapFrame *     trapframe;   // process context
+    TrapFrame *     trapframe;   // process trapframe
     Context *       context;     // process context
     void *          chan;        // sleep on chan if it's not zero
     bool            killed;      // is process killed
@@ -54,6 +54,7 @@ typedef struct CPU {
     GDTRecord       gdtr;
     GDTEntry        gdt[NSEGS];
     TaskState       ts;
+    Context *       scheduler; // Scheduler context. Points to kernel stack.
     volatile bool   started;
     bool            int_on; // was int enabled when ncli = 0
     int             ncli;   // levels of pushcli
@@ -64,3 +65,6 @@ typedef struct CPU {
 void init_pid1();
 CPU *this_cpu();
 Process *this_proc();
+void scheduler();
+int fork();
+void yield();

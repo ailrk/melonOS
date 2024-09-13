@@ -106,17 +106,18 @@ typedef uint32_t PTE;
 
 // Each define here is for a specific flag in the descriptor.
 // Refer to the intel documentation for a description of what each one does.
-#define SEG_DESCTYPE(x)  ((x) << 0x04) // Descriptor type (0 for system, 1 for code/data)
-#define SEG_PRES(x)      ((x) << 0x07) // Present
-#define SEG_SAVL(x)      ((x) << 0x0c) // Available for system use
-#define SEG_LONG(x)      ((x) << 0x0d) // Long mode
-#define SEG_SIZE(x)      ((x) << 0x0e) // Size (0 for 16-bit, 1 for 32)
-#define SEG_GRAN(x)      ((x) << 0x0f) // Granularity (0 for 1B - 1MB, 1 for 4KB - 4GB)
-#define SEG_PRIV(x)     (((x) &  0x03) << 0x05)   // Set privilege level (0 - 3)
+#define SEG_S(x)         ((x) << 0x04) // Descriptor type (0 for system, 1 for code/data)
+#define SEG_P(x)         ((x) << 0x07) // Present
+#define SEG_AVL(x)       ((x) << 0x0c) // Available for system use
+#define SEG_L(x)         ((x) << 0x0d) // Long mode
+#define SEG_DB(x)        ((x) << 0x0e) // Size (0 for 16-bit, 1 for 32)
+#define SEG_G(x)         ((x) << 0x0f) // Granularity (0 for 1B - 1MB, 1 for 4KB - 4GB)
+#define SEG_DPL(x)       (((x) &  0x03) << 0x05) // Set privilege level (0 - 3)
  
 #define DPL_K              0x00
 #define DPL_U              0x03
 
+// Code & data segment type
 #define SEG_DATA_RD        0x00 // Read-Only
 #define SEG_DATA_RDA       0x01 // Read-Only, accessed
 #define SEG_DATA_RDWR      0x02 // Read/Write
@@ -133,6 +134,10 @@ typedef uint32_t PTE;
 #define SEG_CODE_EXCA      0x0d // Execute-Only, conforming, accessed
 #define SEG_CODE_EXRDC     0x0e // Execute/Read, conforming
 #define SEG_CODE_EXRDCA    0x0f // Execute/Read, conforming, accessed
+
+// System segment type
+#define SEG_TSS_32_AVL     0x09
+#define SEG_TSS_32_BUSY    0x0b
 
 /*! Task state segment */
 typedef struct TaskState {
