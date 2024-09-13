@@ -19,7 +19,12 @@ extern void swtch(Context **save, Context *load);
 CPU cpu;
 
 
-Process ptable[NPROC];
+typedef struct PTable {
+    Process t[NPROC];
+} PTable;
+
+PTable ptable;
+
 int nextpid = 1;
 
 
@@ -98,7 +103,7 @@ static Process *get_unused_process() {
     Process *p;
     bool found = false;
     for (int i = 1; i < NPROC; ++i) {
-        p = &ptable[i];
+        p = &ptable.t[i];
         if (p->state == PROC_UNUSED) {
             found = true;
             break;
@@ -246,7 +251,7 @@ void scheduler() {
     sti();
 
     for(;;) {
-        for (Process *p = ptable; p < ptable + NPROC; ++p) {
+        for (Process *p = ptable.t; p < ptable.t + NPROC; ++p) {
             if (p->state != PROC_READY)
                 continue;
             cpu->proc = p;
