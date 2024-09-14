@@ -33,10 +33,14 @@ int atoi(const char *p) {
  *
  *  @return:    0 if error
  * */
-long int strtol (const char * str, char **endptr) {
+long int strtol (const char *str, const char **endptr) {
+    const char *p = str;
+    if (endptr) {
+        *endptr = p;
+    }
     long int k = 0;
     int neg = 0; 
-    const char *p = str;  
+
     while (isspace(*p)) p++;
     
     if (*p == '+') p++;
@@ -83,6 +87,7 @@ long int strtol (const char * str, char **endptr) {
         return k;
 
 abort:
+    if (endptr) *endptr = p;
     errno = ERANGE;
     return 0;
 }

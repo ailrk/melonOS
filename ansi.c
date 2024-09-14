@@ -129,9 +129,9 @@ static int *parse_list(int *top, const char **cbegin) {
             *cbegin++;
             continue;
         } 
-
-        return top;
+        break;
     }
+    return top;
 }
 
 

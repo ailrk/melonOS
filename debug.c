@@ -96,7 +96,7 @@ void debug_memdump(const char *cmd, ...) {
         addr = (char *)strtol(endptr, 0);
     }
     va_end(args);
-
+ 
 #define sp(n) { if (i == 0 || i % n) debug_printf(" "); else debug_printf("\n"); }
     for (int i = 0; i < n; ++i) {
         char *p = &addr[i * sz];

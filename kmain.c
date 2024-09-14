@@ -12,6 +12,8 @@
 #include "gdt.h"
 #include "uart.h"
 #include "vmem.h"
+#include "stdlib.h"
+#include "errno.h"
 
 #define DBG 0
 
@@ -25,7 +27,7 @@ char *kstack;             // kernel stack. userd in entry.s
 
 extern char data[];
 
-int kmain(void) {
+void kmain(void) {
     tty_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
     allocate_kernel_vmem();
@@ -37,5 +39,4 @@ int kmain(void) {
     init_pid1();
     idt_init();
     scheduler();
-    return 0;
 }
