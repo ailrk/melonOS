@@ -29,7 +29,7 @@ int atoi(const char *p) {
  *  this strtol only support hexdecimal, octal and decimal.
  *  If an error occurs, `strtol` returns a 0 and set `errno`  to ERANGE.
  *  @str:       pointer to the string
- *  @endptr:    points to the character after the last digit.
+ *  @endptr:    points to the character after the last digit. 0 if not needed.
  *
  *  @return:    0 if error
  * */

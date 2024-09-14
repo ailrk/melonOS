@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "kbd.h"
 #include "mem.h"
 #include "proc.h"
