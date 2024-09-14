@@ -15,24 +15,24 @@ unsigned int ticks;
 #if DEBUG
 static void dump_trapframe(const TrapFrame *tf) {
     debug_printf("trapframe> \n");
-    debug_printf(" edi:    %x\n", tf->edi);
-    debug_printf(" esi:    %x\n", tf->esi);
-    debug_printf(" ebp:    %x\n", tf->ebp);
-    debug_printf(" ebx:    %x\n", tf->ebx);
-    debug_printf(" edx:    %x\n", tf->edx);
-    debug_printf(" ecx:    %x\n", tf->ecx);
-    debug_printf(" eax:    %x\n", tf->eax);
-    debug_printf(" gs:     %x\n", tf->gs);
-    debug_printf(" fs:     %x\n", tf->fs);
-    debug_printf(" es:     %x\n", tf->es);
-    debug_printf(" ds:     %x\n", tf->ds);
-    debug_printf(" trapno: %x\n", tf->trapno);
-    debug_printf(" err:    %x\n", tf->err);
-    debug_printf(" eip:    %x\n", tf->eip);
-    debug_printf(" cs:     %x\n", tf->cs);
-    debug_printf(" elfags: %x\n", tf->eflags);
-    debug_printf(" esp:    %x\n", tf->esp);
-    debug_printf(" ss:     %x\n", tf->ss);
+    debug_printf(" edi:    %#x\n", tf->edi);
+    debug_printf(" esi:    %#x\n", tf->esi);
+    debug_printf(" ebp:    %#x\n", tf->ebp);
+    debug_printf(" ebx:    %#x\n", tf->ebx);
+    debug_printf(" edx:    %#x\n", tf->edx);
+    debug_printf(" ecx:    %#x\n", tf->ecx);
+    debug_printf(" eax:    %#x\n", tf->eax);
+    debug_printf(" gs:     %#x\n", tf->gs);
+    debug_printf(" fs:     %#x\n", tf->fs);
+    debug_printf(" es:     %#x\n", tf->es);
+    debug_printf(" ds:     %#x\n", tf->ds);
+    debug_printf(" trapno: %#x\n", tf->trapno);
+    debug_printf(" err:    %#x\n", tf->err);
+    debug_printf(" eip:    %#x\n", tf->eip);
+    debug_printf(" cs:     %#x\n", tf->cs);
+    debug_printf(" elfags: %#x\n", tf->eflags);
+    debug_printf(" esp:    %#x\n", tf->esp);
+    debug_printf(" ss:     %#x\n", tf->ss);
 }
 #endif
 
@@ -98,7 +98,7 @@ void handle_I_IRQ_ERR() {
 }
 
 void handle_I_IRQ_SPURIOUS(const TrapFrame *tf) {
-    debug_printf("[cpu]: spurious interrupt at %x:%x\n", tf->cs, tf->eip);
+    debug_printf("[cpu]: spurious interrupt at %#x:%#x\n", tf->cs, tf->eip);
     pic_eoi();
 }
 

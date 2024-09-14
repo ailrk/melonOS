@@ -141,8 +141,8 @@ static bool map_pages(const PDE *page_dir, const VMap *k) {
     PTE *         pte;
 
 #if DEBUG
-    tty_printf("\nmap_pages> <VMap %x, (%x, %x), %x>", k->virt, k->pstart, k->pend, k->perm);
-    tty_printf("\n           <vstart %x, vend %x>\n", vstart, vend);
+    tty_printf("\nmap_pages> <VMap %#x, (%#x, %#x), %#x>", k->virt, k->pstart, k->pend, k->perm);
+    tty_printf("\n           <vstart %#x, vend %#x>\n", vstart, vend);
 #endif
 
     if ((uint32_t)vstart % PAGE_SZ > 0 || (uint32_t)vend % PAGE_SZ > 0)

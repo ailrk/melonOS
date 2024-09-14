@@ -34,7 +34,7 @@ void dump_context(const Context *c) {
         debug_printf("[CTX| no context yet]");
         return;
     }
-    debug_printf("[CTX|%x, %x, %x, %x, %x]",
+    debug_printf("[CTX|%#x, %#x, %#x, %#x, %#x]",
                  c->edi, c->esi, c->ebx, c->ebp, c->eip);
 }
 
@@ -140,7 +140,7 @@ static Process *get_unused_process() {
 static bool setup_process_stack(Process *p) {
     // allocate and build the kernel stack
     if ((p->kstack = palloc()) == 0) {
-        tty_printf("found %x", p);
+        tty_printf("found %#x", p);
         p->state = PROC_UNUSED;
         return false;
     }

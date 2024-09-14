@@ -181,9 +181,10 @@ const char *tty_writec(const char *data) {
     return data;
 }
 
-/*! printf on vga tty. supports %d, %x, %p, %s, %c.
- *  The implementation should always use `tty_write_string` because it handles
+/*! The implementation should always use `tty_write_string` because it handles
  *  ansi escapes properly.
+ *
+ *  `tty_printf` is driven by `format` and it supports all it's format specifiers.
  *
  *  @fmt formatted string
  *  @... data to be formatted

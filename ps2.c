@@ -136,7 +136,7 @@ static uint8_t scancode(uint8_t scancode) {
 
 #if DEBUG
 static void debug() {
-    tty_printf("[\033[33mkbd\033[0m] status %x, data %x\n", inb(KBP_STAT), inb(KBP_DATA));
+    tty_printf("[\033[33mkbd\033[0m] status %#x, data %#x\n", inb(KBP_STAT), inb(KBP_DATA));
 }
 #endif
 

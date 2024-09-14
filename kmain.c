@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "mem.h"
 #include "proc.h"
 #include "ps2.h"
@@ -9,7 +10,6 @@
 #include "mmu.h"
 #include "gdt.h"
 #include "vmem.h"
-#include "err.h"
 
 #define DBG 0
 
