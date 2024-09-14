@@ -46,7 +46,7 @@ trapgo:
 
     push esp
     call trap
-    add esp, 0x4 ; for trapno set by vector{n} from vector.s
+    add esp, 0x4
 
 ; fall through
 ; `trapret` restore the context before the trap

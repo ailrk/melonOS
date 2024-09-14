@@ -150,8 +150,8 @@ static bool setup_process_stack(Process *p) {
     sp -= sizeof(TrapFrame);
     p->trapframe = (TrapFrame*)sp;
 
-    sp -= sizeof(uint32_t);
-    *sp = (uint32_t)trapret;
+    sp -= sizeof(uintptr_t);
+    *(uintptr_t*)sp = (uintptr_t)trapret;
 
     sp -= sizeof(Context);
     p->context = (Context*)sp;
