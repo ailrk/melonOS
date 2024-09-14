@@ -1,5 +1,3 @@
-#include "debug.h"
-#include "kbd.h"
 #include "mem.h"
 #include "proc.h"
 #include "ps2.h"
@@ -10,10 +8,8 @@
 #include "idt.h"
 #include "mmu.h"
 #include "gdt.h"
-#include "uart.h"
 #include "vmem.h"
-#include "stdlib.h"
-#include "errno.h"
+#include "err.h"
 
 #define DBG 0
 

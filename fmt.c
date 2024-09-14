@@ -79,21 +79,6 @@ static void pad(int n, char c, FmtIO io) {
 }
 
 
-#define WITH_PAD(pad0, leftpad, width, w, CODE)   \
-    do {                                          \
-        if (w > width) {                          \
-            print_int(n, PCTL_x(true));           \
-        }                                         \
-        if (leftpad) {                            \
-            pad(width - w, pad0?'0':' ', io);     \
-            CODE;                                 \
-        } else {                                  \
-            CODE;                                 \
-            pad(width - w, pad0?'0':' ', io);     \
-        }                                         \
-    } while(0)
-
-
 
 /* Shorthand for print ctl */
 #define PCTL_d(flush_) (PrintCtl){ .base = 10, .upper = false, .io = io, .sign = true, .flush = flush_}

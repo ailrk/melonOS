@@ -76,8 +76,7 @@ long int strtol (const char *str, const char **endptr) {
             k = k * 10 + (*p - '0');
             p++;
         }
-    } else 
-        goto abort;
+    }
 
     if (endptr) *endptr = p;
 
