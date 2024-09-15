@@ -62,6 +62,7 @@ typedef struct CPU {
 } CPU;
 
 
+void ptable_init();
 void init_pid1();
 CPU *this_cpu();
 Process *this_proc();

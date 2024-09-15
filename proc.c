@@ -6,6 +6,7 @@
 #include "mem.h"
 #include "ncli.h"
 #include "palloc.h"
+#include "spinlock.h"
 #include "trap.h"
 #include "tty.h"
 #include "string.h"
@@ -20,12 +21,17 @@ CPU cpu;
 
 
 typedef struct PTable {
+    SpinLock lock;
     Process t[NPROC];
 } PTable;
 
 PTable ptable;
 
 int nextpid = 1;
+
+void ptable_init() {
+    ptable.lock = new_lock();
+}
 
 
 #if DEBUG
