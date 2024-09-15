@@ -1,24 +1,24 @@
-#include "ata.h"
+#include "ide.h"
 #include "i386.h"
 #include <stdint.h>
 #include "string.h"
 
-/* ATA is the standard interface for hard drives */
+/* IDE is the standard interface for hard drives */
 
 #define SECTSZ      512
 
-static inline uint8_t read_status_register() { return inb(ATA_P_7); }
+static inline uint8_t read_status_register() { return inb(IDE_P_7); }
 
 /* Wait for disk ready. 
- * inb(0x1f7) getting the status register from ATA PIO mode.
+ * inb(0x1f7) getting the status register from IDE PIO mode.
  * 0xc0 => 0x11000000 check DRY (bit 6) and BSY (bit 7) of the 
  * disk status.
  *
  * The disk is ready when BSY = 1 && RDY = 0
  * */
 void ata_wait_disk() {
-    uint8_t mask = ATA_S_RDY | ATA_S_BSY; 
-    uint8_t ready = ATA_S_RDY;
+    uint8_t mask = IDE_S_RDY | IDE_S_BSY; 
+    uint8_t ready = IDE_S_RDY;
     while((read_status_register() & mask) != ready);
 }
 
@@ -27,16 +27,16 @@ void ata_wait_disk() {
 void ata_read_sector(void *dst, uint32_t lba) {
     // send command
     ata_wait_disk();
-    outb(ATA_P_2, 1);
-    outb(ATA_P_3, lba);
-    outb(ATA_P_4, lba >> 8);
-    outb(ATA_P_5, lba >> 16);
-    outb(ATA_P_6, (lba >> 24) | 0xE0);
-    outb(ATA_P_7, ATA_C_READSECTOR);
+    outb(IDE_P_2, 1);
+    outb(IDE_P_3, lba);
+    outb(IDE_P_4, lba >> 8);
+    outb(IDE_P_5, lba >> 16);
+    outb(IDE_P_6, (lba >> 24) | 0xE0);
+    outb(IDE_P_7, IDE_C_READSECTOR);
     
     // read data
     ata_wait_disk();
-    insl(ATA_P_0, dst, SECTSZ/4);     // /4 because insl read words
+    insl(IDE_P_0, dst, SECTSZ/4);     // /4 because insl read words
 }
 
 

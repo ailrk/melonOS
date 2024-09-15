@@ -3,7 +3,7 @@
 #include "elf.h"
 #include "mem.h"
 #include "mmu.h"
-#include "ata.h"
+#include "ide.h"
 #include <stdalign.h>
 #include <stdint.h>
 
