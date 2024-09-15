@@ -282,3 +282,9 @@ void sched() {
     swtch(&p->context, this_cpu()->scheduler);
     this_cpu()->int_on = int_on;
 }
+
+
+void yield() {
+    this_proc()->state = PROC_READY;
+    sched();
+}
