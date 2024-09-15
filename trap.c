@@ -3,6 +3,9 @@
 #include "err.h"
 #include "kbd.h"
 #include "pic.h"
+#include "proc.h"
+#include "traps.h"
+#include "syscall.h"
 #include "tty.h"
 #include "idt.h"
 
@@ -42,6 +45,26 @@ void trap_init() {
         regist_idt_handler(i, vectors[i], InterruptGate);
     }
     regist_idt_handler(I_SYSCALL, vectors[I_SYSCALL], TrapGate);
+}
+
+/*! When a system call is invoked, the system call number is 
+ *  moved to eax and `int I_SYSCALL` is performed, which
+ *  causes the trap to dispatch to this handler.
+ *
+ *  `handle_syscall` will set the trapframe to the current
+ *  process, then it dispatches to `syscall`, the 
+ *
+ *  After trap is invoked, `trapret` will bring the program back
+ *  to the user space with `iret`.
+ * */
+void handle_syscall(TrapFrame *tf) {
+    if (this_proc()->killed)
+        exit();
+    this_proc()->trapframe = tf;
+    syscall();
+    if (this_proc()->killed)
+        exit();
+    return;
 }
 
 
@@ -102,10 +125,10 @@ void handle_I_IRQ_SPURIOUS(const TrapFrame *tf) {
     pic_eoi();
 }
 
-
 /* trap handler */
 void trap(TrapFrame *tf) {
     switch (tf->trapno) {
+        case I_SYSCALL:
         case MAP_IRQ(I_IRQ_TIMER):
             handle_I_IRQ_TIMER();
             break;
@@ -135,8 +158,6 @@ void trap(TrapFrame *tf) {
             break;
         case MAP_IRQ(I_IRQ_SPURIOUS):
             handle_I_IRQ_SPURIOUS(tf);
-            break;
-        case I_SYSCALL:
             break;
         default:
 #if DEBUG

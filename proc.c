@@ -257,6 +257,7 @@ void scheduler() {
     sti();
 
     for(;;) {
+        sti(); // force enable interrupt
         for (Process *p = ptable.t; p < ptable.t + NPROC; ++p) {
             if (p->state != PROC_READY)
                 continue;

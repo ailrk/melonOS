@@ -68,4 +68,6 @@ CPU *this_cpu();
 Process *this_proc();
 void scheduler();
 int fork();
+int wait();
 void yield();
+void exit();
