@@ -6,7 +6,7 @@
 #define IDE_S_ERR  0
 #define IDE_S_DFE  (1 << 5)
 #define IDE_S_RDY  (1 << 6) // 0 when drive is spun down, or after an error.
-#define IDE_S_BSY  (1 << 7) // 1 when drive is preparing to send/receive data
+#define IDE_S_BSY  (1 << 7) // 1 when drive is preparing to send/receive dide
 
 #define IDE_P_0  0x1F0
 
@@ -23,6 +23,6 @@
 #define IDE_C_WRITESECTOR  0x30   // write sector
 
 
-void ata_wait_disk();
-void ata_read_sector(void *dst, uint32_t lba);
-void ata_read_offset(void *dst, uint32_t n, uint32_t offset);
+void ide_wait_disk();
+void ide_read_sector(void *dst, uint32_t lba);
+void ide_read_offset(void *dst, uint32_t n, uint32_t offset);

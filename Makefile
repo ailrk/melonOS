@@ -1,22 +1,22 @@
 ARCH ?= i686
-CC				= $(ARCH)-elf-gcc
-LD				= $(ARCH)-elf-ld
-AS				= nasm -f elf32
-AR				= ar rcs
-CPP				= cpp
-CFLAGS			= -ffreestanding -g -nostdlib
-CWARNS			= -Wall -Wextra -fno-exceptions
+CC = $(ARCH)-elf-gcc
+LD = $(ARCH)-elf-ld
+AS = nasm -f elf32
+AR = ar rcs
+CPP = cpp
+CFLAGS = -ffreestanding -g -nostdlib
+CWARNS = -Wall -Wextra -fno-exceptions
 
-B_DIR			= boot
-K_DIR			= kernel
-L_DIR			= lib
+B_DIR = boot
+K_DIR = kernel
+L_DIR = lib
 
-BOOT			= melonos-bootloader
-KERNEL			= melonos-kernel
-LIBMELON		= libmelon.a
-OUT				= melonos.img
+BOOT = melonos-bootloader
+KERNEL = melonos-kernel
+LIBMELON = libmelon.a
+OUT = melonos.img
 
-QEMU			= qemu-system-i386
+QEMU = qemu-system-i386
 
 .PHONY: boot kernel all
 
