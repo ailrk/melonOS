@@ -1,5 +1,3 @@
-#include "mem.h"
-
 KSTACKSZ equ 16384      ; kernel stack size is 16kb
     global _start
     extern kmain

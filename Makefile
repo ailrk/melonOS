@@ -2,41 +2,27 @@ ARCH ?= i686
 CC				= $(ARCH)-elf-gcc
 LD				= $(ARCH)-elf-ld
 AS				= nasm -f elf32
+AR				= ar rcs
 CPP				= cpp
 CFLAGS			= -ffreestanding -g -nostdlib
 CWARNS			= -Wall -Wextra -fno-exceptions
 
-# We use c preprocessor to process both nasm assembly files and linker files. 
-# because they are not supported by gcc, we need to process them manually with
-# `cpp`. 
-# A preprocessed file will have `.pp` extension being added before it's suffix.
-# For example, linker.ld will become linker.pp.ld, and the  linker.pp.ld will be
-# used in the following linking process.
-K_CFILES		= $(filter-out boot.c,$(wildcard *.c))
-K_ASMFILES		= $(filter-out bootld.s $(wildcard *.pp.s),$(wildcard *.s))
-K_LINKER		= kernel.ld
-K_OBJS			= $(K_CFILES:.c=.o) $(K_ASMFILES:.s=.o)
-
-B_CFILES		= boot.c ide.c string.c
-B_ASMFILES		= bootld.s
-B_LINKER		= boot.ld
-B_OBJS			= $(B_CFILES:.c=.o) $(B_ASMFILES:.s=.o)
+B_DIR			= boot
+K_DIR			= kernel
+L_DIR			= lib
 
 BOOT			= melonos-bootloader
 KERNEL			= melonos-kernel
+LIBMELON		= libmelon.a
 OUT				= melonos.img
 
 QEMU			= qemu-system-i386
 
+.PHONY: boot kernel all
 
-.PHONY: boot kernel out
-
-default: out
-
-out: $(OUT)
-
+default: all
+all: $(OUT)
 boot: $(BOOT)
-
 kernel: $(KERNEL)
 
 $(OUT): $(BOOT) $(KERNEL)
@@ -44,31 +30,13 @@ $(OUT): $(BOOT) $(KERNEL)
 	dd if=$(BOOT) of=$(OUT) conv=notrunc
 	dd if=$(KERNEL) of=$(OUT) seek=20 conv=notrunc
 
-$(KERNEL): $(K_OBJS)
-	@echo "Building Melon OS Kernel..."
-	@./vectors.py > vectors.s
-	@$(CPP) $(K_LINKER) | tools/pptrim > $(K_LINKER:.ld=.pp.ld)
-	$(CC) -T $(K_LINKER:.ld=.pp.ld) $(CFLAGS) $(CWARNS) $(K_OBJS) -lgcc -o $@
-
-$(BOOT): $(B_OBJS)
-	@echo "Building Melon OS Boot loader..."
-	$(CC) -T $(B_LINKER) -o $@ $(CFLAGS) $(CWARNS) $(B_OBJS) -lgcc
-
-
-%.o: %.c
-	@echo "> compiling $<..."
-	$(CC) $(CFLAGS) $(CWARNS) -c -o $@ $*.c
-
-%.o: %.s
-	@echo "> preprocessing $<... "
-	@$(CPP) $^ | tools/pptrim > $(^:.s=.pp.s)
-	@echo "> compiling $(^:.s=.pp.s) (from $^)... "
-	@$(AS) $(^:.s=.pp.s) -o $@
-
 
 .PHONY: clean qemu-debug copy echo
 clean:
-	rm -rf *.o *.pp.* $(OUT) $(BOOT) $(KERNEL)
+	cd $(K_DIR) && rm -rf *.o *.pp.* vectors.s
+	cd $(B_DIR) && rm -rf *.o *.pp.*
+	cd $(L_DIR) && rm -rf *.o
+	rm -rf *.o *.pp.* $(OUT) $(BOOT) $(KERNEL) $(LIBMELON)
 
 echo:
 	@echo 'CC		  $(CC)'
@@ -107,5 +75,13 @@ hex:
 
 watch:
 	tail -f -n 1 .uart.log
+
+cc:
+	bear -- make $(OUT)
+
+# subfolder makefiles
+include boot/Makefile
+include kernel/Makefile
+include lib/Makefile
 
 -include .local.mk

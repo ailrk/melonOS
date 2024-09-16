@@ -42,6 +42,7 @@ sysroot
 .qemu.log
 .uart.log
 .ccls-cache
+.cache
 .vim-session
 
 # Allows you to append your local dev commands
@@ -51,7 +52,7 @@ sysroot
 melonos-bootloader
 melonos-kernel
 melonos-img
+libmelon.a
 
-# Generated files should be obtained from the
-# Makefile
+# Generated files should be obtained from the Makefile
 vectors.s

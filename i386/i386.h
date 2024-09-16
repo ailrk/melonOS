@@ -1,8 +1,9 @@
 #pragma once 
 // x86 specific instructions
 
-#include "defs.h"
 #include <stdint.h>
+
+typedef uint32_t physical_addr; 
 
 /* CR0 register */
 #define CR0_PE  0x00000001 // 1 = Protected Mode 

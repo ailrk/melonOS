@@ -1,4 +1,3 @@
-#include "debug.h"
 #include "mem.h"
 #include "proc.h"
 #include "ps2.h"

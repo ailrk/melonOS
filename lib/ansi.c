@@ -2,8 +2,6 @@
 #include "ctype.h"
 #include "stdlib.h"
 #include "errno.h"
-#include "string.h"
-#include "tty.h"
 
 #define BUFSZ 64
 

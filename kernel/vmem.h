@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mmu.h"
-#include "defs.h"
+#include "i386.h"
 #include "proc.h"
 
 

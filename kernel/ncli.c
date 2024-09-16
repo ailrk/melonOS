@@ -2,7 +2,6 @@
 #include "err.h"
 #include "i386.h"
 #include "proc.h"
-#include "tty.h"
 #include <stdint.h>
 
 

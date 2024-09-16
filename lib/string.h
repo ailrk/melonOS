@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-
 int   memcmp(const void*, const void*, int);
 void *memmove(void*, const void*, int);
 void  memcpy(void*, const void*, int);
