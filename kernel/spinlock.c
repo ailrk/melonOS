@@ -3,7 +3,6 @@
 #include "i386.h"
 #include "ncli.h"
 #include "proc.h"
-#include <stdatomic.h>
 
 
 SpinLock new_lock() {
@@ -27,7 +26,7 @@ void lock(SpinLock *lk) {
         panic("lock");
 
     while(xchg(&lk->locked, 1) != 0);
-    
+
     __sync_synchronize();
 
     lk->cpu = this_cpu();
