@@ -5,9 +5,11 @@
 #include "gdt.h"
 #include "mmu.h"
 #include "trap.h"
+#include "fs/file.h"
 
 
 #define NPROC    64
+#define NFILE    32
 
 
 typedef enum ProcState {
@@ -35,17 +37,18 @@ typedef struct Context {
 
 
 typedef struct Process {
-    uint32_t        size;        // size of process memory
-    PDE *           page_table;  // per process page table
-    char *          kstack;      // bottom of kernel stack for this process
-    uint32_t        pid;         // process id
-    uint32_t        ppid;        // parent pid
-    ProcState       state;       // process state
-    TrapFrame *     trapframe;   // process trapframe
-    Context *       context;     // process context
-    void *          chan;        // sleep on chan if it's not zero
-    bool            killed;      // is process killed
-    char            name[16];    // name of the process
+    uint32_t        size;         // size of process memory
+    PDE *           page_table;   // per process page table
+    char *          kstack;       // bottom of kernel stack for this process
+    uint32_t        pid;          // process id
+    uint32_t        ppid;         // parent pid
+    ProcState       state;        // process state
+    TrapFrame *     trapframe;    // process trapframe
+    Context *       context;      // process context
+    void *          chan;         // sleep on chan if it's not zero
+    bool            killed;       // is process killed
+    File            file[NFILE];  // files
+    char            name[16];     // name of the process
 } Process;
 
 

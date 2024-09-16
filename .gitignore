@@ -44,6 +44,7 @@ sysroot
 .ccls-cache
 .cache
 .vim-session
+compile_commands.json
 
 # Allows you to append your local dev commands
 .local.mk
