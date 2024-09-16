@@ -1,13 +1,13 @@
 #include "trap.h"
 #include "debug.h"
 #include "err.h"
-#include "kbd.h"
-#include "pic.h"
-#include "proc.h"
 #include "traps.h"
-#include "syscall.h"
 #include "tty.h"
 #include "idt.h"
+#include "sys/syscall.h"
+#include "drivers/kbd.h"
+#include "drivers/pic.h"
+#include "process/proc.h"
 
 #define DEBUG 1
 

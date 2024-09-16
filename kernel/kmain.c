@@ -1,23 +1,23 @@
 #include "mem.h"
-#include "proc.h"
-#include "ps2.h"
-#include "palloc.h"
-#include "pic.h"
 #include "trap.h"
 #include "tty.h"
 #include "idt.h"
 #include "mmu.h"
 #include "gdt.h"
-#include "vmem.h"
+#include "mem/vmem.h"
+#include "mem/palloc.h"
+#include "drivers/ps2.h"
+#include "drivers/pic.h"
+#include "process/proc.h"
 
 #define DBG 0
 
 /* defined in `kernel.ld.
  *`first address after kernel loaded from ELF file
  */
-extern char end[];        
+extern char end[];
 
-PDE *kernel_page_dir;     // kernel only page directory. 
+PDE *kernel_page_dir;     // kernel only page directory.
 char *kstack;             // kernel stack. userd in entry.s
 
 extern char data[];

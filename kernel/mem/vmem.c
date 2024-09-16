@@ -1,4 +1,5 @@
-#include "vmem.h"
+#include <stdbool.h>
+#include <stdint.h>
 #include "debug.h"
 #include "defs.h"
 #include "err.h"
@@ -7,12 +8,11 @@
 #include "mem.h"
 #include "mmu.h"
 #include "ncli.h"
-#include "palloc.h"
-#include <stdbool.h>
-#include <stdint.h>
-#include "proc.h"
 #include "string.h"
 #include "tty.h"
+#include "mem/vmem.h"
+#include "mem/palloc.h"
+#include "process/proc.h"
 
 
 #define DEBUG 0
@@ -24,7 +24,7 @@ VMap kmap[4];
 
 
 /*! There is one page table for each process. The following
- *  mapping for kernel space presents on every processes' 
+ *  mapping for kernel space presents on every processes'
  *  page table.
  *
  *      KERN_BASE..KERN_BASE+EXTMEM => 0..EXTMEM
@@ -45,7 +45,7 @@ static void init_kmap() {
     kmap[1] = (VMap)
         { .virt   = (void*)KERN_LINK,
           .pstart = V2P_C(KERN_LINK),
-          .pend   = V2P_C(data), 
+          .pend   = V2P_C(data),
           .perm   = 0
         };
 
@@ -84,12 +84,12 @@ static PTE* get_pt1(const PDE *pde, const void *vaddr) {
 
 
 static PTE* get_pte(const PDE *page_dir, const void *vaddr) {
-    PTE *pt = get_pt(page_dir, vaddr); 
+    PTE *pt = get_pt(page_dir, vaddr);
     return &pt[PT_IDX(vaddr)];
 }
 
 static PTE* get_pte1(const PDE *pde, const void *vaddr) {
-    PTE *pt = get_pt1(pde, vaddr); 
+    PTE *pt = get_pt1(pde, vaddr);
     return &pt[PT_IDX(vaddr)];
 }
 
@@ -101,7 +101,7 @@ static physical_addr translate(const PDE *page_dir, const void *vaddr) {
 }
 
 
-/*! Walk the page directory, return the PTE corresponding to the virtual address. 
+/*! Walk the page directory, return the PTE corresponding to the virtual address.
  *  walk will allocate the page table if it doesn't exists.
  *
  *  @page_dir:  the page directory
@@ -136,7 +136,7 @@ static PTE *walk(const PDE *page_dir, const void *vaddr) {
 static bool map_pages(const PDE *page_dir, const VMap *k) {
     int           size   = k->pend - k->pstart;
     char *        vstart = (char *)PG_ALIGNDOWN((uint32_t)k->virt);
-    char *        vend   = (char *)PG_ALIGNDOWN((uint32_t)k->virt + size); 
+    char *        vend   = (char *)PG_ALIGNDOWN((uint32_t)k->virt + size);
     physical_addr pstart = k->pstart;
     PTE *         pte;
 
@@ -163,7 +163,7 @@ static bool map_pages(const PDE *page_dir, const VMap *k) {
 
 /*! Setup the kernel part of the page table.
  *  we allocate the first page to hold the PD. Then
- *  we map pages base on the `kmap`. PT is allocated as 
+ *  we map pages base on the `kmap`. PT is allocated as
  *  needed.
  *
  *  @return initialized page directory
@@ -179,7 +179,7 @@ PDE *setup_kernel_vmem() {
 
     if ((void*)P2V(PHYSTOP) > (void*)DEV_SPACE)
         panic("PHYSTOP is too high");
-        
+
     for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
         if (!map_pages(page, k)) {
             free_vmem(page);
@@ -192,7 +192,7 @@ PDE *setup_kernel_vmem() {
 
 
 /*! Switch page table register cr3 to kernel only page table. This page table is used
- *  when there is no process running 
+ *  when there is no process running
  * */
 void switch_kernel_vmem() {
    set_cr3(V2P_C(kernel_page_dir));
@@ -225,7 +225,7 @@ void init_user_vmem(PDE *page_dir, char *init, unsigned int sz) {
 
     memset(mem, 0, PAGE_SZ);
 
-    VMap mmap = 
+    VMap mmap =
         { .virt = 0,
           .pstart = V2P_C(mem),
           .pend = V2P_C(mem + PAGE_SZ),
@@ -264,11 +264,11 @@ void switch_user_vmem(Process *p) {
 }
 
 
-/* !Grow process virtual memory from oldsz to newsz, which need not be page 
+/* !Grow process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size or 0 on error.
  * */
 int allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
-    if (newsz > KERN_BASE) 
+    if (newsz > KERN_BASE)
         return 0;
 
     if (newsz < oldsz)
@@ -283,7 +283,7 @@ int allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
         }
 
         memset(mem, 0, PAGE_SZ);
-        VMap mmap = 
+        VMap mmap =
             { .virt = (char *)p,
               .pstart = V2P_C(mem),
               .pend = V2P_C(mem + PAGE_SZ),
@@ -300,7 +300,7 @@ int allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
     return newsz;
 }
 
-/* !Shrink process virtual memory from oldsz to newsz, which need not be page 
+/* !Shrink process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size.
  * */
 int deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
@@ -329,9 +329,9 @@ int deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
  *  This will free all memory used in the user part.
  * */
 void free_vmem(PDE *page_dir) {
-    if (page_dir == 0) 
+    if (page_dir == 0)
         panic("free_vmem");
-    
+
     // deallocate
     deallocate_user_vmem(page_dir, KERN_BASE, 0);
     for (int i = 0; i < NPDES; ++i) {

@@ -16,14 +16,14 @@ typedef enum ProcState {
     PROC_SLEEPING,
     PROC_READY,
     PROC_RUNNING,
-    PROC_ZOMBIE 
+    PROC_ZOMBIE
 } ProcState;
 
 
-// In x86 convention %eax, %ecx, %edx are caller saved register so we 
+// In x86 convention %eax, %ecx, %edx are caller saved register so we
 // don't need to save them in context. Segment registers are always the
 // same so we don't need to save them either.
-// For context swithcing we only need to save the following general 
+// For context swithcing we only need to save the following general
 // purpose registers.
 typedef struct Context {
   uint32_t          edi;
@@ -58,7 +58,7 @@ typedef struct CPU {
     volatile bool   started;
     bool            int_on; // was int enabled when ncli = 0
     int             ncli;   // levels of pushcli
-    Process *       proc; 
+    Process *       proc;
 } CPU;
 
 

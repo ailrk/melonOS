@@ -1,7 +1,5 @@
 #include "uart.h"
 #include "i386.h"
-#include "pic.h"
-#include "trap.h"
 
 #define COM1    0x3f8
 

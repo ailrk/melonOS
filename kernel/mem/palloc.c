@@ -1,7 +1,6 @@
 #include "palloc.h"
 #include "mem.h"
 #include "err.h"
-#include "string.h"
 #include "tty.h"
 #include <stdint.h>
 
@@ -15,9 +14,9 @@ typedef struct KernelMem {
     Run *freelist;
 } KernelMem;
 
-KernelMem kernel_mem; 
+KernelMem kernel_mem;
 
-/*! free the memory from vstart to vend 
+/*! free the memory from vstart to vend
  * */
 void pfree_range(void *vstart, void *vend) {
     char *p = (char*)vstart;
@@ -52,7 +51,7 @@ Run *r() {
     return kernel_mem.freelist;
 }
 
-/*! free a page of physical memory pointed by v 
+/*! free a page of physical memory pointed by v
  *  v needs to align at page boundry otherwise we panic.
  *
  *  @v:  virtual address
@@ -69,9 +68,9 @@ void pfree(char *v) {
     if ((uint32_t)v % PAGE_SZ) {
         panic("pfree, address not on page boundry");
     }
-   
+
     Run* r = (Run *)v;
 
-    r->next = kernel_mem.freelist; 
+    r->next = kernel_mem.freelist;
     kernel_mem.freelist = r;
 }

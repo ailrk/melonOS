@@ -33,9 +33,9 @@ $(OUT): $(BOOT) $(KERNEL)
 
 .PHONY: clean qemu-debug copy echo
 clean:
-	cd $(K_DIR) && rm -rf *.o *.pp.* vectors.s
-	cd $(B_DIR) && rm -rf *.o *.pp.*
-	cd $(L_DIR) && rm -rf *.o
+	find $(K_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
+	find $(B_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
+	find $(L_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	rm -rf *.o *.pp.* $(OUT) $(BOOT) $(KERNEL) $(LIBMELON)
 
 echo:

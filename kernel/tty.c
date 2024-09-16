@@ -1,11 +1,11 @@
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "tty.h"
 #include "mem.h"
 #include "ansi.h"
 #include "string.h"
 #include "fmt.h"
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdint.h>
 
 /**
  * VGA buffer starts at 0xb8000 and provides 256k display memory.
@@ -13,12 +13,12 @@
 
 Terminal term;
 
-static inline uint8_t 
+static inline uint8_t
 vga_entry_color(VgaColor fg, VgaColor bg) {
     return fg | bg << 4;
 }
 
-static inline uint16_t 
+static inline uint16_t
 vga_entry(unsigned char uc, uint8_t color) {
     return (uint16_t)(uc) | (uint16_t)(color) << 8;
 }
@@ -94,21 +94,21 @@ void tty_putchar(char c) {
 
 static void ansi_cntl(const ANSIState *ansi) {
     switch(ansi->tag) {
-        case ANSI_COLOR: 
+        case ANSI_COLOR:
             switch (ansi->value.color) {
-            case ANSIColor_BBLK: 
+            case ANSIColor_BBLK:
                 set_bg_color(VGA_COLOR_BLACK);
                 break;
-            case ANSIColor_BRED: 
+            case ANSIColor_BRED:
                 set_bg_color(VGA_COLOR_RED);
                 break;
-            case ANSIColor_BGRN: 
+            case ANSIColor_BGRN:
                 set_bg_color(VGA_COLOR_GREEN);
                 break;
-            case ANSIColor_BYLW: 
+            case ANSIColor_BYLW:
                 set_bg_color(VGA_COLOR_LIGHT_BROWN);
                 break;
-            case ANSIColor_BBLU: 
+            case ANSIColor_BBLU:
                 set_bg_color(VGA_COLOR_BLUE);
                 break;
             case ANSIColor_BMAG:
@@ -163,7 +163,7 @@ static void ansi_cntl(const ANSIState *ansi) {
 
 
 
-/*! Write a single char to the screen. If it encounters an escape code, consume 
+/*! Write a single char to the screen. If it encounters an escape code, consume
  *  it first then print the next character.
  * */
 const char *tty_writec(const char *data) {
@@ -188,12 +188,12 @@ const char *tty_writec(const char *data) {
  *
  *  @fmt formatted string
  *  @... data to be formatted
- * */ 
+ * */
 void tty_printf(const char *fmt, ...) {
     FmtIO io = {
         .putchar = &tty_writec,
     };
-    va_list args; 
+    va_list args;
     va_start (args, fmt);
     format(io, fmt, args);
     va_end (args);

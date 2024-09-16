@@ -1,6 +1,6 @@
-#include "syscall.h"
-#include "syscalls.h"
-#include "proc.h"
+#include "sys/syscall.h"
+#include "sys/syscalls.h"
+#include "process/proc.h"
 
 
 int sys_fork() {

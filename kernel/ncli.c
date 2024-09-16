@@ -1,11 +1,11 @@
+#include <stdint.h>
 #include "ncli.h"
 #include "err.h"
 #include "i386.h"
-#include "proc.h"
-#include <stdint.h>
+#include "process/proc.h"
 
 
-/* n push_cli requires n pop_cli to undo. 
+/* n push_cli requires n pop_cli to undo.
  *
  * If interrupt was disabled before pushing then
  * when ncli is 0 don't do anything.

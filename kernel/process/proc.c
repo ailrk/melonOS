@@ -1,17 +1,17 @@
-#include "proc.h"
+#include <stdint.h>
 #include "debug.h"
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
 #include "mem.h"
 #include "ncli.h"
-#include "palloc.h"
-#include "spinlock.h"
 #include "trap.h"
 #include "tty.h"
 #include "string.h"
-#include "vmem.h"
-#include <stdint.h>
+#include "spinlock.h"
+#include "process/proc.h"
+#include "mem/palloc.h"
+#include "mem/vmem.h"
 
 #define DEBUG 1
 
@@ -47,7 +47,7 @@ void dump_context(const Context *c) {
 void dump_process(const Process *p) {
     if (p->pid < 0 || p->pid > NPROC)
         return;
-    
+
     char *state;
     switch(p->state) {
         case PROC_UNUSED:
@@ -128,7 +128,7 @@ static Process *get_unused_process() {
  *      +---------------+
  *      | trapret       |
  *      +---------------+
- *      |  |eip=forkret | 
+ *      |  |eip=forkret |
  *      |  |...         |
  *      | Context       |
  *      +---------------+
@@ -136,7 +136,7 @@ static Process *get_unused_process() {
  * kstk +---------------+
  *
  *  When scheduler is trying to switch in to the process, swtch will pop
- *  all context except the eip, when it `ret`, the control will be transferred 
+ *  all context except the eip, when it `ret`, the control will be transferred
  *  to `eip` in this case we set to `forkret.`
  *  `forkret` simply return to caller. In this case it will return to `trapret`,
  *  which will further pop all registers in the trap frame. We set the eip in
@@ -181,14 +181,14 @@ static Process *allocate_process() {
 }
 
 
-/*! Setup the trapframe for the first process to create an illusion 
+/*! Setup the trapframe for the first process to create an illusion
  * that a trap occured. So if we call trapret, it will pop all registers
  * in the trap frame hence switch the control.
  * */
 static void set_pid1_trapframe(Process *p) {
     memset(p->trapframe, 0, sizeof(*p->trapframe));
     p->trapframe->cs = (SEG_UCODE << 3) | DPL_U; // set segment DPL
-    p->trapframe->ds = (SEG_UDATA << 3) | DPL_U; 
+    p->trapframe->ds = (SEG_UDATA << 3) | DPL_U;
     p->trapframe->es = p->trapframe->ds;
     p->trapframe->ss = p->trapframe->ds;
     p->trapframe->eflags = FL_IF;
@@ -212,7 +212,7 @@ void init_pid1() {
     extern char __INIT1_END__[];
     int init1_sz = __INIT1_END__ - __INIT1_BEGIN__;
 
-    init_user_vmem(p->page_table, __INIT1_BEGIN__, init1_sz); 
+    init_user_vmem(p->page_table, __INIT1_BEGIN__, init1_sz);
     p->size = PAGE_SZ;
     set_pid1_trapframe(p);
     strncpy(p->name, "init", sizeof(p->name));
@@ -235,7 +235,7 @@ bool grow_process(int n) {
             return false;
         }
     } else {
-        if ((sz = allocate_user_vmem(p->page_table, sz, sz + n)) == 0) 
+        if ((sz = allocate_user_vmem(p->page_table, sz, sz + n)) == 0)
             return false;
     }
 
@@ -246,9 +246,9 @@ bool grow_process(int n) {
 
 
 /*! The scheduler next returns. CPU loops over the `ptable` and look
- *  for the next process to run. The loop will pick the first ready 
- *  process, switch to run the process, wait until the process switch 
- *  back to the scheduler.  
+ *  for the next process to run. The loop will pick the first ready
+ *  process, switch to run the process, wait until the process switch
+ *  back to the scheduler.
  * */
 void scheduler() {
     tty_printf("[\033[32mboot\033[0m] scheduler...\n");
@@ -284,7 +284,7 @@ void sched() {
 
     if(readeflags() & FL_IF)
         panic("sched interruptible");
-     
+
     int int_on = this_cpu()->int_on;
     swtch(&p->context, this_cpu()->scheduler);
     this_cpu()->int_on = int_on;

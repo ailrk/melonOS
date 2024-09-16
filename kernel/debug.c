@@ -1,11 +1,11 @@
+#include <stdarg.h>
+#include <stdint.h>
 #include "debug.h"
 #include "fmt.h"
-#include "uart.h"
 #include "stdlib.h"
 #include "ctype.h"
 #include "errno.h"
-#include <stdarg.h>
-#include <stdint.h>
+#include "drivers/uart.h"
 
 static const char *uart_putc1(const char *c) {
     uart_putc(*c++);

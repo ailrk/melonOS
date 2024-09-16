@@ -2,13 +2,13 @@
 
 #include "mmu.h"
 #include "i386.h"
-#include "proc.h"
+#include "process/proc.h"
 
 
 /* Virtual addrses mapping */
 typedef struct VMap {
     void *        virt;
-    physical_addr pstart; 
+    physical_addr pstart;
     physical_addr pend;
     int           perm;
 } VMap;

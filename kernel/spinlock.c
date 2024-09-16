@@ -2,7 +2,7 @@
 #include "err.h"
 #include "i386.h"
 #include "ncli.h"
-#include "proc.h"
+#include "process/proc.h"
 
 
 SpinLock new_lock() {

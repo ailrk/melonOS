@@ -14,28 +14,9 @@
       "boot/boot.o",
       "boot/boot.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/boot/boot.c",
-    "output": "/home/fatmonad/repo/melonos/boot/boot.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "boot/ide.o",
-      "boot/ide.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/boot/ide.c",
-    "output": "/home/fatmonad/repo/melonos/boot/ide.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/boot/boot.c",
+    "output": "/home/fatmonad/repo/melonOS/boot/boot.o"
   },
   {
     "arguments": [
@@ -47,9 +28,9 @@
       "lib/ansi.o",
       "lib/ansi.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/lib/ansi.c",
-    "output": "/home/fatmonad/repo/melonos/lib/ansi.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/lib/ansi.c",
+    "output": "/home/fatmonad/repo/melonOS/lib/ansi.o"
   },
   {
     "arguments": [
@@ -61,9 +42,9 @@
       "lib/ctype.o",
       "lib/ctype.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/lib/ctype.c",
-    "output": "/home/fatmonad/repo/melonos/lib/ctype.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/lib/ctype.c",
+    "output": "/home/fatmonad/repo/melonOS/lib/ctype.o"
   },
   {
     "arguments": [
@@ -75,9 +56,9 @@
       "lib/errno.o",
       "lib/errno.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/lib/errno.c",
-    "output": "/home/fatmonad/repo/melonos/lib/errno.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/lib/errno.c",
+    "output": "/home/fatmonad/repo/melonOS/lib/errno.o"
   },
   {
     "arguments": [
@@ -89,9 +70,9 @@
       "lib/fmt.o",
       "lib/fmt.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/lib/fmt.c",
-    "output": "/home/fatmonad/repo/melonos/lib/fmt.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/lib/fmt.c",
+    "output": "/home/fatmonad/repo/melonOS/lib/fmt.o"
   },
   {
     "arguments": [
@@ -103,9 +84,9 @@
       "lib/stdlib.o",
       "lib/stdlib.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/lib/stdlib.c",
-    "output": "/home/fatmonad/repo/melonos/lib/stdlib.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/lib/stdlib.c",
+    "output": "/home/fatmonad/repo/melonOS/lib/stdlib.o"
   },
   {
     "arguments": [
@@ -117,134 +98,19 @@
       "lib/string.o",
       "lib/string.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/lib/string.c",
-    "output": "/home/fatmonad/repo/melonos/lib/string.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/lib/string.c",
+    "output": "/home/fatmonad/repo/melonOS/lib/string.o"
   },
   {
     "arguments": [
       "/usr/bin/i686-elf-gcc",
       "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/debug.o",
-      "kernel/debug.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/debug.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/debug.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/err.o",
-      "kernel/err.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/err.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/err.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/gdt.o",
-      "kernel/gdt.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/gdt.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/gdt.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/ide.o",
-      "kernel/ide.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/ide.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/ide.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/idt.o",
-      "kernel/idt.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/idt.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/idt.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/kbd.o",
-      "kernel/kbd.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/kbd.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/kbd.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
       "-Ilib",
       "-Ii386",
       "-ffreestanding",
@@ -257,14 +123,19 @@
       "kernel/kmain.o",
       "kernel/kmain.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/kmain.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/kmain.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/kmain.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/kmain.o"
   },
   {
     "arguments": [
       "/usr/bin/i686-elf-gcc",
       "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
       "-Ilib",
       "-Ii386",
       "-ffreestanding",
@@ -274,17 +145,22 @@
       "-fno-exceptions",
       "-c",
       "-o",
-      "kernel/ncli.o",
-      "kernel/ncli.c"
+      "kernel/sys/syscall.o",
+      "kernel/sys/syscall.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/ncli.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/ncli.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/sys/syscall.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/sys/syscall.o"
   },
   {
     "arguments": [
       "/usr/bin/i686-elf-gcc",
       "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
       "-Ilib",
       "-Ii386",
       "-ffreestanding",
@@ -294,137 +170,22 @@
       "-fno-exceptions",
       "-c",
       "-o",
-      "kernel/palloc.o",
-      "kernel/palloc.c"
+      "kernel/gdt.o",
+      "kernel/gdt.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/palloc.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/palloc.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/gdt.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/gdt.o"
   },
   {
     "arguments": [
       "/usr/bin/i686-elf-gcc",
       "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/pic.o",
-      "kernel/pic.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/pic.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/pic.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/proc.o",
-      "kernel/proc.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/proc.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/proc.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/ps2.o",
-      "kernel/ps2.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/ps2.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/ps2.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/spinlock.o",
-      "kernel/spinlock.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/spinlock.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/spinlock.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/syscall.o",
-      "kernel/syscall.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/syscall.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/syscall.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
-      "-Ilib",
-      "-Ii386",
-      "-ffreestanding",
-      "-g",
-      "-Wall",
-      "-Wextra",
-      "-fno-exceptions",
-      "-c",
-      "-o",
-      "kernel/trap.o",
-      "kernel/trap.c"
-    ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/trap.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/trap.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/i686-elf-gcc",
-      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
       "-Ilib",
       "-Ii386",
       "-ffreestanding",
@@ -437,14 +198,19 @@
       "kernel/tty.o",
       "kernel/tty.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/tty.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/tty.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/tty.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/tty.o"
   },
   {
     "arguments": [
       "/usr/bin/i686-elf-gcc",
       "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
       "-Ilib",
       "-Ii386",
       "-ffreestanding",
@@ -454,17 +220,22 @@
       "-fno-exceptions",
       "-c",
       "-o",
-      "kernel/uart.o",
-      "kernel/uart.c"
+      "kernel/drivers/pic.o",
+      "kernel/drivers/pic.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/uart.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/uart.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/drivers/pic.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/drivers/pic.o"
   },
   {
     "arguments": [
       "/usr/bin/i686-elf-gcc",
       "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
       "-Ilib",
       "-Ii386",
       "-ffreestanding",
@@ -474,11 +245,311 @@
       "-fno-exceptions",
       "-c",
       "-o",
-      "kernel/vmem.o",
-      "kernel/vmem.c"
+      "kernel/drivers/kbd.o",
+      "kernel/drivers/kbd.c"
     ],
-    "directory": "/home/fatmonad/repo/melonos",
-    "file": "/home/fatmonad/repo/melonos/kernel/vmem.c",
-    "output": "/home/fatmonad/repo/melonos/kernel/vmem.o"
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/drivers/kbd.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/drivers/kbd.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/drivers/ide.o",
+      "kernel/drivers/ide.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/drivers/ide.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/drivers/ide.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/drivers/ps2.o",
+      "kernel/drivers/ps2.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/drivers/ps2.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/drivers/ps2.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/drivers/uart.o",
+      "kernel/drivers/uart.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/drivers/uart.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/drivers/uart.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/process/proc.o",
+      "kernel/process/proc.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/process/proc.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/process/proc.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/spinlock.o",
+      "kernel/spinlock.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/spinlock.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/spinlock.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/err.o",
+      "kernel/err.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/err.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/err.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/mem/vmem.o",
+      "kernel/mem/vmem.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/mem/vmem.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/mem/vmem.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/mem/palloc.o",
+      "kernel/mem/palloc.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/mem/palloc.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/mem/palloc.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/trap.o",
+      "kernel/trap.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/trap.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/trap.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/debug.o",
+      "kernel/debug.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/debug.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/debug.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/idt.o",
+      "kernel/idt.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/idt.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/idt.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/i686-elf-gcc",
+      "-Ikernel",
+      "-Ikernel/sys",
+      "-Ikernel/drivers",
+      "-Ikernel/process",
+      "-Ikernel/mem",
+      "-Ikernel/fs",
+      "-Ilib",
+      "-Ii386",
+      "-ffreestanding",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-fno-exceptions",
+      "-c",
+      "-o",
+      "kernel/ncli.o",
+      "kernel/ncli.c"
+    ],
+    "directory": "/home/fatmonad/repo/melonOS",
+    "file": "/home/fatmonad/repo/melonOS/kernel/ncli.c",
+    "output": "/home/fatmonad/repo/melonOS/kernel/ncli.o"
   }
 ]

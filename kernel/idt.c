@@ -1,7 +1,7 @@
 #include "idt.h"
-#include "pic.h"
 #include "tty.h"
 #include <stdint.h>
+#include "drivers/pic.h"
 
 /* an array of IDT entries; */
 IDTEntry idt[IDT_MAX_VECTOR];
@@ -24,7 +24,7 @@ void *get_handler_from_idt(uint8_t vector) {
 void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
     IDTEntry *entry = &idt[vector];
     entry->isr_low = (uint32_t) isr & 0xffff;
-    entry->kernel_cs = 0x08; // 8 bytes after gdt 
+    entry->kernel_cs = 0x08; // 8 bytes after gdt
     entry->reserved = 0;
     entry->attributes = flags;
     entry->isr_high = (uint32_t) isr >> 16;
