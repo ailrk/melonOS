@@ -87,7 +87,7 @@ static void reset() {
         perror("[\033[31mkbd\033[0m] failed to reset\n");
         return;
     }
-    
+
     data = ps2in(KBP_DATA);
     if (data != 0xaa) {
         perror("[\033[31mkbd\033[0m] failed to reset\n");
@@ -127,7 +127,7 @@ static uint8_t scancode(uint8_t scancode) {
     if (data != 0xfa && data != 0xfe) {
         perror("[\033[33mkbd\033[0m] can't set scan code");
         return 0;
-    } 
+    }
 
     return ps2in(KBP_DATA);
 }
@@ -142,7 +142,7 @@ static void debug() {
 
 
 /* controller configuration byte */
-#define CCB_P1_INT  0 // port 1 interrupt 1=enable 
+#define CCB_P1_INT  0 // port 1 interrupt 1=enable
 #define CCB_P2_INT  1 // port 2 interrupt 1=enable
 #define CCB_SYSFLAG 2 // 1=past POST
 #define CCB_P1_CLK  4 // port 1 clock 1=disabled

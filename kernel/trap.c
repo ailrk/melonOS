@@ -47,12 +47,12 @@ void trap_init() {
     regist_idt_handler(I_SYSCALL, vectors[I_SYSCALL], TrapGate);
 }
 
-/*! When a system call is invoked, the system call number is 
+/*! When a system call is invoked, the system call number is
  *  moved to eax and `int I_SYSCALL` is performed, which
  *  causes the trap to dispatch to this handler.
  *
  *  `handle_syscall` will set the trapframe to the current
- *  process, then it dispatches to `syscall`, the 
+ *  process, then it dispatches to `syscall`, the
  *
  *  After trap is invoked, `trapret` will bring the program back
  *  to the user space with `iret`.
@@ -132,7 +132,7 @@ void trap(TrapFrame *tf) {
         case MAP_IRQ(I_IRQ_TIMER):
             handle_I_IRQ_TIMER();
             break;
-        case MAP_IRQ(I_IRQ_KBD): 
+        case MAP_IRQ(I_IRQ_KBD):
             handle_I_IRQ_KBD();
             break;
         case MAP_IRQ(I_IRQ_COM2):

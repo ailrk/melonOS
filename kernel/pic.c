@@ -1,6 +1,4 @@
 #include "i386.h"
-#include "idt.h"
-#include "trap.h"
 #include "tty.h"
 #include <stdint.h>
 
@@ -34,7 +32,7 @@
 #define ICW4_BUF_MASTER 0x0C        // master buffered mode
 #define ICW4_SFNM       0x10        // special fully nested
 
-#define PIC_EOI         0x20 
+#define PIC_EOI         0x20
 
 
 
@@ -52,11 +50,11 @@ void pic_eoi() {
 
 /* Define the vector offset for pic.
  *
- * In x86 protected mode IRQ 0 to 7 conflicts with the CPU exceptions, so we 
+ * In x86 protected mode IRQ 0 to 7 conflicts with the CPU exceptions, so we
  * need to remap the vector to somewhere unused by the CPU. Common way of
  * handling it is to map IRQ0 to vector 0x20.
  *
- * pic follows a specific initialization sequence, at each step data sent from 
+ * pic follows a specific initialization sequence, at each step data sent from
  * the data port will be interpert as different ICW.
  * */
 void pic_remap(uint32_t pic1_offset, uint32_t pic2_offset) {
@@ -97,7 +95,7 @@ void pic_remap(uint32_t pic1_offset, uint32_t pic2_offset) {
 }
 
 
-/* disable pic. 
+/* disable pic.
  * In order to use apic we have to disable pic first.
  * */
 void pic_disable(void) {

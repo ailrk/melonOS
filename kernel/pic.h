@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include "i386.h"
 
 void pic_eoi();
 void pic_remap(uint32_t pic1_offset, uint32_t pic2_offset);

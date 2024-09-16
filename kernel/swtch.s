@@ -1,7 +1,7 @@
 ; Context swtch
 ;
 ;   void swtch(struct context **save, struct context *load);
-; 
+;
 ; Save the current registers on the stack, creating
 ; a struct context, and save its address in *old.
 ; Switch stacks to new and pop previously-saved registers.
@@ -29,7 +29,7 @@ swtch
     ;  ebx;
     ;  ebp;
     ;  eip;
-    ; We switch to the new process by leaving eip on the 
+    ; We switch to the new process by leaving eip on the
     ; stack then calling ret
 
     pop edi
