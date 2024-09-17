@@ -129,6 +129,8 @@ void handle_I_IRQ_SPURIOUS(const TrapFrame *tf) {
 void trap(TrapFrame *tf) {
     switch (tf->trapno) {
         case I_SYSCALL:
+            handle_syscall(tf);
+            break;
         case MAP_IRQ(I_IRQ_TIMER):
             handle_I_IRQ_TIMER();
             break;
