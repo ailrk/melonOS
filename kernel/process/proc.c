@@ -30,7 +30,7 @@ PTable ptable;
 int nextpid = 1;
 
 void ptable_init() {
-    ptable.lk = new_lock();
+    ptable.lk = new_lock("ptable.lk");
 }
 
 

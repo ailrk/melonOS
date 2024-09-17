@@ -15,7 +15,7 @@ FTable ftable;
 
 
 void file_init() {
-    ftable.lk = new_lock();
+    ftable.lk = new_lock("ftable.lk");
 }
 
 
@@ -54,5 +54,4 @@ File *dup_file(File *f) {
  *  deallocate resources.
  * */
 void close_file(File *f) {
-
 }

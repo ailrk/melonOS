@@ -5,10 +5,11 @@
 #include "process/proc.h"
 
 
-SpinLock new_lock() {
+SpinLock new_lock(const char *name) {
     return (SpinLock) {
         .locked = 0,
-        .cpu = 0
+        .cpu = 0, 
+        .name = name
     };
 }
 
