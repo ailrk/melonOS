@@ -21,7 +21,7 @@ CPU cpu;
 
 
 typedef struct PTable {
-    SpinLock lock;
+    SpinLock lk;
     Process t[NPROC];
 } PTable;
 
@@ -30,7 +30,7 @@ PTable ptable;
 int nextpid = 1;
 
 void ptable_init() {
-    ptable.lock = new_lock();
+    ptable.lk = new_lock();
 }
 
 
@@ -107,15 +107,13 @@ void forkret() {
 /*! Try to get the next unused process in ptable */
 static Process *get_unused_process() {
     Process *p;
-    bool found = false;
     for (int i = 1; i < NPROC; ++i) {
         p = &ptable.t[i];
         if (p->state == PROC_UNUSED) {
-            found = true;
-            break;
+            return p;
         }
     }
-    return p;
+    return 0;
 }
 
 
@@ -171,11 +169,15 @@ static bool setup_process_stack(Process *p) {
 
 /*! Allocate a new process and set it up to run in kernel. */
 static Process *allocate_process() {
+    lock(&ptable.lk);
     Process *p = get_unused_process();
-
+    if (!p) {
+        unlock(&ptable.lk);
+        return 0;
+    }
     p->state = PROC_CREATED;
     p->pid = nextpid++;
-
+    unlock(&ptable.lk);
     if (!setup_process_stack(p)) return 0;
     return p;
 }
@@ -216,7 +218,11 @@ void init_pid1() {
     p->size = PAGE_SZ;
     set_pid1_trapframe(p);
     strncpy(p->name, "init", sizeof(p->name));
+
+    lock(&ptable.lk);
     p->state = PROC_READY;
+    unlock(&ptable.lk);
+
     tty_printf("\033[32mok\033[0m\n");
 }
 
@@ -255,20 +261,20 @@ void scheduler() {
     CPU *cpu = this_cpu();
     cpu->proc = 0;
     sti();
-
     for(;;) {
         sti(); // force enable interrupt
+        lock(&ptable.lk);
         for (Process *p = ptable.t; p < ptable.t + NPROC; ++p) {
             if (p->state != PROC_READY)
                 continue;
             cpu->proc = p;
-
             switch_user_vmem(p);
             p->state = PROC_RUNNING;
             swtch(&cpu->scheduler, p->context);
             switch_kernel_vmem();
             cpu->proc = 0;
         }
+        unlock(&ptable.lk);
     }
 }
 
@@ -292,6 +298,8 @@ void sched() {
 
 
 void yield() {
+    lock(&ptable.lk);
     this_proc()->state = PROC_READY;
     sched();
+    unlock(&ptable.lk);
 }

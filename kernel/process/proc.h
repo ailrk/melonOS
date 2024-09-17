@@ -8,8 +8,8 @@
 #include "fs/file.h"
 
 
-#define NPROC    64
-#define NFILE    32
+#define NPROC    64 // max number of processes
+#define NOFILE   32 // max number of open files per process
 
 
 typedef enum ProcState {
@@ -47,7 +47,7 @@ typedef struct Process {
     Context *       context;      // process context
     void *          chan;         // sleep on chan if it's not zero
     bool            killed;       // is process killed
-    File            file[NFILE];  // files
+    File            file[NOFILE]; // files
     char            name[16];     // name of the process
 } Process;
 
