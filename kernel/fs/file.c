@@ -49,9 +49,31 @@ File *dup_file(File *f) {
 }
 
 
-
 /*! Decrement the reference count. When `nref` = 0
  *  deallocate resources.
  * */
 void close_file(File *f) {
+    File f1;
+    lock(&ftable.lk);
+    if (f->nref < 1)
+        panic("close_file");
+
+    if (--f->nref > 0) {
+        unlock(&ftable.lk);
+        return;
+    }
+
+    f1 = *f;
+    f->type = FD_NONE;
+    f->nref = 0;
+    unlock(&ftable.lk);
+
+    switch (f1.type) {
+        case FD_INODE:
+            break;
+        case FD_PIPE:
+            break;
+        case FD_NONE:
+            break;
+    }
 }

@@ -36,8 +36,8 @@ typedef struct File {
 
 
 typedef struct Dev {
-    int (*read)(Inode *ino, char * buf, int n);
-    int (*write)(Inode *ino, char * buf, int n);
+    int (*read)(Inode *ino, char * addr, int n);
+    int (*write)(Inode *ino, char * addr, int n);
 } Dev;
 
 extern Dev devs[NDEV];
