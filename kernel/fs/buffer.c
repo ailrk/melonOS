@@ -1,6 +1,6 @@
 #include "spinlock.h"
 #include "fs/buffer.h"
-#include "fs/fconfig.h"
+#include "fs/fdefs.h"
 
 
 typedef struct BCache {

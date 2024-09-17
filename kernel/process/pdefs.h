@@ -7,7 +7,7 @@
 #include "gdt.h"
 #include "mmu.h"
 #include "trap.h"
-#include "fs/file.h"
+#include "fs/fdefs.h"
 
 
 #define NPROC    64 // max number of processes

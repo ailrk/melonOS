@@ -2,7 +2,6 @@
 #include "proc.h"
 #include "err.h"
 #include "spinlock.h"
-#include "stat.h"
 #include "fs/file.h"
 
 

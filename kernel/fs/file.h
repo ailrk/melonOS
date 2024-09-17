@@ -1,27 +1,9 @@
 #pragma once
 
 #include <stdbool.h>
-#include "fs/stat.h"
-#include "fs/fconfig.h"
-#include "fs/inode.h"
+#include "fs/fdefs.h"
 
 /* File descriptors */
-
-typedef struct File {
-    FileType     type;
-    int          nref;       // reference count
-    bool         readable;
-    bool         writable;
-    unsigned int offset;
-    Inode *ip;
-} File;
-
-
-/* Devices need to implement this interface */
-typedef struct Dev {
-    int (*read)(Inode *ino, char * addr, int n);
-    int (*write)(Inode *ino, char * addr, int n);
-} Dev;
 
 extern Dev devs[NDEV];
 

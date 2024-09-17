@@ -1,5 +1,4 @@
-#include "stat.h"
-#include "fs/inode.h"
+#include "fs/fdefs.h"
 
 
 /*! Get stat from inode */
