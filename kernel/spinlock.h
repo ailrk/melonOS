@@ -1,6 +1,6 @@
 #pragma once
 
-#include "process/proc.h"
+#include "process/pdefs.h"
 
 
 typedef struct SpinLock {
