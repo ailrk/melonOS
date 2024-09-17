@@ -1,29 +1,11 @@
 #pragma once
 
-#include "stat.h"
 #include <stdbool.h>
+#include "fs/stat.h"
+#include "fs/fconfig.h"
+#include "fs/inode.h"
 
 /* File descriptors */
-
-#define NDEV  32  // max number of devices
-#define NFILE 128 // max number of open filese in the system
-
-
-/* Memory representation of an inode */
-typedef struct Inode {
-    unsigned int dev;  // device number
-    unsigned int ino;  // inode number
-    int          nref; // ref count
-} Inode;
-
-
-/* File types */
-typedef enum FileType {
-    FD_NONE,
-    FD_PIPE,
-    FD_INODE,
-} FileType;
-
 
 typedef struct File {
     FileType     type;
@@ -35,6 +17,7 @@ typedef struct File {
 } File;
 
 
+/* Devices need to implement this interface */
 typedef struct Dev {
     int (*read)(Inode *ino, char * addr, int n);
     int (*write)(Inode *ino, char * addr, int n);

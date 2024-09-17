@@ -1,7 +1,9 @@
-#include "fs/file.h"
+#include "inode.h"
 #include "proc.h"
 #include "err.h"
 #include "spinlock.h"
+#include "stat.h"
+#include "fs/file.h"
 
 
 Dev devs[NDEV];
@@ -17,7 +19,6 @@ FTable ftable;
 void file_init() {
     ftable.lk = new_lock("ftable.lk");
 }
-
 
 
 /*! Allocate a file from the ftable

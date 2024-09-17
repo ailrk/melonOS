@@ -1,6 +1,6 @@
 #pragma once
 
-#define DIR_SZ 32
+#include "fconfig.h"
 
 /* Directory entry */
 typedef struct DirEntry {
