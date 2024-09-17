@@ -11,10 +11,3 @@ SleepLock new_sleeplock(const char *name) {
     slk.pid = 0;
     return slk;
 }
-
-
-void lock_sleep(SleepLock *slk) {
-    lock(&slk->lk);
-
-
-}

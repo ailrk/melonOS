@@ -5,6 +5,7 @@
 #include "i386.h"
 #include "mem.h"
 #include "ncli.h"
+#include "pdefs.h"
 #include "trap.h"
 #include "tty.h"
 #include "string.h"
@@ -260,7 +261,6 @@ void scheduler() {
     tty_printf("[\033[32mboot\033[0m] scheduler...\n");
     CPU *cpu = this_cpu();
     cpu->proc = 0;
-    sti();
     for(;;) {
         sti(); // force enable interrupt
         lock(&ptable.lk);
@@ -294,6 +294,63 @@ void sched() {
     int int_on = this_cpu()->int_on;
     swtch(&p->context, this_cpu()->scheduler);
     this_cpu()->int_on = int_on;
+}
+
+
+/*! Release lock and sleep on `chan`. Acquire the lock when wake up.
+ *  Sleep modifies
+ *  @chan  identify the channel the process is being slept. Usually
+ *         it's the address of the lock.
+ *  @lk    the lock the process
+  * */
+void sleep(void *chan, SpinLock *lk) {
+    Process *p = this_proc();
+    if (p == 0)
+        panic("sleep");
+
+    if (lk == 0)
+        panic("sleep: lk");
+
+
+    if (lk != &ptable.lk) {
+        lock(&ptable.lk); // ptable lock to protect proc state
+        unlock(lk);
+    }
+
+    p->chan = chan;
+    p->state = PROC_SLEEPING;
+
+    sched();
+
+    p->chan = 0;
+
+    if (lk != &ptable.lk) {
+        unlock(&ptable.lk);
+        lock(lk);
+    }
+}
+
+
+/*! Walke up all sleeping processes sleep on `chan` */
+void wakeup_unlocked(void *chan) {
+    Process *p;
+
+    for (int i = 0; i < NPROC; ++i) {
+        p = &ptable.t[i];
+        if (p->state == PROC_SLEEPING && p->chan == chan) {
+            p->state = PROC_READY;
+        }
+    }
+}
+
+
+/*! Walke up all sleeping processes sleeps on `chan`. Protected
+ *  by ptable lock.
+ * */
+void wakeup(void *chan) {
+    lock(&ptable.lk);
+    wakeup_unlocked(chan);
+    unlock(&ptable.lk);
 }
 
 

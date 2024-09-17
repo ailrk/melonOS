@@ -18,5 +18,6 @@ void scheduler();
 int fork();
 int wait();
 void sleep(void *chan, SpinLock *lk);
+void wakeup(void *chan);
 void yield();
 void exit();
