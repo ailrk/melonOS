@@ -8,6 +8,7 @@
 #include "mem/palloc.h"
 #include "drivers/ps2.h"
 #include "drivers/pic.h"
+#include "drivers/uart.h"
 #include "process/proc.h"
 
 #define DBG 0
@@ -17,7 +18,6 @@
  */
 extern char end[];
 
-PDE *kernel_page_dir;     // kernel only page directory.
 char *kstack;             // kernel stack. userd in entry.s
 
 extern char data[];
@@ -25,14 +25,15 @@ extern char data[];
 void kmain(void) {
     tty_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
-    allocate_kernel_vmem();
+    kernel_vmem_init();
     gdt_init();
     trap_init();
     pic_init();
-    palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
+    uart_init();
     ps2_init();
     ptable_init();
-    init_pid1();
     idt_init();
+    palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
+    init_pid1();
     scheduler();
 }

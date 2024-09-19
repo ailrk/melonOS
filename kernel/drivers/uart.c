@@ -1,9 +1,11 @@
+#include <stdbool.h>
+#include "err.h"
 #include "uart.h"
 #include "i386.h"
 
 #define COM1    0x3f8
 
-static int init_serial() {
+static bool init_serial() {
    outb(COM1 + 1, 0x00);    // Disable all interrupts
    outb(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
    outb(COM1 + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
@@ -16,13 +18,20 @@ static int init_serial() {
 
    // Check if serial is faulty (i.e: not same byte as sent)
    if(inb(COM1 + 0) != 0xAE) {
-      return 1;
+      return false;
    }
 
    // If serial is not faulty set it in normal operation mode
    // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
    outb(COM1 + 4, 0x0F);
-   return 0;
+   return true;
+}
+
+
+void uart_init() {
+    if (!init_serial()) {
+        panic("init serial");
+    }
 }
 
 static int serial_received() {

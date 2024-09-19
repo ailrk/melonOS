@@ -40,10 +40,10 @@ typedef struct Context {
 
 typedef struct Process {
     uint32_t        size;         // size of process memory
-    PDE *           page_table;   // per process page table
+    PD              pgdir;        // per process page table
     char *          kstack;       // bottom of kernel stack for this process
-    uint32_t        pid;          // process id
-    uint32_t        ppid;         // parent pid
+    unsigned int    pid;          // process id
+    unsigned int    ppid;         // parent pid
     ProcState       state;        // process state
     TrapFrame *     trapframe;    // process trapframe
     Context *       context;      // process context

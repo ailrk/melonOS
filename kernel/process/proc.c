@@ -46,7 +46,7 @@ void dump_context(const Context *c) {
 }
 
 void dump_process(const Process *p) {
-    if (p->pid < 0 || p->pid > NPROC)
+    if (p->pid > NPROC)
         return;
 
     char *state;
@@ -208,14 +208,14 @@ void init_pid1() {
         panic("init_pid, failed to allocate process");
     }
 
-    if ((p->page_table = setup_kernel_vmem()) == 0)
+    if (!(allocate_kernel_vmem(&p->pgdir)))
         panic("init_pid1");
 
     extern char __INIT1_BEGIN__[];
     extern char __INIT1_END__[];
     int init1_sz = __INIT1_END__ - __INIT1_BEGIN__;
 
-    init_user_vmem(p->page_table, __INIT1_BEGIN__, init1_sz);
+    init_user_vmem(&p->pgdir, __INIT1_BEGIN__, init1_sz);
     p->size = PAGE_SZ;
     set_pid1_trapframe(p);
     strncpy(p->name, "init", sizeof(p->name));
@@ -238,11 +238,11 @@ bool grow_process(int n) {
     size_t sz = p->size;
 
     if (n > 0) {
-        if ((sz = allocate_user_vmem(p->page_table, sz, sz + n)) == 0) {
+        if ((sz = allocate_user_vmem(&p->pgdir, sz, sz + n)) == 0) {
             return false;
         }
     } else {
-        if ((sz = allocate_user_vmem(p->page_table, sz, sz + n)) == 0)
+        if ((sz = allocate_user_vmem(&p->pgdir, sz, sz + n)) == 0)
             return false;
     }
 

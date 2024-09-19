@@ -26,7 +26,7 @@ void lock(SpinLock *lk) {
     if (holding(lk))
         panic("lock");
 
-    while(xchg(&lk->locked, 1) != 0);
+    while(xchg((uint32_t*)&lk->locked, 1) != 0);
 
     __sync_synchronize();
 

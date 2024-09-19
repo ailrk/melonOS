@@ -1,6 +1,16 @@
 #pragma once
 #include <stdint.h>
 #include "mem.h"
+/*
+ * For 32-bit linux, e.g PD and PT are both 10 bits long, and each page is 4096 bytes.
+ * So in total, PD and PT can index (2**10)**2, or , or 1MB pages, and together with
+ * offset it addresses 1MB * 4096, or 4GB memory of a 32bit RAM.
+ */
+
+
+#define PTESZ           4       // size of PTE
+#define NPDES           1024    // # directory entries per page directory
+#define NPTES           1024    // # PTEs per page table
 
 
 /* PD and PT entries (PTE):
@@ -20,6 +30,7 @@
 
 typedef uintptr_t PDE;
 typedef uintptr_t PTE;
+typedef struct { PDE *t; } PD; // page directory
 
 
 /* PTE flags */
@@ -35,17 +46,6 @@ typedef uintptr_t PTE;
 #define PDE_U           PTE_U  // 1 = user, 0 = supervisor only
 #define PDE_PS          0x80   // 1 = 4MB page size, 0 = 4Kb page size
 
-
-/*
- * For 32-bit linux, e.g PD and PT are both 10 bits long, and each page is 4096 bytes.
- * So in total, PD and PT can index (2**10)**2, or , or 1MB pages, and together with
- * offset it addresses 1MB * 4096, or 4GB memory of a 32bit RAM.
- */
-
-
-#define PTESZ           4       // size of PTE
-#define NPDES           1024    // # directory entries per page directory
-#define NPTES           1024    // # PTEs per page table
 
 
 /* The structure of a 32 bit virtual address:

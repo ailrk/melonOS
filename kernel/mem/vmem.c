@@ -19,8 +19,8 @@
 
 #define DEBUG 0
 
-extern PDE *kernel_page_dir;
-extern char data[];  // defined by kernel.ld
+PD kernel_page_dir = { .t = 0 };     // kernel only page directory.
+extern char data[];                  // defined by kernel.ld
 
 VMap kmap[4];
 
@@ -69,11 +69,11 @@ static void init_kmap() {
 }
 
 /*! Some untilities for handling page table access */
-static PDE* get_pde(PDE *page_dir, const void *vaddr) {
-    return &page_dir[page_directory_idx((uintptr_t)vaddr)];
+static PDE* get_pde(PD *page_dir, const void *vaddr) {
+    return &page_dir->t[page_directory_idx((uintptr_t)vaddr)];
 }
 
-static PTE* get_pt(PDE *page_dir, const void *vaddr) {
+static PTE* get_pt(PD *page_dir, const void *vaddr) {
     PDE *pde = get_pde(page_dir, vaddr);
     return (PTE *)P2V(pte_addr(*pde));
 }
@@ -82,7 +82,7 @@ static PTE* get_pt1(PDE *pde) {
     return (PTE *)P2V(pte_addr(*pde));
 }
 
-static PTE* get_pte(PDE *page_dir, const void *vaddr) {
+static PTE* get_pte(PD *page_dir, const void *vaddr) {
     PTE *pt = get_pt(page_dir, vaddr);
     return &pt[page_table_idx((uintptr_t)vaddr)];
 }
@@ -90,12 +90,6 @@ static PTE* get_pte(PDE *page_dir, const void *vaddr) {
 static PTE* get_pte1(PDE *pde, const void *vaddr) {
     PTE *pt = get_pt1(pde);
     return &pt[page_table_idx((uintptr_t)vaddr)];
-}
-
-/*! Translate a vaddr to physical address. It assumes the page table is already set up */
-static physical_addr translate(PDE *page_dir, void *vaddr) {
-    PTE *pte = get_pte(page_dir, vaddr);
-    return (physical_addr)((*pte & ~(0xfff)) | (uintptr_t)vaddr_offset(vaddr));
 }
 
 
@@ -107,7 +101,7 @@ static physical_addr translate(PDE *page_dir, void *vaddr) {
  *  @alloc:     allocation flag.
  *  @return:    the address of the page table entry. 0 indicates failed to find pte
  * */
-static PTE *walk(PDE *page_dir, const void *vaddr) {
+static PTE *walk(PD *page_dir, const void *vaddr) {
     PDE *pde = get_pde(page_dir, vaddr);
     PTE *pt;
 
@@ -131,7 +125,7 @@ static PTE *walk(PDE *page_dir, const void *vaddr) {
  *
  *  @return true if pages are mapped successfully. false otherwise.
  * */
-static bool map_pages(PDE *page_dir, const VMap *k) {
+static bool map_pages(PD *page_dir, const VMap *k) {
     int           size   = k->pend - k->pstart;
     char *        vstart = (char *)page_aligndown((uintptr_t)k->virt);
     char *        vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
@@ -158,51 +152,48 @@ static bool map_pages(PDE *page_dir, const VMap *k) {
     return true;
 }
 
-
-/*! Setup the kernel part of the page table.
- *  we allocate the first page to hold the PD. Then
- *  we map pages base on the `kmap`. PT is allocated as
- *  needed.
+/*! Setup the kernel part of the page table. we allocate
+ *  a single page to hold the PD. Then we map pages base
+ *  on the `kmap` to setup the kernel virtual memory.
  *
  *  @return initialized page directory
  * */
-PDE *setup_kernel_vmem() {
-    PDE *page;
-    int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
-
-    if ((page = (PDE*)palloc()) == 0)
-        return 0;
-
-    memset(page, 0, PAGE_SZ);
-
+bool allocate_kernel_vmem(PD *page_dir) {
     if ((void *)P2V(PHYSTOP) > (void *)DEV_SPACE)
         panic("PHYSTOP is too high");
 
+    if ((page_dir->t = (PDE*)palloc()) == 0)
+        return false;
+
+    memset(page_dir->t, 0, PAGE_SZ);
+
+    int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
+
     for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
-        if (!map_pages(page, k)) {
-            free_vmem(page);
-            return 0;
+        if (!map_pages(page_dir, k)) {
+            free_vmem(page_dir);
+            return false;
         }
     }
-
-    return page;
+    return true;
 }
+
 
 
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running
  * */
 void switch_kernel_vmem() {
-   set_cr3(V2P_C(kernel_page_dir));
+   set_cr3(V2P_C(kernel_page_dir.t));
 }
 
 
 
 /*! Setup kernel virtual memory */
-void allocate_kernel_vmem() {
+void kernel_vmem_init() {
     tty_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
     init_kmap();
-    kernel_page_dir = setup_kernel_vmem();
+    allocate_kernel_vmem(&kernel_page_dir);
     switch_kernel_vmem();
     tty_printf("\033[32mok\033[0m\n");
 }
@@ -213,7 +204,7 @@ void allocate_kernel_vmem() {
  *  @init     address of the binary
  *  @sz       size of the binary
  * */
-void init_user_vmem(PDE *page_dir, char *init, size_t sz) {
+void init_user_vmem(PD *page_dir, char *init, size_t sz) {
     char *mem;
     if (sz > PAGE_SZ)
         panic("\033[32mvmem\033[0m init_user_vmem: more than a page");
@@ -260,12 +251,12 @@ void switch_user_vmem(Process *p) {
         panic("switch_user_vmem: no process");
     if (!p->kstack)
         panic("switch_user_vmem: no kernel stack");
-    if (!p->page_table)
+    if (!p->pgdir.t)
         panic("switch_user_vmem: no page table");
 
     push_cli();
     write_tss(p); // setup TSS
-    set_cr3(V2P_C(this_proc()->page_table));
+    set_cr3(V2P_C(this_proc()->pgdir.t));
     pop_cli();
 }
 
@@ -273,7 +264,7 @@ void switch_user_vmem(Process *p) {
 /* !Grow process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size or 0 on error.
  * */
-int allocate_user_vmem(PDE *page_dir, size_t oldsz, size_t newsz) {
+int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
     if (newsz > KERN_BASE)
         return 0;
 
@@ -308,16 +299,16 @@ int allocate_user_vmem(PDE *page_dir, size_t oldsz, size_t newsz) {
 
 
 /*! Copy the page table of another process.
- *  @page_dir   the page directory of the other process.
+ *  @page_dir   the page directory of process to copy from.
+ *  @new_pgdir  the page directory copy to.
  *  @sz         number of pages copy from the other process.
  *  @return     the copied page directory. 0 if failed.
  * */
-PDE *copy_user_vmem(PDE *page_dir, size_t sz) {
-    PDE *new_pgdir;
+bool copy_user_vmem(PD *page_dir, PD *new_pgdir, size_t sz) {
     char *mem;
 
-    if ((new_pgdir = setup_kernel_vmem()) == 0)
-        return 0;
+    if (!(allocate_kernel_vmem(new_pgdir)))
+        return false;
 
     PTE *pte;
 
@@ -349,14 +340,14 @@ PDE *copy_user_vmem(PDE *page_dir, size_t sz) {
             return 0;
         }
     }
-    return new_pgdir;
+    return true;
 }
 
 
 /* !Shrink process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size.
  * */
-int deallocate_user_vmem(PDE *page_dir, uintptr_t oldsz, uintptr_t newsz) {
+int deallocate_user_vmem(PD *page_dir, uintptr_t oldsz, uintptr_t newsz) {
     if (oldsz < newsz)
         return oldsz;
 
@@ -381,16 +372,16 @@ int deallocate_user_vmem(PDE *page_dir, uintptr_t oldsz, uintptr_t newsz) {
 /*! Free a page table.
  *  This will free all memory used in the user part.
  * */
-void free_vmem(PDE *page_dir) {
+void free_vmem(PD *page_dir) {
     if (page_dir == 0)
         panic("free_vmem");
 
     // deallocate
     deallocate_user_vmem(page_dir, KERN_BASE, 0);
     for (int i = 0; i < NPDES; ++i) {
-        if (page_dir[i] & PDE_P) {
-            pfree((char *)P2V(pte_addr(page_dir[i])));
+        if (page_dir->t[i] & PDE_P) {
+            pfree((char *)P2V(pte_addr(page_dir->t[i])));
         }
     }
-    pfree((char *)page_dir);
+    pfree((char *)page_dir->t);
 }

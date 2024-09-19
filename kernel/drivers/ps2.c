@@ -79,7 +79,7 @@ static void write_ccb(uint8_t b) {
 }
 
 
-static void reset() {
+void ps2_reset() {
     uint8_t data;
     ps2out(KBP_DATA, 0xff);
     data = ps2in(KBP_DATA);
@@ -108,7 +108,7 @@ static void echo_test() {
  *  set the scan code to `scancode`
  * */
 static uint8_t scancode(uint8_t scancode) {
-    if (scancode < 0 || scancode > 0x3) {
+    if (scancode > 0x3) {
         perror("[\033[33mkbd\033[0m] invalid scan code");
         return 0;
     }
@@ -151,7 +151,6 @@ static void debug() {
 
 void ps2_init() {
     tty_printf("[\033[32mboot\033[0m] ps2...");
-    uint32_t status;
 
     echo_test();
 

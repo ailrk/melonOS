@@ -15,3 +15,4 @@
 void ps2_init(); 
 void ps2out(uint16_t port, uint8_t val);
 uint8_t ps2in(uint16_t port);
+void ps2_reset();
