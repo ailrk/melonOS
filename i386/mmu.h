@@ -2,19 +2,6 @@
 #include <stdint.h>
 #include "mem.h"
 
-/* MMU translates virutal address to physical address. We need to setup MMU to
- * enable paging.
- *
- * To map a virutal address to a physical address, we need to look it up from the 
- * page table. A page table structured like a tree with two layers. It contains
- * two parts: PD (page directory) and PT (page table). The root is the PD and leaves are
- * PT.
- *
- * To look up for the physical address, we need to use the virtual address to find the
- * page directory, then locate the page table in that page directory, then finally we 
- * can add offset from the page table address to find teh actual physical address.
- */
-
 
 /* PD and PT entries (PTE):
  * 
@@ -31,8 +18,8 @@
  *  P:   present, accessing when it's 0 cause page fault.                     
  */
 
-typedef uint32_t PDE;
-typedef uint32_t PTE;
+typedef uintptr_t PDE;
+typedef uintptr_t PTE;
 
 
 /* PTE flags */
@@ -70,26 +57,40 @@ typedef uint32_t PTE;
 #define PD_IDX_SHIFT       22     // offset of PD_IDX in a linear address
 
 
-#define VADDR_OFFSET(vaddr)  ((uint32_t)vaddr & 0xfff)
+static inline uintptr_t vaddr_offset(const void *vaddr) {
+    return (uintptr_t)vaddr & 0xfff;
+}
 
-/* page directory index */
-#define PD_IDX(vaddr)   (((uint32_t)(vaddr) >> PD_IDX_SHIFT) & 0x3FF)
+static inline uintptr_t page_directory_idx(uintptr_t vaddr) {
+    return ((vaddr) >> PD_IDX_SHIFT) & 0x3FF;
+}
 
-/* page table index */
-#define PT_IDX(vaddr)   (((uint32_t)(vaddr) >> PT_IDX_SHIFT) & 0x3FF)
+static inline uintptr_t page_table_idx(uintptr_t vaddr) {
+    return ((vaddr) >> PT_IDX_SHIFT) & 0x3FF;
+}
 
+static inline uintptr_t page_alignup(int sz) {
+    return ((sz)+PAGE_SZ-1) & ~(PAGE_SZ-1);
+}
 
-#define PG_ALIGNUP(sz)  (((sz)+PGSIZE-1) & ~(PAGE_SZ-1))
-#define PG_ALIGNDOWN(addr) ((addr) & ~(PAGE_SZ-1))
-
+static inline uintptr_t page_aligndown(uintptr_t addr) {
+    return (addr) & ~(PAGE_SZ-1);
+}
 
 /* Address in page table or page directory entry */
-#define PTE_ADDR(pte)   ((unsigned int)(pte) & ~0xFFF)
+static inline uintptr_t pte_addr(PTE pte) {
+    return (uintptr_t)(pte) & ~0xFFF;
+}
 
-#define PTE_FLAGS(pte)  ((unsigned int)(pte) &  0xFFF)
+/* Flag in page table or page directory entry */
+static inline unsigned int pte_flags(PTE pte) {
+    return (unsigned int)(pte) &  0xFFF;
+}
 
-/* construct virtual address from indexes and offsets */
-#define PG_ADDR(pde, pte, offset) ((uint32_t)((pde) << PD_IDX_SHIFT | (pte) << PT_IDX_SHIFT | (offset)))
+/*! Construct virtual address from indexes and offsets */
+static inline unsigned int page_addr(PDE pde, PTE pte, int offset) {
+    return (uint32_t)((pde) << PD_IDX_SHIFT | (pte) << PT_IDX_SHIFT | (offset));
+}
 
 
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stddef.h>
 #include "mmu.h"
 #include "i386.h"
 #include "process/proc.h"
@@ -18,9 +19,9 @@ typedef struct VMap {
 void allocate_kernel_vmem();
 PDE *setup_kernel_vmem();
 void switch_kernel_vmem();
-int  allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz);
-int  deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz);
+int  allocate_user_vmem(PDE *page_dir, size_t oldsz, size_t newsz);
+int  deallocate_user_vmem(PDE *page_dir, size_t oldsz, size_t newsz);
 void switch_user_vmem(Process *p);
-PDE *copy_user_vmem(PDE *page_dir, unsigned int sz);
-void init_user_vmem(PDE *page_dir, char *init, unsigned int sz);
+PDE *copy_user_vmem(PDE *page_dir, size_t sz);
+void init_user_vmem(PDE *page_dir, char *init, size_t sz);
 void free_vmem(PDE *page_dir);

@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "debug.h"
 #include "defs.h"
@@ -68,37 +69,33 @@ static void init_kmap() {
 }
 
 /*! Some untilities for handling page table access */
-static PDE* get_pde(const PDE *page_dir, const void *vaddr) {
-    return &page_dir[PD_IDX(vaddr)];
+static PDE* get_pde(PDE *page_dir, const void *vaddr) {
+    return &page_dir[page_directory_idx((uintptr_t)vaddr)];
 }
 
-
-static PTE* get_pt(const PDE *page_dir, const void *vaddr) {
+static PTE* get_pt(PDE *page_dir, const void *vaddr) {
     PDE *pde = get_pde(page_dir, vaddr);
-    return (PTE *)P2V(PTE_ADDR(*pde));
+    return (PTE *)P2V(pte_addr(*pde));
 }
 
-
-static PTE* get_pt1(const PDE *pde, const void *vaddr) {
-    return (PTE *)P2V(PTE_ADDR(*pde));
+static PTE* get_pt1(PDE *pde) {
+    return (PTE *)P2V(pte_addr(*pde));
 }
 
-
-static PTE* get_pte(const PDE *page_dir, const void *vaddr) {
+static PTE* get_pte(PDE *page_dir, const void *vaddr) {
     PTE *pt = get_pt(page_dir, vaddr);
-    return &pt[PT_IDX(vaddr)];
+    return &pt[page_table_idx((uintptr_t)vaddr)];
 }
 
-static PTE* get_pte1(const PDE *pde, const void *vaddr) {
-    PTE *pt = get_pt1(pde, vaddr);
-    return &pt[PT_IDX(vaddr)];
+static PTE* get_pte1(PDE *pde, const void *vaddr) {
+    PTE *pt = get_pt1(pde);
+    return &pt[page_table_idx((uintptr_t)vaddr)];
 }
-
 
 /*! Translate a vaddr to physical address. It assumes the page table is already set up */
-static physical_addr translate(const PDE *page_dir, const void *vaddr) {
+static physical_addr translate(PDE *page_dir, void *vaddr) {
     PTE *pte = get_pte(page_dir, vaddr);
-    return (uint32_t)(*pte & ~(0xfff) | (uint32_t)VADDR_OFFSET(vaddr));
+    return (physical_addr)((*pte & ~(0xfff)) | (uintptr_t)vaddr_offset(vaddr));
 }
 
 
@@ -110,7 +107,7 @@ static physical_addr translate(const PDE *page_dir, const void *vaddr) {
  *  @alloc:     allocation flag.
  *  @return:    the address of the page table entry. 0 indicates failed to find pte
  * */
-static PTE *walk(const PDE *page_dir, const void *vaddr) {
+static PTE *walk(PDE *page_dir, const void *vaddr) {
     PDE *pde = get_pde(page_dir, vaddr);
     PTE *pt;
 
@@ -122,7 +119,7 @@ static PTE *walk(const PDE *page_dir, const void *vaddr) {
 
     memset(pt, 0, PAGE_SZ);
 
-    *pde = V2P_C((uint32_t)pt | PDE_P | PDE_W | PDE_U);
+    *pde = V2P_C((uintptr_t)pt | PDE_P | PDE_W | PDE_U);
     return get_pte1(pde, vaddr);
 }
 
@@ -134,10 +131,10 @@ static PTE *walk(const PDE *page_dir, const void *vaddr) {
  *
  *  @return true if pages are mapped successfully. false otherwise.
  * */
-static bool map_pages(const PDE *page_dir, const VMap *k) {
+static bool map_pages(PDE *page_dir, const VMap *k) {
     int           size   = k->pend - k->pstart;
-    char *        vstart = (char *)PG_ALIGNDOWN((uint32_t)k->virt);
-    char *        vend   = (char *)PG_ALIGNDOWN((uint32_t)k->virt + size);
+    char *        vstart = (char *)page_aligndown((uintptr_t)k->virt);
+    char *        vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
     physical_addr pstart = k->pstart;
     PTE *         pte;
 
@@ -146,7 +143,7 @@ static bool map_pages(const PDE *page_dir, const VMap *k) {
     tty_printf("\n           <vstart %#x, vend %#x>\n", vstart, vend);
 #endif
 
-    if ((uint32_t)vstart % PAGE_SZ > 0 || (uint32_t)vend % PAGE_SZ > 0)
+    if ((uintptr_t)vstart % PAGE_SZ > 0 || (uintptr_t)vend % PAGE_SZ > 0)
         panic("map_pages, not on page boundry");
 
     for (; vstart != vend; vstart+=PAGE_SZ, pstart+=PAGE_SZ) {
@@ -178,7 +175,7 @@ PDE *setup_kernel_vmem() {
 
     memset(page, 0, PAGE_SZ);
 
-    if ((void*)P2V(PHYSTOP) > (void*)DEV_SPACE)
+    if ((void *)P2V(PHYSTOP) > (void *)DEV_SPACE)
         panic("PHYSTOP is too high");
 
     for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
@@ -216,7 +213,7 @@ void allocate_kernel_vmem() {
  *  @init     address of the binary
  *  @sz       size of the binary
  * */
-void init_user_vmem(PDE *page_dir, char *init, unsigned int sz) {
+void init_user_vmem(PDE *page_dir, char *init, size_t sz) {
     char *mem;
     if (sz > PAGE_SZ)
         panic("\033[32mvmem\033[0m init_user_vmem: more than a page");
@@ -243,7 +240,7 @@ static void write_tss(Process *p) {
     uint16_t flag  = SEG_S(0)       | SEG_P(1)  | SEG_AVL(0) |
                      SEG_L(0)       | SEG_DB(1) | SEG_G(0)   |
                      SEG_DPL(DPL_K) | SEG_TSS_32_AVL;
-    uint32_t base  = (uint32_t)&this_cpu()->ts;
+    uint32_t base  = (uintptr_t)&this_cpu()->ts;
     uint32_t limit = sizeof(this_cpu()->ts) - 1;
     uint8_t  rpl   = 0; // request privilege level
     memset((void*)base, 0, limit);
@@ -276,14 +273,14 @@ void switch_user_vmem(Process *p) {
 /* !Grow process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size or 0 on error.
  * */
-int allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
+int allocate_user_vmem(PDE *page_dir, size_t oldsz, size_t newsz) {
     if (newsz > KERN_BASE)
         return 0;
 
     if (newsz < oldsz)
         return oldsz;
 
-    for (uint32_t p = PG_ALIGNDOWN(oldsz); p < newsz; p += PAGE_SZ) {
+    for (uintptr_t p = page_alignup(oldsz); p < newsz; p += PAGE_SZ) {
         char * mem;
         if ((mem = palloc()) == 0) {
             perror("allocate_user_vmem: out of memory");
@@ -315,24 +312,24 @@ int allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
  *  @sz         number of pages copy from the other process.
  *  @return     the copied page directory. 0 if failed.
  * */
-PDE *copy_user_vmem(PDE *page_dir, unsigned int sz) {
+PDE *copy_user_vmem(PDE *page_dir, size_t sz) {
     PDE *new_pgdir;
     char *mem;
-
 
     if ((new_pgdir = setup_kernel_vmem()) == 0)
         return 0;
 
     PTE *pte;
-    for (int i = 0; i < PAGE_SZ; ++i) {
+
+    for (size_t i = 0; i < sz; i+=PAGE_SZ) {
         if ((pte = get_pte(page_dir, (void*)i)) == 0)
             panic("copy_user_vmem: trying to copy non existing pte");
 
         if (!(*pte & PTE_P))
             panic("copy_user_vmem: page not present");
 
-        physical_addr pa = PTE_ADDR(pte);
-        unsigned int flags = PTE_FLAGS(pte);
+        physical_addr pa = pte_addr(*pte);
+        unsigned int flags = pte_flags(*pte);
 
         if ((mem = palloc()) == 0) {
             free_vmem(new_pgdir);
@@ -345,7 +342,7 @@ PDE *copy_user_vmem(PDE *page_dir, unsigned int sz) {
             { .virt = (char *)i,
               .pstart = V2P_C(mem),
               .pend = V2P_C(mem + PAGE_SZ),
-              .perm = PTE_W | PTE_U
+              .perm = flags
             };
         if (!map_pages(new_pgdir, &mmap)) {
             free_vmem(new_pgdir);
@@ -359,18 +356,18 @@ PDE *copy_user_vmem(PDE *page_dir, unsigned int sz) {
 /* !Shrink process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size.
  * */
-int deallocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
+int deallocate_user_vmem(PDE *page_dir, uintptr_t oldsz, uintptr_t newsz) {
     if (oldsz < newsz)
         return oldsz;
 
-    for (uint32_t p = PG_ALIGNDOWN(newsz); p < oldsz; p += PAGE_SZ) {
+    for (uintptr_t p = page_alignup(newsz); p < oldsz; p += PAGE_SZ) {
         PTE *pte = get_pte(page_dir, (char *)p);
 
         if (!pte)
-            p = PG_ADDR(PD_IDX(p) + 1, 0, 0) - PAGE_SZ;
+            p = page_addr(page_directory_idx(p) + 1, 0, 0) - PAGE_SZ;
 
         if (*pte & PTE_P) {
-            physical_addr page_table_addr = PTE_ADDR(*pte);
+            physical_addr page_table_addr = page_table_idx(*pte);
             if (page_table_addr == 0)
                 panic("deallocate_user_vmem: trying to pfree invalid physical addr");
             pfree(P2V_C(page_table_addr));
@@ -392,7 +389,7 @@ void free_vmem(PDE *page_dir) {
     deallocate_user_vmem(page_dir, KERN_BASE, 0);
     for (int i = 0; i < NPDES; ++i) {
         if (page_dir[i] & PDE_P) {
-            pfree((char *)P2V(PTE_ADDR(page_dir[i])));
+            pfree((char *)P2V(pte_addr(page_dir[i])));
         }
     }
     pfree((char *)page_dir);
