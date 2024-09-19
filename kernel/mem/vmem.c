@@ -19,8 +19,8 @@
 
 #define DEBUG 0
 
-PD kernel_page_dir = { .t = 0 };     // kernel only page directory.
-extern char data[];                  // defined by kernel.ld
+PD *kernel_page_dir;     // kernel only page directory.
+extern char data[];      // defined by kernel.ld
 
 VMap kmap[4];
 
@@ -70,7 +70,7 @@ static void init_kmap() {
 
 /*! Some untilities for handling page table access */
 static PDE* get_pde(PD *page_dir, const void *vaddr) {
-    return &page_dir->t[page_directory_idx((uintptr_t)vaddr)];
+    return &page_dir[page_directory_idx((uintptr_t)vaddr)];
 }
 
 static PTE* get_pt(PD *page_dir, const void *vaddr) {
@@ -138,7 +138,7 @@ static bool map_pages(PD *page_dir, const VMap *k) {
 #endif
 
     if ((uintptr_t)vstart % PAGE_SZ > 0 || (uintptr_t)vend % PAGE_SZ > 0)
-        panic("map_pages, not on page boundry");
+        panic("map_pages: not on page boundry");
 
     for (; vstart != vend; vstart+=PAGE_SZ, pstart+=PAGE_SZ) {
         if ((pte = walk(page_dir, vstart)) == 0)
@@ -158,15 +158,19 @@ static bool map_pages(PD *page_dir, const VMap *k) {
  *
  *  @return initialized page directory
  * */
-bool allocate_kernel_vmem(PD *page_dir) {
+PD *allocate_kernel_vmem() {
+    PD *page_dir;
     if ((void *)P2V(PHYSTOP) > (void *)DEV_SPACE)
         panic("PHYSTOP is too high");
 
-    if ((page_dir->t = (PDE*)palloc()) == 0)
-        return false;
+    if ((page_dir = (PD*)palloc()) == 0)
+        return 0;
 
-    memset(page_dir->t, 0, PAGE_SZ);
+    debug_printf("kernel_page_dir0> %#x\n", kernel_page_dir);
 
+    memset(page_dir, 0, PAGE_SZ);
+
+    debug_printf("kernel_page_dir1> %#x\n", kernel_page_dir);
     int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
 
     for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
@@ -175,7 +179,7 @@ bool allocate_kernel_vmem(PD *page_dir) {
             return false;
         }
     }
-    return true;
+    return page_dir;
 }
 
 
@@ -183,9 +187,7 @@ bool allocate_kernel_vmem(PD *page_dir) {
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running
  * */
-void switch_kernel_vmem() {
-   set_cr3(V2P_C(kernel_page_dir.t));
-}
+void switch_kernel_vmem() { set_cr3(V2P_C(kernel_page_dir)); }
 
 
 
@@ -193,7 +195,10 @@ void switch_kernel_vmem() {
 void kernel_vmem_init() {
     tty_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
     init_kmap();
-    allocate_kernel_vmem(&kernel_page_dir);
+    if ((kernel_page_dir = allocate_kernel_vmem()) == 0) {
+        panic("kernel_vmem_init");
+    }
+    debug_printf("kernel_page_dir2> %#x\n", kernel_page_dir);
     switch_kernel_vmem();
     tty_printf("\033[32mok\033[0m\n");
 }
@@ -251,12 +256,12 @@ void switch_user_vmem(Process *p) {
         panic("switch_user_vmem: no process");
     if (!p->kstack)
         panic("switch_user_vmem: no kernel stack");
-    if (!p->pgdir.t)
+    if (!p->pgdir)
         panic("switch_user_vmem: no page table");
 
     push_cli();
     write_tss(p); // setup TSS
-    set_cr3(V2P_C(this_proc()->pgdir.t));
+    set_cr3(V2P_C(this_proc()->pgdir));
     pop_cli();
 }
 
@@ -300,14 +305,14 @@ int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
 
 /*! Copy the page table of another process.
  *  @page_dir   the page directory of process to copy from.
- *  @new_pgdir  the page directory copy to.
  *  @sz         number of pages copy from the other process.
  *  @return     the copied page directory. 0 if failed.
  * */
-bool copy_user_vmem(PD *page_dir, PD *new_pgdir, size_t sz) {
+PD * copy_user_vmem(PD *page_dir, size_t sz) {
     char *mem;
+    PD *new_pgdir;
 
-    if (!(allocate_kernel_vmem(new_pgdir)))
+    if ((new_pgdir = allocate_kernel_vmem()) == 0)
         return false;
 
     PTE *pte;
@@ -340,7 +345,7 @@ bool copy_user_vmem(PD *page_dir, PD *new_pgdir, size_t sz) {
             return 0;
         }
     }
-    return true;
+    return new_pgdir;
 }
 
 
@@ -379,9 +384,9 @@ void free_vmem(PD *page_dir) {
     // deallocate
     deallocate_user_vmem(page_dir, KERN_BASE, 0);
     for (int i = 0; i < NPDES; ++i) {
-        if (page_dir->t[i] & PDE_P) {
-            pfree((char *)P2V(pte_addr(page_dir->t[i])));
+        if (page_dir[i] & PDE_P) {
+            pfree((char *)P2V(pte_addr(page_dir[i])));
         }
     }
-    pfree((char *)page_dir->t);
+    pfree((char *)page_dir);
 }

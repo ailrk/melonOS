@@ -30,7 +30,7 @@
 
 typedef uintptr_t PDE;
 typedef uintptr_t PTE;
-typedef struct { PDE *t; } PD; // page directory
+typedef uintptr_t PD; // page directory
 
 
 /* PTE flags */

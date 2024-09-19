@@ -170,6 +170,8 @@ static bool setup_process_stack(Process *p) {
 
 /*! Allocate a new process and set it up to run in kernel. */
 static Process *allocate_process() {
+    if (nextpid > NPROC)
+        panic("allocate_process: can't allocate more pids");
     lock(&ptable.lk);
     Process *p = get_unused_process();
     if (!p) {
@@ -181,6 +183,31 @@ static Process *allocate_process() {
     unlock(&ptable.lk);
     if (!setup_process_stack(p)) return 0;
     return p;
+}
+
+
+/*! Deallocate a process */
+static void deallocate_process(Process *p) {
+    lock(&ptable.lk);
+    p->size = 0;
+    if (p->pgdir) {
+        free_vmem(p->pgdir);
+        p->pgdir = 0;
+    }
+    if (p->kstack)  {
+        pfree(p->kstack);
+        p->kstack = 0;
+    }
+    p->kstack = 0;
+    p->pid = 0;
+    p->parent = 0;
+    p->state = PROC_UNUSED;
+    p->trapframe = 0;
+    p->context = 0;
+    p->chan = 0;
+    p->killed = 0;
+    memset(p->name, 0, sizeof(p->name));
+    unlock(&ptable.lk);
 }
 
 
@@ -205,17 +232,17 @@ void init_pid1() {
     tty_printf("[\033[32mboot\033[0m] init1...");
     Process *p;
     if ((p = allocate_process()) == 0) {
-        panic("init_pid, failed to allocate process");
+        panic("init_pid1: failed to allocate process");
     }
 
-    if (!(allocate_kernel_vmem(&p->pgdir)))
+    if ((p->pgdir = allocate_kernel_vmem()) == 0)
         panic("init_pid1");
 
     extern char __INIT1_BEGIN__[];
     extern char __INIT1_END__[];
     int init1_sz = __INIT1_END__ - __INIT1_BEGIN__;
 
-    init_user_vmem(&p->pgdir, __INIT1_BEGIN__, init1_sz);
+    init_user_vmem(p->pgdir, __INIT1_BEGIN__, init1_sz);
     p->size = PAGE_SZ;
     set_pid1_trapframe(p);
     strncpy(p->name, "init", sizeof(p->name));
@@ -238,11 +265,11 @@ bool grow_process(int n) {
     size_t sz = p->size;
 
     if (n > 0) {
-        if ((sz = allocate_user_vmem(&p->pgdir, sz, sz + n)) == 0) {
+        if ((sz = allocate_user_vmem(p->pgdir, sz, sz + n)) == 0) {
             return false;
         }
     } else {
-        if ((sz = allocate_user_vmem(&p->pgdir, sz, sz + n)) == 0)
+        if ((sz = allocate_user_vmem(p->pgdir, sz, sz + n)) == 0)
             return false;
     }
 
@@ -279,13 +306,49 @@ void scheduler() {
 }
 
 
-/*! Fork a process */
+/*! Fork a process
+ *  @return  return 0 on child process, pid of the child process on parent. -1
+ *           if failed.
+ * */
 int fork() {
-    
+    Process *child;
+    Process *thisp = this_proc();
+
+    if ((child = allocate_process()) == 0) {
+        return -1;
+    }
+
+    if ((child->pgdir = copy_user_vmem(thisp->pgdir, thisp->size)) == 0) {
+        deallocate_process(child);
+        return -1;
+    }
+
+    child->size = thisp->size;
+    child->parent = thisp;
+    *child->trapframe = *thisp->trapframe;
+    child->trapframe->eax = 0;
+    strncpy(child->name, thisp->name, sizeof(thisp->name));
+
+    lock(&ptable.lk);
+    child->state = PROC_READY;
+    unlock(&ptable.lk);
+
+    return child->pid;
 }
 
 
+/*! Exit the current process. On exit the control is immediately
+ *  transferred to scheduler through `sched()`. The exited process remains
+ *  in `PROC_ZOMBIE` state until its parent calls wait, which clean up
+ *  the zombie process.
+ * */
 void exit() {
+
+}
+
+
+/*! Wait for child process to exit. Return -1 if the process has no child */
+int wait() {
 
 }
 
@@ -294,13 +357,13 @@ void sched() {
     Process *p = this_proc();
 
     if(this_cpu()->ncli != 1)
-        panic("sched locks");
+        panic("sched: locks");
 
     if(p->state == PROC_RUNNING)
-        panic("sched running");
+        panic("sched: running");
 
     if(readeflags() & FL_IF)
-        panic("sched interruptible");
+        panic("sched: interruptible");
 
     int int_on = this_cpu()->int_on;
     swtch(&p->context, this_cpu()->scheduler);
@@ -321,7 +384,6 @@ void sleep(void *chan, SpinLock *lk) {
 
     if (lk == 0)
         panic("sleep: lk");
-
 
     if (lk != &ptable.lk) {
         lock(&ptable.lk); // ptable lock to protect proc state
