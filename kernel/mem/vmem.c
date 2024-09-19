@@ -309,6 +309,53 @@ int allocate_user_vmem(PDE *page_dir, uint32_t oldsz, uint32_t newsz) {
     return newsz;
 }
 
+
+/*! Copy the page table of another process.
+ *  @page_dir   the page directory of the other process.
+ *  @sz         number of pages copy from the other process.
+ *  @return     the copied page directory. 0 if failed.
+ * */
+PDE *copy_user_vmem(PDE *page_dir, unsigned int sz) {
+    PDE *new_pgdir;
+    char *mem;
+
+
+    if ((new_pgdir = setup_kernel_vmem()) == 0)
+        return 0;
+
+    PTE *pte;
+    for (int i = 0; i < PAGE_SZ; ++i) {
+        if ((pte = get_pte(page_dir, (void*)i)) == 0)
+            panic("copy_user_vmem: trying to copy non existing pte");
+
+        if (!(*pte & PTE_P))
+            panic("copy_user_vmem: page not present");
+
+        physical_addr pa = PTE_ADDR(pte);
+        unsigned int flags = PTE_FLAGS(pte);
+
+        if ((mem = palloc()) == 0) {
+            free_vmem(new_pgdir);
+            return 0;
+        }
+
+        memmove(mem, (char *)P2V_C(pa), PAGE_SZ);
+
+        VMap mmap =
+            { .virt = (char *)i,
+              .pstart = V2P_C(mem),
+              .pend = V2P_C(mem + PAGE_SZ),
+              .perm = PTE_W | PTE_U
+            };
+        if (!map_pages(new_pgdir, &mmap)) {
+            free_vmem(new_pgdir);
+            return 0;
+        }
+    }
+    return new_pgdir;
+}
+
+
 /* !Shrink process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size.
  * */

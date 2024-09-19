@@ -279,6 +279,17 @@ void scheduler() {
 }
 
 
+/*! Fork a process */
+int fork() {
+    
+}
+
+
+void exit() {
+
+}
+
+
 void sched() {
     Process *p = this_proc();
 
