@@ -8,6 +8,7 @@
 #include "mem.h"
 #include "mmu.h"
 #include "ncli.h"
+#include "pdefs.h"
 #include "string.h"
 #include "tty.h"
 #include "mem/vmem.h"
@@ -236,29 +237,37 @@ void init_user_vmem(PDE *page_dir, char *init, unsigned int sz) {
 }
 
 
-/*! Switch TSS and page table to process `p`. */
+/* Write TSS segment for user space task switching */
+static void write_tss(Process *p) {
+    push_cli();
+    uint16_t flag  = SEG_S(0)       | SEG_P(1)  | SEG_AVL(0) |
+                     SEG_L(0)       | SEG_DB(1) | SEG_G(0)   |
+                     SEG_DPL(DPL_K) | SEG_TSS_32_AVL;
+    uint32_t base  = (uint32_t)&this_cpu()->ts;
+    uint32_t limit = sizeof(this_cpu()->ts) - 1;
+    uint8_t  rpl   = 0; // request privilege level
+    memset((void*)base, 0, limit);
+    this_cpu()->gdt[SEG_TSS] = create_descriptor(base, limit, flag);
+    this_cpu()->ts.ss0 = SEG_KDATA << 3;
+    this_cpu()->ts.esp0 = (uintptr_t)p->kstack + KSTACK_SZ;
+    ltr(SEG_TSS << 3 | rpl);
+    pop_cli();
+}
+
+
+/*! Switch TSS and page table to process `p`.
+ *  We setup a new TSS entry for the gdt. When interrupt occurs,
+ * */
 void switch_user_vmem(Process *p) {
     if (!p)
         panic("switch_user_vmem: no process");
     if (!p->kstack)
         panic("switch_user_vmem: no kernel stack");
-
     if (!p->page_table)
         panic("switch_user_vmem: no page table");
 
     push_cli();
-    // setup TSS
-    uint16_t flag = SEG_S(0)       | SEG_P(1)  | SEG_AVL(0) |
-                    SEG_L(0)       | SEG_DB(1) | SEG_G(1)   |
-                    SEG_DPL(DPL_K) | SEG_TSS_32_AVL;
-    this_cpu()->gdt[SEG_TSS] =
-        create_descriptor((uint32_t)&this_cpu()->ts,
-                          sizeof(this_cpu()->ts) - 1,
-                          flag);
-    this_cpu()->ts.ss0 = SEG_KDATA << 3;
-    this_cpu()->ts.esp0 = (uintptr_t)p->kstack + KSTACK_SZ;
-    this_cpu()->ts.iobp = sizeof(TaskState);
-    ltr(SEG_TSS << 3);
+    write_tss(p); // setup TSS
     set_cr3(V2P_C(this_proc()->page_table));
     pop_cli();
 }

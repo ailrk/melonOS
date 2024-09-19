@@ -185,8 +185,8 @@ static Process *allocate_process() {
 
 
 /*! Setup the trapframe for the first process to create an illusion
- * that a trap occured. So if we call trapret, it will pop all registers
- * in the trap frame hence switch the control.
+ *  that a trap occured. So if we call trapret, it will pop all registers
+ *  in the trap frame hence switch the control.
  * */
 static void set_pid1_trapframe(Process *p) {
     memset(p->trapframe, 0, sizeof(*p->trapframe));
