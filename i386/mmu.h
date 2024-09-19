@@ -151,6 +151,23 @@ typedef uint32_t PTE;
 #define SEG_TSS_32_AVL     0x09
 #define SEG_TSS_32_BUSY    0x0b
 
+
+/* idt flags
+ * 8 bytes flag that describes the idt
+ * | 7 | 6-5 | 4 |  3-0      |
+ * | p | dpl | 0 | gate type |
+ */
+
+#define GATE_DPL(x)       (((x) & 0x03) << 0x05) // Set privilege level (0 - 3)
+#define GATE_P(x)         ((x) << 0x07) // Present
+
+/* Gate types */
+#define TASK_GATE         0x5
+#define INT_GATE          0xe
+#define TRAP_GATE         0xf
+
+
+
 /*! Task state segment */
 typedef struct TaskState {
 	uint32_t link; // previous tss for hardware task switching
