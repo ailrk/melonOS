@@ -1,6 +1,7 @@
 #include "trap.h"
 #include "debug.h"
 #include "err.h"
+#include "mmu.h"
 #include "traps.h"
 #include "tty.h"
 #include "idt.h"
@@ -42,9 +43,15 @@ static void dump_trapframe(const TrapFrame *tf) {
 
 void trap_init() {
     for (int i = 0; i < 256; ++i) {
-        regist_idt_handler(i, vectors[i], InterruptGate);
+        regist_idt_handler(
+                i,
+                vectors[i],
+                GATE_P(1) | GATE_DPL(DPL_K) | INT_GATE);
     }
-    regist_idt_handler(I_SYSCALL, vectors[I_SYSCALL], TrapGate);
+    regist_idt_handler(
+            I_SYSCALL,
+            vectors[I_SYSCALL],
+            GATE_P(1) | GATE_DPL(DPL_U) | TRAP_GATE);
 }
 
 /*! When a system call is invoked, the system call number is
@@ -129,6 +136,8 @@ void handle_I_IRQ_SPURIOUS(const TrapFrame *tf) {
 void trap(TrapFrame *tf) {
     switch (tf->trapno) {
         case I_SYSCALL:
+            handle_syscall(tf);
+            break;
         case MAP_IRQ(I_IRQ_TIMER):
             handle_I_IRQ_TIMER();
             break;

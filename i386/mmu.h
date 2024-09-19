@@ -106,13 +106,25 @@ typedef uint32_t PTE;
 
 // Each define here is for a specific flag in the descriptor.
 // Refer to the intel documentation for a description of what each one does.
+//
+//  31                23                15        11      7               0
+//  +-----------------+-+-+-+-+---------+-+-----+-+-----+-+-----------------+
+//  |                 | |D| |A|         | |     | |     | |                 |
+//  |   BASE 31..24   |G|B|L|V| LIMIT   |P| DPL |S| TYPE|A|  BASE 23..16    | 4
+//  |                 | | | |L| 19..16  | |     | |     | |                 |
+//  |-----------------+-+-+-+-+---------+-+-----+-+-----+-+-----------------|
+//  |                                   |                                   |
+//  |        SEGMENT BASE 15..0         |       SEGMENT LIMIT 15..0         | 0
+//  |                                   |                                   |
+//  +-----------------+-----------------+-----------------+-----------------+
+//                           0
 #define SEG_S(x)         ((x) << 0x04) // Descriptor type (0 for system, 1 for code/data)
+#define SEG_DPL(x)       (((x) & 0x03) << 0x05) // Set privilege level (0 - 3)
 #define SEG_P(x)         ((x) << 0x07) // Present
 #define SEG_AVL(x)       ((x) << 0x0c) // Available for system use
 #define SEG_L(x)         ((x) << 0x0d) // Long mode
 #define SEG_DB(x)        ((x) << 0x0e) // Size (0 for 16-bit, 1 for 32)
 #define SEG_G(x)         ((x) << 0x0f) // Granularity (0 for 1B - 1MB, 1 for 4KB - 4GB)
-#define SEG_DPL(x)       (((x) &  0x03) << 0x05) // Set privilege level (0 - 3)
  
 #define DPL_K              0x00
 #define DPL_U              0x03
@@ -141,43 +153,32 @@ typedef uint32_t PTE;
 
 /*! Task state segment */
 typedef struct TaskState {
-    uint16_t link;
-    uint16_t _padding0;
-    uint32_t esp0;
-    uint16_t ss0;
-    uint16_t _padding1;
-    uint32_t esp1;
-    uint16_t ss1;
-    uint16_t _padding2;
-    uint32_t esp2;
-    uint16_t ss2;
-    uint16_t _padding3;
-    uint32_t cr3;
-    uint32_t eip;
-    uint32_t eflags;
-    uint32_t eax;
-    uint32_t ecx;
-    uint32_t edx;
-    uint32_t ebx;
-    uint32_t esp;
-    uint32_t ebp;
-    uint32_t esi;
-    uint32_t edi;
-    uint16_t es;
-    uint16_t _padding4;
-    uint16_t cs;
-    uint16_t _padding5;
-    uint16_t ss;
-    uint16_t _padding6;
-    uint16_t ds;
-    uint16_t _padding7;
-    uint16_t fs;
-    uint16_t _padding8;
-    uint16_t gs;
-    uint16_t _padding9;
-    uint16_t ldtr;
-    uint16_t _padding10;
-    uint16_t t;
-    uint16_t iobp;
-    uint32_t ssp;
-} TaskState;
+	uint32_t link; // previous tss for hardware task switching
+	uint32_t esp0; // ring 0 esp
+	uint32_t ss0;  // ring 0 ss
+    // from these point is unused.
+	uint32_t esp1;
+	uint32_t ss1;
+	uint32_t esp2;
+	uint32_t ss2;
+	uint32_t cr3;
+	uint32_t eip;
+	uint32_t eflags;
+	uint32_t eax;
+	uint32_t ecx;
+	uint32_t edx;
+	uint32_t ebx;
+	uint32_t esp;
+	uint32_t ebp;
+	uint32_t esi;
+	uint32_t edi;
+	uint32_t es;
+	uint32_t cs;
+	uint32_t ss;
+	uint32_t ds;
+	uint32_t fs;
+	uint32_t gs;
+	uint32_t ldt;
+	uint16_t trap;
+	uint16_t iobp;
+} __attribute__((packed)) TaskState;
