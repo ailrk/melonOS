@@ -147,7 +147,7 @@ typedef uint32_t PTE;
 #define SEG_CODE_EXRDC     0x0e // Execute/Read, conforming
 #define SEG_CODE_EXRDCA    0x0f // Execute/Read, conforming, accessed
 
-// System segment type
+/* System segment type */
 #define SEG_TSS_32_AVL     0x09
 #define SEG_TSS_32_BUSY    0x0b
 

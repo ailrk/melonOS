@@ -10,9 +10,11 @@ CWARNS = -Wall -Wextra -fno-exceptions
 B_DIR = boot
 K_DIR = kernel
 L_DIR = lib
+M_DIR = melon
 
 BOOT = melonos-bootloader
 KERNEL = melonos-kernel
+LIBUTILS = libutils.a
 LIBMELON = libmelon.a
 OUT = melonos.img
 
@@ -36,7 +38,7 @@ clean:
 	find $(K_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(B_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(L_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	rm -rf *.o *.pp.* $(OUT) $(BOOT) $(KERNEL) $(LIBMELON)
+	rm -rf *.o *.pp.* $(OUT) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 
 echo:
 	@echo 'CC		  $(CC)'

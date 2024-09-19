@@ -14,10 +14,10 @@ K_ASMFILES = $(filter-out $(K_VECTORS) $(shell find $(K_DIR) -name "*.pp.s"),$(s
 K_LINKER = $(K_DIR)/kernel.ld
 K_OBJS = $(K_CFILES:.c=.o) $(K_ASMFILES:.s=.o)
 K_INCS = $(shell find kernel -type d -exec echo -I"{}" \;) -I$(L_DIR) -Ii386
-K_LIBS = -L. -lmelon
+K_LIBS = -L. -lutils
 
 
-$(KERNEL): $(K_OBJS) $(LIBMELON)
+$(KERNEL): $(K_OBJS) $(LIBUTILS)
 	@echo "kernel> Building Melon OS Kernel..."
 	@echo "$(K_ASMFILES)"
 	@echo "$(K_ASMFILES)"
