@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 
+
 /* Configurartion for the file system parameters */
 
 #define BSIZE   512            // block size
@@ -12,8 +13,7 @@
 #define NLOG    (NOPBLKS * 5)  // max log size
 #define DIR_SZ  512            // max number of directories
 #define MAXBLKS 1000           // max file system size
-                               //
-                               //
+
                                
 /* File types */
 typedef enum FileType {

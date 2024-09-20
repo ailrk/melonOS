@@ -1,8 +1,62 @@
+#include <stdint.h>
+#include <string.h>
 #include "err.h"
+#include "pdefs.h"
 #include "sys/syscall.h"
 #include "sys/syscalls.h"
 #include "process/proc.h"
 
+
+/* Copying system call arguments from user stack to
+ *
+ * After `int I_SYSCALL`, the user stack on system call looks
+ * like this:
+ *      +--------+
+ *      |  arg3  |
+ *      +--------+
+ *      |  arg2  |
+ *      +--------+
+ *      |  arg1  |
+ *      +--------+
+ *      |  eip   |
+ *      +--------+ <- esp
+ * During the system call, the `esp` is saved in the trapframe
+ * and TSS switch the stack. We need to manually fetch arguments
+ * from the user stack on each sytemcall.
+ * */
+
+/*! Get arguments from user stack.
+ *  p: pointer
+ *  d: int
+ *  c: char
+ * */
+void *getarg(size_t n, char *args) {
+    if (n >= strlen(args))
+        panic("getarg");
+
+    Process *thisp = this_proc();
+    void *esp = (void*)thisp->trapframe->esp;
+    int offset = 4;
+
+    while(n) {
+        switch (*args++) {
+            case 'p':
+                offset += sizeof(uintptr_t);
+                break;
+            case 'd':
+                offset += sizeof(int);
+                break;
+            case 'c':
+                offset += sizeof(char);
+                break;
+            default:
+                panic("getarg: unknown arg type");
+        }
+        n--;
+    }
+
+    return esp + offset;
+}
 
 
 int sys_fork() {
@@ -15,7 +69,6 @@ int sys_exit() {
 }
 
 int sys_exec() {
-
 }
 
 int sys_sbrk() {
@@ -25,7 +78,6 @@ int sys_sbrk() {
 int sys_getpid() {
     return this_proc()->pid;
 }
-
 
 static int (* system_calls[])() = {
     [SYS_FORK]   = sys_fork,

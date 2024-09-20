@@ -357,7 +357,6 @@ void exit() {
     wakeup_unlocked(thisp->parent);
 
     // pass its children to init
-
     for (Process *p = ptable.t; p < &ptable.t[NPROC]; ++p) {
         if (p->parent == thisp) {
             p->parent = proc_init1;
