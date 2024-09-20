@@ -3,7 +3,6 @@
 #include "fs/fdefs.h"
 
 
-void buffer_init();
-BNode *buffer_get(unsigned int dev, unsigned int blockno);
-BNode *buffer_read(unsigned int dev, unsigned int blockno);
-BNode *buffer_release(BNode *b);
+void bcache_init();
+BNode *bcache_read(unsigned dev, unsigned blockno);
+BNode *bcache_release(BNode *b);

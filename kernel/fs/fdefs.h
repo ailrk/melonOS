@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdbool.h>
+#include "fdefs.fwd.h"
+#include "sleeplock.h"
 
 
 /* Configurartion for the file system parameters */
@@ -15,13 +17,6 @@
 #define MAXBLKS 1000           // max file system size
 
                                
-/* File types */
-typedef enum FileType {
-    FD_NONE,
-    FD_PIPE,
-    FD_INODE,
-} FileType;
-
 
 /* In disk representation of an inode */
 typedef struct DInode {
@@ -29,18 +24,18 @@ typedef struct DInode {
     unsigned short  major; // major device number
     unsigned short  minor; // minor device number
     unsigned short  nlink; // number of links in fs
-    unsigned int    size;
-    unsigned int    addr;  // block address.
+    unsigned        size;
+    unsigned        addr;  // block address.
 } DInode;
 
 
 /* Memory representation of an inode */
 typedef struct Inode {
-    unsigned int dev;    // device number
-    unsigned int ino;    // inode number
-    int          nref;   // ref count
-    bool         read;   // has been read from disk?
-    DInode       dinode; // copy of disk inode.
+    unsigned dev;    // device number
+    unsigned ino;    // inode number
+    int      nref;   // ref count
+    bool     read;   // has been read from disk?
+    DInode   dinode; // copy of disk inode.
 } Inode;
 
 
@@ -48,23 +43,14 @@ typedef struct Inode {
 typedef struct BNode {
     struct BNode *next;
     struct BNode *prev;
+    SleepLock     sleeplk;
     bool          dirty; // needs to be writtent to disk.
     bool          valid; // has been read from disk.
-    unsigned int  nref;
-    unsigned int  dev;
-    unsigned int  blockno;
+    unsigned      nref;
+    unsigned      dev;
+    unsigned      blockno;
     char          cache[BSIZE];
 } BNode;
-
-
-typedef struct File {
-    FileType     type;
-    int          nref;       // reference count
-    bool         readable;
-    bool         writable;
-    unsigned int offset;
-    Inode *ip;
-} File;
 
 
 /* Devices need to implement this interface */
@@ -91,5 +77,5 @@ typedef struct Stat {
     int          dev;   // disk device
     int          ino;   // inode number
     short        nlink; // number of links
-    unsigned int size;  // file size
+    unsigned     size;  // file size
 } Stat;
