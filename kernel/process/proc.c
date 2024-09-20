@@ -29,6 +29,7 @@ typedef struct PTable {
 PTable ptable;
 
 int nextpid = 1;
+Process *proc_init1;
 
 void ptable_init() {
     ptable.lk = new_lock("ptable.lk");
@@ -186,7 +187,10 @@ static Process *allocate_process() {
 }
 
 
-/*! Deallocate a process */
+/*! Deallocate a process.
+ *  This is the all purpose deallocation, it tries to free all resources hold by
+ *  the process.
+ * */
 static void deallocate_process(Process *p) {
     lock(&ptable.lk);
     p->size = 0;
@@ -227,7 +231,7 @@ static void set_pid1_trapframe(Process *p) {
 }
 
 
-/*! Initialize the first user space process */
+/*! Initialize the first user space process. */
 void init_pid1() {
     tty_printf("[\033[32mboot\033[0m] init1...");
     Process *p;
@@ -249,6 +253,7 @@ void init_pid1() {
 
     lock(&ptable.lk);
     p->state = PROC_READY;
+    proc_init1 = p;
     unlock(&ptable.lk);
 
     tty_printf("\033[32mok\033[0m\n");
@@ -343,16 +348,68 @@ int fork() {
  *  the zombie process.
  * */
 void exit() {
+    Process *thisp = this_proc();
+    if (thisp == proc_init1)
+        panic("init 1 is exiting");
 
+    lock(&ptable.lk);
+
+    wakeup_unlocked(thisp->parent);
+
+    // pass its children to init
+
+    for (Process *p = ptable.t; p < &ptable.t[NPROC]; ++p) {
+        if (p->parent == thisp) {
+            p->parent = proc_init1;
+            if (p->state == PROC_ZOMBIE) {
+                wakeup_unlocked(proc_init1);
+            }
+        }
+    }
+
+    thisp->state = PROC_ZOMBIE;
+    sched();
+    panic("zombie exit");
 }
 
 
 /*! Wait for child process to exit. Return -1 if the process has no child */
 int wait() {
+    Process *thisp = this_proc();
+    bool haskids;
+    lock(&ptable.lk);
 
+    for (;;) {
+        haskids = false;
+        for (Process *p = ptable.t; p < &ptable.t[NPROC]; ++p) {
+            if (p->parent == thisp) {
+                haskids = true;
+                if (p->state == PROC_ZOMBIE) {
+                    int pid = p->pid;
+                    deallocate_process(p);
+                    unlock(&ptable.lk);
+                    return pid;
+                }
+            }
+        }
+
+        if (!haskids) {
+            unlock(&ptable.lk);
+            return -1;
+        }
+
+        if (thisp->killed) {
+            unlock(&ptable.lk);
+            return -1;
+        }
+
+        // wait for child to exist
+        sleep(thisp, &ptable.lk);
+    }
 }
 
 
+/* Give away the control back to the scheduler */
 void sched() {
     Process *p = this_proc();
 
