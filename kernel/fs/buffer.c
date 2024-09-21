@@ -1,5 +1,5 @@
 #include "err.h"
-#include "sleeplock.h"
+#include "mutex.h"
 #include "spinlock.h"
 #include "fs/buffer.h"
 #include "fs/fdefs.h"
@@ -40,7 +40,7 @@ void bcache_init() {
     for (BNode *b = head + 1; b <= tail; ++b) {
         b->prev = bcache.head;
         b->prev->next = b;
-        b->sleeplk = new_sleeplock("bnode.lk");
+        b->mutex = new_mutex("bnode.mtx");
         bcache.head = b;
     }
 }
@@ -90,13 +90,13 @@ static BNode *bcache_get(unsigned dev, unsigned blockno) {
 
     if ((b = bcachce_lookup(dev, blockno))) {
         unlock(&bcache.lk);
-        lock_sleep(&b->sleeplk);
+        lock_mutex(&b->mutex);
         return b;
     }
 
     if ((b = bcache_allocate(dev, blockno))) {
         unlock(&bcache.lk);
-        lock_sleep(&b->sleeplk);
+        lock_mutex(&b->mutex);
         return b;
     }
 

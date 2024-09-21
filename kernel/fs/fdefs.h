@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 #include "fdefs.fwd.h"
-#include "sleeplock.h"
+#include "mutex.h"
 
 
 /* Configurartion for the file system parameters */
@@ -16,7 +16,7 @@
 #define DIR_SZ  512            // max number of directories
 #define MAXBLKS 1000           // max file system size
 
-                               
+
 
 /* In disk representation of an inode */
 typedef struct DInode {
@@ -43,7 +43,7 @@ typedef struct Inode {
 typedef struct BNode {
     struct BNode *next;
     struct BNode *prev;
-    SleepLock     sleeplk;
+    Mutex         mutex;
     bool          dirty; // needs to be writtent to disk.
     bool          valid; // has been read from disk.
     unsigned      nref;
