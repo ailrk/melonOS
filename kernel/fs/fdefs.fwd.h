@@ -3,8 +3,8 @@
 #include <stdbool.h>
 /* Break cyclic dependency */
 
-struct Inode; 
-typedef struct Inode Inode; 
+struct Inode;
+typedef struct Inode Inode;
 
 
 /* File types */
@@ -16,11 +16,11 @@ typedef enum FileType {
 
 
 typedef struct File {
-    FileType     type;
-    int          nref;       // reference count
-    bool         readable;
-    bool         writable;
-    unsigned int offset;
-    Inode *      ip;
+    FileType  type;
+    int       nref;       // reference count
+    bool      readable;
+    bool      writable;
+    unsigned  offset;
+    Inode *   ip;
 } File;
 

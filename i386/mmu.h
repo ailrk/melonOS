@@ -14,7 +14,7 @@
 
 
 /* PD and PT entries (PTE):
- * 
+ *
  * | 31              |12  9|7 8| 6 | 5 | 4  | 3  | 2 | 1 | 0 |
  * | PPN             | AVL |   | D | A | CD | WT | U | W | P |
  *
@@ -22,10 +22,10 @@
  *  D:   dirty
  *  A:   accessed
  *  CD:  cache disabled
- *  WT:  1=write through, 0=write back  
+ *  WT:  1=write through, 0=write back
  *  U:   user
  *  U:   writable
- *  P:   present, accessing when it's 0 cause page fault.                     
+ *  P:   present, accessing when it's 0 cause page fault.
  */
 
 typedef uintptr_t PDE;
@@ -83,12 +83,12 @@ static inline uintptr_t pte_addr(PTE pte) {
 }
 
 /* Flag in page table or page directory entry */
-static inline unsigned int pte_flags(PTE pte) {
-    return (unsigned int)(pte) &  0xFFF;
+static inline unsigned pte_flags(PTE pte) {
+    return (unsigned)(pte) &  0xFFF;
 }
 
 /*! Construct virtual address from indexes and offsets */
-static inline unsigned int page_addr(PDE pde, PTE pte, int offset) {
+static inline unsigned page_addr(PDE pde, PTE pte, int offset) {
     return (uint32_t)((pde) << PD_IDX_SHIFT | (pte) << PT_IDX_SHIFT | (offset));
 }
 
@@ -97,7 +97,7 @@ static inline unsigned int page_addr(PDE pde, PTE pte, int offset) {
 /* Segments */
 
 #define SEG_NULL  0     // null descriptor
-#define SEG_KCODE 1     // kernel code 
+#define SEG_KCODE 1     // kernel code
 #define SEG_KDATA 2     // kernel data & stack
 #define SEG_UCODE 3     // user code
 #define SEG_UDATA 4     // user data & stack
@@ -126,7 +126,7 @@ static inline unsigned int page_addr(PDE pde, PTE pte, int offset) {
 #define SEG_L(x)         ((x) << 0x0d) // Long mode
 #define SEG_DB(x)        ((x) << 0x0e) // Size (0 for 16-bit, 1 for 32)
 #define SEG_G(x)         ((x) << 0x0f) // Granularity (0 for 1B - 1MB, 1 for 4KB - 4GB)
- 
+
 #define DPL_K              0x00
 #define DPL_U              0x03
 

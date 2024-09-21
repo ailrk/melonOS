@@ -19,7 +19,7 @@ static const char *write_string(const char *data, FmtIO io) {
     const char *end = data + strlen(data);
     const char *p;
     while (data < end) {
-        p =  io.putchar(data); 
+        p =  io.putchar(data);
         data = p;
     }
     return data;
@@ -35,7 +35,7 @@ typedef struct PrintCtl {
 
 
 /*! Print integral number  */
-static int print_uint(unsigned int n, PrintCtl ctl) {
+static int print_uint(unsigned n, PrintCtl ctl) {
     static const char digits[] = "0123456789abcdef";
 
     char buf[32];
@@ -67,7 +67,7 @@ static int print_int(int n, PrintCtl ctl) {
         return print_uint(n, ctl);
     }
 
-    return print_uint((unsigned int)n, ctl);
+    return print_uint((unsigned)n, ctl);
 }
 
 
@@ -107,15 +107,15 @@ typedef struct Closure {
  *      p: pointer.
  *      s: null terminated string.
  *      c: character.
- *      
+ *
  *  @fmt formatted string
  *  @... data to be formatted
- * */ 
+ * */
 void format(FmtIO io, const char *fmt, va_list args) {
-    bool pad0 = false; 
+    bool pad0 = false;
     bool leftpad = false;
     bool hex = false;
-    unsigned int width = 0;
+    unsigned width = 0;
 
     while(*fmt) {
         if (*fmt == '%') {
@@ -134,7 +134,7 @@ void format(FmtIO io, const char *fmt, va_list args) {
                     } else if (*fmt == '-') {
                         leftpad = true;
                         fmt++;
-                    } else 
+                    } else
                         go = false;
                 }
             }

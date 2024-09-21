@@ -88,7 +88,7 @@ static int (* system_calls[])() = {
 };
 
 
-static bool is_valid_syscall(unsigned int n) {
+static bool is_valid_syscall(unsigned n) {
     return (n > 0 && n < sizeof(system_calls) / sizeof(system_calls[0]) && system_calls[n]);
 }
 
@@ -102,7 +102,7 @@ void syscall() {
         panic("syscall: invalid process");
     }
 
-    unsigned int n = p->trapframe->eax;
+    unsigned n = p->trapframe->eax;
     if (!is_valid_syscall(n)) {
         p->trapframe->eax = -1;
         perror("known system call");

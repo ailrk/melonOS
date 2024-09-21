@@ -325,7 +325,7 @@ PD * copy_user_vmem(PD *page_dir, size_t sz) {
             panic("copy_user_vmem: page not present");
 
         physical_addr pa = pte_addr(*pte);
-        unsigned int flags = pte_flags(*pte);
+        unsigned flags = pte_flags(*pte);
 
         if ((mem = palloc()) == 0) {
             free_vmem(new_pgdir);

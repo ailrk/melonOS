@@ -13,7 +13,7 @@
 #define DEBUG 1
 
 extern void * vectors[];
-unsigned int ticks;
+unsigned ticks;
 
 
 #if DEBUG

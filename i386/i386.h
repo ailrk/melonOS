@@ -1,19 +1,19 @@
-#pragma once 
+#pragma once
 // x86 specific instructions
 
 #include <stdint.h>
 
-typedef uint32_t physical_addr; 
+typedef uint32_t physical_addr;
 
 /* CR0 register */
-#define CR0_PE  0x00000001 // 1 = Protected Mode 
+#define CR0_PE  0x00000001 // 1 = Protected Mode
 #define CR0_WP  0x00010000 // write protect
 #define CR0_PG  0x80000000 // 1 = Paging, enable paging and use the CR3 register.
 
 /* CR4 register */
 #define CR4_PSE 0x00000010  // page size extension
 #define CR4_PGE	0x00000080  // page Global Enabled
-                            
+
 /* eflags */
 #define FL_IF   0x00000200  // Interrupt Enable
 
@@ -34,9 +34,9 @@ static inline unsigned char inb(unsigned short port) {
 static inline uint32_t xchg(volatile uint32_t *addr, uint32_t newval) {
   uint32_t result;
   // The + in "+m" denotes a read-modify-write operand.
-  asm volatile("lock; xchgl %0, %1" 
-                : "+m" (*addr), "=a" (result) 
-                : "1" (newval) 
+  asm volatile("lock; xchgl %0, %1"
+                : "+m" (*addr), "=a" (result)
+                : "1" (newval)
                 : "cc");
   return result;
 }
@@ -144,8 +144,8 @@ static inline uint64_t rdtsc() {
 }
 
 
-static inline unsigned int readeflags(void) {
-  unsigned int eflags;
+static inline unsigned readeflags(void) {
+  unsigned eflags;
   __asm__ volatile("pushfl; popl %0" : "=r" (eflags));
   return eflags;
 }
@@ -160,6 +160,6 @@ static inline void popfd() { __asm__ volatile ("popfd"); }
 
 /* write a value to edi for debugging purpose */
 static inline void debug_efi(uint32_t val) {
-    __asm__ volatile("movl %0,  %%edi\n" : "=r"(val): ); 
+    __asm__ volatile("movl %0,  %%edi\n" : "=r"(val): );
 }
 

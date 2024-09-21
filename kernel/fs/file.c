@@ -1,5 +1,3 @@
-#include "inode.h"
-#include "proc.h"
 #include "err.h"
 #include "spinlock.h"
 #include "fs/file.h"

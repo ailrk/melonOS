@@ -44,7 +44,7 @@ void debug_printf(const char *fmt, ...) {
  * */
 void debug_memdump(const char *cmd, ...) {
     char *addr;
-    unsigned int n = 1;
+    unsigned n = 1;
     char f = 'x';
     char sz = 1;
 

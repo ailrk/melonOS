@@ -4,8 +4,8 @@
 
 
 typedef struct SpinLock {
-    unsigned int locked;
-    CPU *cpu;
+    unsigned    locked;
+    CPU *       cpu;
     const char *name;
 } SpinLock;
 

@@ -42,7 +42,7 @@ typedef struct Process {
     uint32_t        size;         // size of process memory
     PD *            pgdir;        // per process page table
     char *          kstack;       // bottom of kernel stack for this process
-    unsigned int    pid;          // process id
+    unsigned        pid;          // process id
     struct Process *parent;       // parent pid
     ProcState       state;        // process state
     TrapFrame *     trapframe;    // process trapframe
