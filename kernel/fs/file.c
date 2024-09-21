@@ -3,6 +3,8 @@
 #include "fs/file.h"
 
 
+/* file descriptor */
+
 Dev devs[NDEV];
 
 typedef struct FTable {
@@ -13,7 +15,7 @@ typedef struct FTable {
 FTable ftable;
 
 
-void file_init() {
+void ftable_init() {
     ftable.lk = new_lock("ftable.lk");
 }
 

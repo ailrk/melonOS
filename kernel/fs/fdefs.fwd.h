@@ -1,10 +1,16 @@
 #pragma once
 
 #include <stdbool.h>
+
+
 /* Break cyclic dependency */
 
 struct Inode;
 typedef struct Inode Inode;
+
+
+typedef unsigned InodeNum;
+typedef unsigned DevNum;
 
 
 /* File types */
@@ -21,6 +27,6 @@ typedef struct File {
     bool      readable;
     bool      writable;
     unsigned  offset;
-    Inode *   ip;
+    Inode *   ino;
 } File;
 

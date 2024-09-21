@@ -166,11 +166,8 @@ PD *allocate_kernel_vmem() {
     if ((page_dir = (PD*)palloc()) == 0)
         return 0;
 
-    debug_printf("kernel_page_dir0> %#x\n", kernel_page_dir);
-
     memset(page_dir, 0, PAGE_SZ);
 
-    debug_printf("kernel_page_dir1> %#x\n", kernel_page_dir);
     int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
 
     for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
@@ -198,7 +195,6 @@ void kernel_vmem_init() {
     if ((kernel_page_dir = allocate_kernel_vmem()) == 0) {
         panic("kernel_vmem_init");
     }
-    debug_printf("kernel_page_dir2> %#x\n", kernel_page_dir);
     switch_kernel_vmem();
     tty_printf("\033[32mok\033[0m\n");
 }

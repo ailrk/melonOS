@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include "mmu.h"
 #include "i386.h"
-#include "process/proc.h"
+#include "process/pdefs.h"
 
 
 /* Virtual addrses mapping */

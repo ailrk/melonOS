@@ -10,6 +10,8 @@
 #include "drivers/pic.h"
 #include "drivers/uart.h"
 #include "process/proc.h"
+#include "fs/buffer.h"
+#include "fs/file.h"
 
 #define DBG 0
 
@@ -32,8 +34,10 @@ void kmain(void) {
     uart_init();
     ps2_init();
     ptable_init();
-    idt_init();
+    bcache_init();
+    ftable_init();
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
+    idt_init();
     init_pid1();
     scheduler();
 }

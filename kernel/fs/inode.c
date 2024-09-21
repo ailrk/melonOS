@@ -1,10 +1,17 @@
 #include "fs/fdefs.h"
 
 
+typedef struct ITable {
+    SpinLock lk;
+    Inode inodes[NINODE];
+} ITable;
+
+
+
 /*! Get stat from inode */
-void stat_ino(const Inode *i, Stat *stat) {
-    stat->dev = i->dev;
-    stat->ino = i->ino;
-    stat->nlink = i->dinode.nlink;
-    stat->size = i->dinode.size;
+void inode_stat(const Inode *ino, Stat *stat) {
+    stat->dev = ino->dev;
+    stat->inum = ino->inum;
+    stat->nlink = ino->dinode.nlink;
+    stat->size = ino->dinode.size;
 }

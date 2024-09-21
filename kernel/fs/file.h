@@ -13,7 +13,7 @@ extern Dev devs[NDEV];
 #define DEV_PS2MOUSE 3
 
 
-void file_init();
+void ftable_init();
 File *allocate_file();
 File *dup_file(File *);
 void close_file(File *);

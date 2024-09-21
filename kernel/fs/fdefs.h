@@ -10,7 +10,8 @@
 #define BSIZE   512            // block size
 #define NDEV    32             // max number of devices
 #define NFILE   128            // max number of open filese in the system
-#define NOPBLKS 10             // max # of blocks any FS op writes
+#define NINODE  128            // max number of inodes
+#define NOPBLKS 512            // max # of blocks any FS op writes
 #define NBUF    (NOPBLKS * 5)  // max buffer size
 #define NLOG    (NOPBLKS * 5)  // max log size
 #define DIR_SZ  512            // max number of directories
@@ -31,8 +32,8 @@ typedef struct DInode {
 
 /* Memory representation of an inode */
 typedef struct Inode {
-    unsigned dev;    // device number
-    unsigned ino;    // inode number
+    DevNum   dev;    // device number
+    InodeNum inum;   // inode number
     int      nref;   // ref count
     bool     read;   // has been read from disk?
     DInode   dinode; // copy of disk inode.
@@ -47,7 +48,7 @@ typedef struct BNode {
     bool          dirty; // needs to be writtent to disk.
     bool          valid; // has been read from disk.
     unsigned      nref;
-    unsigned      dev;
+    DevNum        dev;
     unsigned      blockno;
     char          cache[BSIZE];
 } BNode;
@@ -62,8 +63,8 @@ typedef struct Dev {
 
 /* Directory entry */
 typedef struct DirEntry {
-  unsigned short inum;
-  char           name[DIR_SZ];
+  InodeNum   inum;
+  char       name[DIR_SZ];
 } DirEntry;
 
 
@@ -74,8 +75,8 @@ typedef struct DirEntry {
 
 typedef struct Stat {
     short        type;  // file type
-    int          dev;   // disk device
-    int          ino;   // inode number
+    DevNum       dev;   // disk device
+    InodeNum     inum;  // inode number
     short        nlink; // number of links
     unsigned     size;  // file size
 } Stat;
