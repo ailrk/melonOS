@@ -1,8 +1,8 @@
+#include <stdbool.h>
+#include <stdint.h>
 #include "kbd.h"
 #include "ps2.h"
 #include "tty.h"
-#include <stdbool.h>
-#include <stdint.h>
 #define DEBUG 1
 
 
@@ -117,7 +117,7 @@ char normalmap[256] = {
   NO,   NO,   NO,   NO,   NO,   NO,   NO,   '7',  // 0x40
   '8',  '9',  '-',  '4',  '5',  '6',  '+',  '1',
   '2',  '3',  '0',  '.',  NO,   NO,   NO,   NO,   // 0x50
-  '\n', '/',       
+  '\n', '/',
 };
 
 char shiftmap[256] = {
@@ -165,7 +165,7 @@ char capslockmap[256] = {
 };
 
 
-uint16_t modifier = 0; 
+uint16_t modifier = 0;
 
 typedef uint16_t Scancode;
 
@@ -180,7 +180,7 @@ typedef struct ScancodeBuffer {
 
 
 ScancodeBuffer sc_buffer = {
-    .head = 0, 
+    .head = 0,
     .tail = 0
 };
 
@@ -209,7 +209,7 @@ static bool is_break_code(Scancode scancode) {
 }
 
 /*! modify keycode j
- *  @scancode  SET 1 scancode recived from the keyboard. 
+ *  @scancode  SET 1 scancode recived from the keyboard.
  *  @return    true if any modifier is updated, false otherwise.
  * */
 static bool update_modifier (Scancode scancode) {

@@ -6,13 +6,10 @@ B_INCS = -I$(L_DIR) -Ii386
 B_LIBS = -L. -lutils
 
 $(BOOT): $(B_OBJS) $(LIBUTILS)
-	@echo "boot> Building Melon OS Boot loader..."
 	$(CC) -T $(B_LINKER) -o $@ $(CFLAGS) $(CWARNS) $(B_OBJS) -lgcc $(B_LIBS)
 
 $(B_CFILES:.c=.o): %.o: %.c
-	@echo "boot> compiling $<..."
 	$(CC) $(B_INCS) $(CFLAGS) $(CWARNS) -c -o $@ $*.c
 
 $(B_ASMFILES:.s=.o): %.o: %.s
-	@echo "boot> compiling $<... "
 	@$(AS) $^ -o $@

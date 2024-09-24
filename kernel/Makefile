@@ -23,16 +23,13 @@ $(KERNEL): $(K_OBJS) $(LIBUTILS)
 	@echo "$(K_ASMFILES)"
 	@echo "$(K_OBJS)"
 	@echo "$(K_INCS)"
-	@echo "kernel> Building Melon OS Kernel..."
 	@$(CPP) $(K_INCS) $(K_LINKER) | tools/pptrim > $(K_LINKER:.ld=.pp.ld)
-	$(CC) -T $(K_LINKER:.ld=.pp.ld) $(CFLAGS) $(CWARNS) $(K_OBJS) -o $@ -lgcc $(K_LIBS)
+	@$(CC) -T $(K_LINKER:.ld=.pp.ld) $(CFLAGS) $(CWARNS) $(K_OBJS) -o $@ -lgcc $(K_LIBS)
 
 $(K_CFILES:.c=.o): %.o: %.c
-	@echo "kernel> compiling $<..."
-	$(CC) $(K_INCS) $(CFLAGS) $(CWARNS) -c -o $@ $*.c
+	@$(CC) $(K_INCS) $(CFLAGS) $(CWARNS) -c -o $@ $*.c
 
 $(K_ASMFILES:.s=.o): %.o: %.s
-	@echo "kernel> compiling $<... "
 	@$(CPP) $(K_INCS) $^ | tools/pptrim > $(^:.s=.pp.s)
 	@$(AS) $(^:.s=.pp.s) -o $@
 
