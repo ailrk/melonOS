@@ -151,26 +151,13 @@ void ide_read(Channel ch, void *dst, size_t secn) {
 }
 
 
-/*! Read synchronously from the ide. This function will block.
- *  @ch   Channel
- *  @dst  Memory read to. The size of `dst` should be bigger
- *        than (SECTSZ * secn).
- *  @secn read n sectors
- * */
-void ide_read_sync(Channel ch, void *dst, unsigned lba, size_t secn) {
-    ide_read_request(ch, lba, secn);
-    ide_wait(ch);
-    ide_read(ch, dst, secn);
-}
-
-
 /* Write to the disk.
  * @ch   Device channel
  * @src  memory chunk write to the disk. Should at least be bigger
  *       than (SECTSZ * secn).
  * @secn n sectors per write
  * */
-void ide_write_sync(Channel ch, void* src, unsigned lba, size_t secn) {
+void ide_write_request(Channel ch, void* src, unsigned lba, size_t secn) {
     ide_wait(ch);
     ATACmd cmd = secn == 1 ? ATA_CMD_WT1 : ATA_CMD_WTN;
     ide_request(ch, cmd, lba, secn);

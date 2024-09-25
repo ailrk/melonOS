@@ -28,8 +28,6 @@ void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn);
 
 void ide_read_request(Channel ch, unsigned lba, size_t secn);
 void ide_read(Channel ch, void *dst, size_t secn);
-
-void ide_read_sync(Channel ch, void *dst, unsigned lba, size_t secn);
-void ide_write_sync(Channel ch, void *src, unsigned lba, size_t secn);
+void ide_write_request(Channel ch, void *src, unsigned lba, size_t secn);
 
 bool ide_check_error(Channel ch);
