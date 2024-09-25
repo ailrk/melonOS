@@ -79,6 +79,7 @@ typedef enum Error {
 } Error;
 
 
+
 static ChannelReg channels[] = {
     [ATA_PRIMARY] = (ChannelReg){
         .base = 0x1f0,
@@ -157,7 +158,7 @@ void ide_wait(Channel ch) {
 }
 
 
-void ide_request(Channel ch, uint32_t lba, size_t secn) {
+void ide_request(Channel ch, unsigned lba, size_t secn) {
     if (secn == 0)
         panic("[IDE] ide_request");
     outb(regb(ch, BR_SECN0), secn);
@@ -175,7 +176,7 @@ void ide_request(Channel ch, uint32_t lba, size_t secn) {
  *  @lba  disk address
  *  @secn number of sectors
  * */
-void ide_read_secn(Channel ch, void *dst, uint32_t lba, unsigned secn) {
+void ide_read_secn(Channel ch, void *dst, unsigned lba, unsigned secn) {
     ide_wait(ch);
     ide_request(ch, lba, secn);
     outb(regb(ch, BR_COMMAND), C_RD(secn));
@@ -188,9 +189,9 @@ void ide_read_secn(Channel ch, void *dst, uint32_t lba, unsigned secn) {
  *
  * The dst buffer size should be greater than (n/SECTSZ)+1.
  * */
-void read_offset(Channel ch, void *dst, uint32_t n, uint32_t offset) {
+void read_offset(Channel ch, void *dst, unsigned n, unsigned offset) {
     char *p = dst;
-    uint32_t lba = offset / SECTSZ;
+    unsigned lba = offset / SECTSZ;
     int remained = (n / SECTSZ) + 1;
 
     char buf[SECTSZ];
@@ -216,7 +217,7 @@ void read_offset(Channel ch, void *dst, uint32_t n, uint32_t offset) {
  * @lba  disk address to write to
  * @secn n sectors per write
  * */
-void ide_write_secn(Channel ch, char* src,  uint32_t lba, unsigned secn) {
+void ide_write_secn(Channel ch, char* src,  unsigned lba, unsigned secn) {
     ide_wait(ch);
     ide_request(ch, lba, secn);
     outb(regb(ch, BR_COMMAND), C_WT(secn));

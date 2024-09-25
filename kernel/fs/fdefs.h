@@ -44,6 +44,7 @@ typedef struct Inode {
 typedef struct BNode {
     struct BNode *next;
     struct BNode *prev;
+    struct BNode *qnext; // next node on disk queue.
     Mutex         mutex;
     bool          dirty; // needs to be writtent to disk.
     bool          valid; // has been read from disk.

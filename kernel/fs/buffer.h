@@ -4,5 +4,6 @@
 
 
 void bcache_init();
-BNode *bcache_read(unsigned dev, unsigned blockno);
+BNode *bcache_read(DevNum dev, unsigned blockno);
+void bcache_write(BNode *);
 BNode *bcache_release(BNode *b);
