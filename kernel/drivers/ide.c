@@ -102,6 +102,11 @@ static inline uint8_t read_status_register(Channel ch) {
 }
 
 
+void ide_set_interrupt(Channel ch, bool set) {
+    outb(regc(ch, CR_ALTSTATUS), set ? 0x1 : 0x0);
+}
+
+
 /* !Wait for disk ready.
  *  inb(0x1f7) getting the status register from IDE PIO mode.
  *  0xc0 => 0x11000000 check DRY (bit 6) and BSY (bit 7) of the

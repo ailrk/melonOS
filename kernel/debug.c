@@ -101,19 +101,19 @@ void debug_memdump(const char *cmd, ...) {
         char *p = &addr[i * sz];
         switch (sz) {
             case 1:
-                debug_printf("%#x", *(uint8_t*)(p));
+                debug_printf("%#02x", *(uint8_t*)(p));
                 sp(20);
                 continue;
             case 2:
-                debug_printf("%#x", *(uint16_t*)p);
+                debug_printf("%#04x", *(uint16_t*)p);
                 sp(15);
                 continue;
             case 4:
-                debug_printf("%#x", *(uint32_t*)p);
+                debug_printf("%#08x", *(uint32_t*)p);
                 sp(10);
                 continue;
             case 8:
-                debug_printf("%#x", *(uint64_t*)p);
+                debug_printf("%#016x", *(uint64_t*)p);
                 sp(4);
                 continue;
             default:
