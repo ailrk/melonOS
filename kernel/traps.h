@@ -39,8 +39,7 @@
 
 #define I_IRQ_TIMER      0x00    // IRQ timer
 #define I_IRQ_KBD        0x01    // IRQ keyboard
-                                 // 0x02 is used internally by pic chips
-
+#define I_IRQ_CASCADE    0x02    // Enable slave pic
 #define I_IRQ_COM2       0x03    // IRQ com2 serial port
 #define I_IRQ_COM1       0x04    // IRQ com1 serial port
 #define I_IRQ_LPT1       0x05    // IRQ parallel port

@@ -49,15 +49,14 @@ typedef enum BaseReg {
     BR_LBA2       = 0x05, // next 8 bytes lba address
     BR_HDDEVSEL   = 0x06, // last 8 bytes lba address
     BR_COMMAND    = 0x07,
-    BR_STATUS     = 0x07,
+    BR_STATUS     = 0x07, // this blocks interrupt.
 } BaseReg;
 
 
 /* ATA register offset from ctl. */
 typedef enum CtrlReg {
-    CR_ALTSTATUS = 0x00, // alternative status register
-    CR_DEVCTL    = 0x01, // device ctrl register
-    CR_DRIVEADDR = 0x02, // drive address register
+    CR_ALTSTATUS = 0x00, // R same as status, doesn't block irq
+    CR_DEVCTL    = 0x00, // W device ctrl register
 } CtrlReg;
 
 
@@ -96,17 +95,6 @@ inline static unsigned short regc(Channel ch, unsigned short r) {
 }
 
 
-/*! IDE is the standard interface for hard drives */
-static inline uint8_t read_status_register(Channel ch) {
-    return inb(regb(ch, BR_STATUS));
-}
-
-
-void ide_set_interrupt(Channel ch, bool set) {
-    outb(regc(ch, CR_ALTSTATUS), set ? 0x1 : 0x0);
-}
-
-
 /* !Wait for disk ready.
  *  inb(0x1f7) getting the status register from IDE PIO mode.
  *  0xc0 => 0x11000000 check DRY (bit 6) and BSY (bit 7) of the
@@ -117,13 +105,13 @@ void ide_set_interrupt(Channel ch, bool set) {
 void ide_wait(Channel ch) {
     uint8_t mask = ATA_S_RDY | ATA_S_BSY;
     uint8_t ready = ATA_S_RDY;
-    while((read_status_register(ch) & mask) != ready);
+    while((regc(ch, CR_ALTSTATUS) & mask) != ready);
 }
 
 
 /*! Check ide errors */
 bool ide_check_error(Channel ch) {
-    return read_status_register(ch) & (ATA_S_ERR | ATA_S_DFE);
+    return regc(ch, CR_ALTSTATUS) & (ATA_S_ERR | ATA_S_DFE);
 }
 
 
@@ -134,6 +122,7 @@ void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn) {
     if (secn == 0)
         panic("[IDE] ide_request");
     ide_wait(ch);
+    outb(regc(ch, CR_DEVCTL)  , 0); // enable interrupts.
     outb(regb(ch, BR_SECN0)   , secn);
     outb(regb(ch, BR_LBA0)    , lba);
     outb(regb(ch, BR_LBA1)    , lba >> 8);

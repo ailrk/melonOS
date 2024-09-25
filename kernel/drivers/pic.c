@@ -143,6 +143,7 @@ void pic_init() {
     pic_remap(0x20, 0x20 + 8);
     pic_irq_unmask(I_IRQ_TIMER);
     pic_irq_unmask(I_IRQ_KBD);
+    pic_irq_unmask(I_IRQ_CASCADE);
     pic_irq_unmask(I_IRQ_MOUSE);
     pic_irq_unmask(I_IRQ_IDE);
     pic_irq_unmask(I_IRQ_ERR);

@@ -23,7 +23,6 @@ typedef enum ATACmd {
 
 
 
-void ide_enable_interrupt(Channel ch);
 void ide_wait(Channel ch);
 void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn);
 
