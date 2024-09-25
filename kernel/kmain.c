@@ -37,6 +37,8 @@ void kmain(void) {
     bcache_init();
     ftable_init();
     palloc_init(P2V_C(PTESZ * NPDES * NPTES), P2V_C(PHYSTOP));
+    bcache_init();
+    disk_init();
     idt_init();
     init_pid1();
     scheduler();

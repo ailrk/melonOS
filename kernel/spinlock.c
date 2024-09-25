@@ -8,10 +8,11 @@
 SpinLock new_lock(const char *name) {
     return (SpinLock) {
         .locked = 0,
-        .cpu = 0, 
+        .cpu = 0,
         .name = name
     };
 }
+
 
 bool holding(SpinLock *lk) {
     bool b;
@@ -20,6 +21,7 @@ bool holding(SpinLock *lk) {
     pop_cli();
     return b;
 }
+
 
 void lock(SpinLock *lk) {
     push_cli();
@@ -33,6 +35,7 @@ void lock(SpinLock *lk) {
     lk->cpu = this_cpu();
     pop_cli();
 }
+
 
 void unlock(SpinLock *lk) {
     push_cli();

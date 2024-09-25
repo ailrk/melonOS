@@ -11,12 +11,15 @@
  * VGA buffer starts at 0xb8000 and provides 256k display memory.
  */
 
+
 Terminal term;
+
 
 static inline uint8_t
 vga_entry_color(VgaColor fg, VgaColor bg) {
     return fg | bg << 4;
 }
+
 
 static inline uint16_t
 vga_entry(unsigned char uc, uint8_t color) {
@@ -27,13 +30,16 @@ vga_entry(unsigned char uc, uint8_t color) {
 static size_t const VGA_WIDTH = 80;
 static size_t const VGA_HEIGHT = 25;
 
+
 /* after set up paging the IO space is mapped from KERN_BASE. */
 #define TERMBUF_START (KERN_BASE + 0xb8000)
 #define TERMBUF_SIZE (VGA_HEIGHT * VGA_WIDTH)
 
+
 static void set_bg_color(VgaColor bg) {
     term.color |= bg << 4;
 }
+
 
 static void set_fg_color(VgaColor fg) {
     term.color = vga_entry_color(fg, term.color >> 4);
@@ -48,10 +54,12 @@ void tty_clear() {
             term.buffer[y * VGA_WIDTH + x] = vga_entry(' ', term.color);
 }
 
+
 void newline() {
     term.column = 0;
     term.row += 1;
 }
+
 
 void tty_init() {
     term.row = 0;
@@ -62,17 +70,21 @@ void tty_init() {
     tty_printf("melonos 0.0.1\n");
 }
 
+
 void tty_set_cursor(uint16_t x, uint16_t y) {
     term.cursor = term.buffer + (y * VGA_WIDTH + x );
 }
 
+
 void tty_set_color(uint8_t color) { term.color = color; }
+
 
 void put_entry_at(char c) {
     size_t x = term.column;
     size_t y = term.row;
     term.buffer[y * VGA_WIDTH + x] = vga_entry(c, term.color);
 }
+
 
 void tty_putchar(char c) {
     if (term.row > VGA_HEIGHT) {
@@ -91,6 +103,7 @@ void tty_putchar(char c) {
             term.row = 0;
     }
 }
+
 
 static void ansi_cntl(const ANSIState *ansi) {
     switch(ansi->tag) {
@@ -162,7 +175,6 @@ static void ansi_cntl(const ANSIState *ansi) {
 }
 
 
-
 /*! Write a single char to the screen. If it encounters an escape code, consume
  *  it first then print the next character.
  * */
@@ -181,6 +193,7 @@ const char *tty_writec(const char *data) {
     return data;
 }
 
+
 /*! The implementation should always use `tty_write_string` because it handles
  *  ansi escapes properly.
  *
@@ -198,6 +211,7 @@ void tty_printf(const char *fmt, ...) {
     format(io, fmt, args);
     va_end (args);
 }
+
 
 void tty_repl() {
     while(1) {

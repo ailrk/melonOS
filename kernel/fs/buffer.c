@@ -2,6 +2,7 @@
 #include "mutex.h"
 #include "spinlock.h"
 #include "fs/buffer.h"
+#include "fs/disk.h"
 #include "fs/fdefs.h"
 
 
@@ -84,21 +85,64 @@ static BNode *bcache_allocate(unsigned dev, unsigned blockno) {
 
 
 /*! Look for buffer cache on dev. Allocate if the cache is not found. */
-static BNode *bcache_get(unsigned dev, unsigned blockno) {
+static BNode *bcache_acquire(unsigned dev, unsigned blockno) {
     BNode *b;
-    lock(&bcache.lk);
 
     if ((b = bcachce_lookup(dev, blockno))) {
-        unlock(&bcache.lk);
-        lock_mutex(&b->mutex);
         return b;
     }
 
     if ((b = bcache_allocate(dev, blockno))) {
-        unlock(&bcache.lk);
-        lock_mutex(&b->mutex);
         return b;
     }
 
     return 0;
+}
+
+
+/*! Read a `BNode` from blockno.
+ *  `bcache_read` allocates a node from `bcache` and locks the
+ *  mutex on that node. The node needs to be released manually
+ *  to be available in the bcache again.
+  * */
+BNode *bcache_read(DevNum dev, unsigned blockno) {
+    BNode *b;
+    if ((b = bcache_acquire(dev, blockno)) == 0) {
+        panic("bcache read");
+    }
+
+    if (b->valid) {
+        disk_sync(b);
+    }
+    return b;
+}
+
+
+/*! Write `BNode` to blockno */
+void bcache_write(BNode *b) {
+    b->dirty = true;
+    disk_sync(b);
+}
+
+
+/*! Clean up the node and move it to the head of the cache.
+ * */
+static void bcache_free(BNode *b) {
+    b->nref--;
+    if (b->nref == 0)
+        b->next->prev = b->prev;
+        b->prev->next = b->next;
+
+        b->next = bcache.head;
+        b->prev = bcache.head->prev;
+
+        bcache.head->prev = b;
+
+        bcache.head = b;
+}
+
+/*! Release the BNode.
+ * */
+BNode *bcache_release(BNode *b) {
+    bcache_free(b);
 }

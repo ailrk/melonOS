@@ -1,35 +1,57 @@
-#include "fs/disk.h"
 #include "spinlock.h"
 #include "mutex.h"
+#include "drivers/ide.h"
+#include "fs/disk.h"
+#include "fs/buffer.h"
 
-#define SECSPBLOCK (BSIZE / SECTSZ)
+#define SECN (BSIZE/SECTSZ)
+#define BLK2SEC(blk) (SECN * blk)
+
 
 typedef struct DiskQueue {
     SpinLock lk;
     BNode *head;
-} DQueue;
+} DiskQueue;
 
 DiskQueue disk_queue;
 
 
 /*! Initialize disk */
 void disk_init() {
-    disk_queue.lk = new_lock();
+    disk_queue.lk = new_lock("disk_queue.lk");
 }
 
 
-static void write_block(void *src, unsigned lba) {
-    ide_write_secn(ATA_PRIMARY, src, lba, SECSPBLOCK);
+/*! Write a block */
+static void write_block(BNode *b) {
+    ide_write_sync(ATA_PRIMARY, b->cache, BLK2SEC(b->blockno), SECN);
 }
 
 
-static void read_block(void *dst, unsigned lba) {
-    ide_read_secn(ATA_PRIMARY, dst, lba, SECSPBLOCK);
+/*! Send a read block request. The block can be read asynchronously */
+static void read_block_request(BNode *b) {
+    ide_read_request(ATA_PRIMARY, BLK2SEC(b->blockno), SECN);
 }
 
 
+/*! Read block */
+static void read_block(BNode *b) {
+    ide_read(ATA_PRIMARY, b->cache, SECN);
+}
+
+
+/*! Check if the cache synchronized synchronized with the disk */
 static bool synced(BNode *b) {
     return b->valid && !b->dirty;
+}
+
+
+/*! Zero a disk block */
+void disk_zero(DevNum dev, unsigned blockno) {
+    BNode *b = bcache_read(dev, blockno);
+    memset(b->cache, 0, BSIZE);
+    bcache_write(b);
+    bcache_release(b);
 }
 
 
@@ -38,32 +60,37 @@ static bool synced(BNode *b) {
  *  If `!b->dirty` && `b->valid`, read from disk and set `b->valid`.
  * */
 void disk_sync(BNode *b) {
-    if (!holding_mutex(b->mutex))
-        panic("not holding mutex");
-    if (synced())
+    if (synced(b))
         return;
 
-    lock(&disk_queue->lk);
     b->qnext = 0;
 
     BNode **p;
-    for(p = &disk_queue.head; p; p = &(*p)->qnext);
+    for(p = &disk_queue.head; *p; p = &(*p)->qnext);
     *p =  b;
 
     if (b->dirty) {
-        write_block(b->cache, b->blockno * SECSPBLOCK);
-    } else (b->valid) {
-        read_block(b->cache, b->blockno * SECSPBLOCK);
+        write_block(b);
+    } else if (b->valid) {
+        read_block_request(b);
     }
-
-    while (!synced(b))
-        sleep(b, &disk_queue->lk);
-
-    unlock(&disk_queue->lk);
 }
 
 
 /*! Handle disk interrupt */
 void disk_handler() {
+    BNode *b;
 
+    if((b = disk_queue.head) == 0) {
+        return;
+    }
+
+    disk_queue.head = b->next;
+
+    if (!b->dirty) {
+        read_block(b);
+    }
+
+    b->valid = true;
+    b->dirty = false;
 }

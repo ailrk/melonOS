@@ -54,6 +54,7 @@ void trap_init() {
             GATE_P(1) | GATE_DPL(DPL_U) | TRAP_GATE);
 }
 
+
 /*! When a system call is invoked, the system call number is
  *  moved to eax and `int I_SYSCALL` is performed, which
  *  causes the trap to dispatch to this handler.
@@ -97,40 +98,48 @@ void handle_I_IRQ_COM2() {
     pic_eoi();
 }
 
+
 void handle_I_IRQ_COM1() {
     debug_printf("irq com1\n");
     pic_eoi();
 }
+
 
 void handle_I_IRQ_LPT1() {
     debug_printf("irq lpt1\n");
     pic_eoi();
 }
 
+
 void handle_I_IRQ_CMOS() {
     debug_printf("irq cmos timer\n");
     pic_eoi();
 }
+
 
 void handle_I_IRQ_MOUSE() {
     debug_printf("irq mouse\n");
     pic_eoi();
 }
 
+
 void handle_I_IRQ_IDE() {
     debug_printf("irq ide\n");
     pic_eoi();
 }
+
 
 void handle_I_IRQ_ERR() {
     debug_printf("irq err\n");
     pic_eoi();
 }
 
+
 void handle_I_IRQ_SPURIOUS(const TrapFrame *tf) {
     debug_printf("[cpu]: spurious interrupt at %#x:%#x\n", tf->cs, tf->eip);
     pic_eoi();
 }
+
 
 /* trap handler */
 void trap(TrapFrame *tf) {

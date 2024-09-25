@@ -16,12 +16,6 @@
 #define ATA_S_RDY  (1 << 6) // ready. 0=drive is spun down or error.
 #define ATA_S_BSY  (1 << 7) // busy. 1=drive is preparing to send/receive
 
-/* ATA Commands */
-#define C_RD1SEC  0x20   // read sector
-#define C_WT1SEC  0x30   // write sector
-#define C_RDNSECS 0xc4   // read n sectors
-#define C_WTNSECS 0xc5   // write n sectors
-
 #define C_RD(n) ((n == 1) ? C_RD1SEC : C_RDNSECS)
 #define C_WT(n) ((n == 1) ? C_WT1SEC : C_WTNSECS)
 
@@ -68,7 +62,7 @@ typedef enum CtrlReg {
 
 
 typedef enum Error {
-    ER_BBK     = 0x80,  // Bad block
+    ER_BBK     = 0x80, // Bad block
     ER_UNC     = 0x40, // Uncorrectable data
     ER_MC      = 0x20, // Media changed
     ER_IDNF    = 0x10, // ID mark not found
@@ -102,42 +96,6 @@ inline static unsigned short regc(Channel ch, unsigned short r) {
 }
 
 
-static void print_error(Channel ch, Error e) {
-    perror("[IDE] ");
-    tty_printf("channel %#x, ", ch);
-    switch (e) {
-        case ER_BBK:
-            perror("Bad block \n");
-            return;
-        case ER_UNC:
-            perror("Uncorrectable data\n");
-            return;
-        case ER_MC:
-            perror("Media change\n");
-            return;
-        case ER_IDNF:
-            perror("ID mark not found\n");
-            return;
-        case ER_MCR:
-            perror("Media change request\n");
-            return;
-        case ER_ABRT:
-            perror("Command aorted\n");
-            return;
-        case ER_TK0NF:
-            perror("Track 0 not found\n");
-            return;
-        case ER_AMNF:
-            perror("No address mark\n");
-            return;
-        default:
-            perror("Unknown error ");
-            tty_printf("%d\n", e);
-            return;
-    }
-}
-
-
 /*! IDE is the standard interface for hard drives */
 static inline uint8_t read_status_register(Channel ch) {
     return inb(regb(ch, BR_STATUS));
@@ -158,69 +116,70 @@ void ide_wait(Channel ch) {
 }
 
 
-void ide_request(Channel ch, unsigned lba, size_t secn) {
+/*! Check ide errors */
+bool ide_check_error(Channel ch) {
+    return read_status_register(ch) & (ATA_S_ERR | ATA_S_DFE);
+}
+
+
+/*! Send ide command request. This returns immediately so we can
+ *  perform disk IO asynchronously.
+ * */
+void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn) {
     if (secn == 0)
         panic("[IDE] ide_request");
-    outb(regb(ch, BR_SECN0), secn);
-    outb(regb(ch, BR_LBA0), lba);
-    outb(regb(ch, BR_LBA1), lba >> 8);
-    outb(regb(ch, BR_LBA2), lba >> 16);
+    ide_wait(ch);
+    outb(regb(ch, BR_SECN0)   , secn);
+    outb(regb(ch, BR_LBA0)    , lba);
+    outb(regb(ch, BR_LBA1)    , lba >> 8);
+    outb(regb(ch, BR_LBA2)    , lba >> 16);
     outb(regb(ch, BR_HDDEVSEL), (lba >> 24) | 0xe0);
+    outb(regb(ch, BR_COMMAND) , cmd);
 }
 
-
-/*! Read n sectors at offset into dst LBA style.
- *  The size of `dst` should be bigger than (SECTSZ * secn).
- *  @ch   Device channel
- *  @dst  Address read into
- *  @lba  disk address
- *  @secn number of sectors
+/*! Send read request to ide without waiting.
+ *  @ch   Channel
+ *  @dst  Memory read to. The size of `dst` should be bigger
+ *        than (SECTSZ * secn).
+ *  @secn read n sectors
  * */
-void ide_read_secn(Channel ch, void *dst, unsigned lba, unsigned secn) {
+void ide_read_request(Channel ch, unsigned lba, size_t secn) {
     ide_wait(ch);
-    ide_request(ch, lba, secn);
-    outb(regb(ch, BR_COMMAND), C_RD(secn));
-    ide_wait(ch);
-    insl(regb(ch, BR_DATA), dst, SECTSZ/4);     // /4 because insl read words
+    ATACmd cmd = secn == 1 ? ATA_CMD_RD1 : ATA_CMD_RDN;
+    ide_request(ch, cmd, lba, secn);
 }
 
 
-/* read n bytes from lba 0 + offset bytes on the disk to dst
- *
- * The dst buffer size should be greater than (n/SECTSZ)+1.
+/*! Read immediately without sending a read request.
  * */
-void read_offset(Channel ch, void *dst, unsigned n, unsigned offset) {
-    char *p = dst;
-    unsigned lba = offset / SECTSZ;
-    int remained = (n / SECTSZ) + 1;
-
-    char buf[SECTSZ];
-    int trash = offset % SECTSZ;
-    int rest = SECTSZ - trash;
-    ide_read_secn(ch, buf, lba++, 1);
-    memcpy(p, &buf[trash], rest);
-    remained--;
-    p += rest;
-
-    while (remained) {
-        ide_read_secn(ch, buf, lba++, 1);
-        p += SECTSZ;
-        remained--;
-    }
+void ide_read(Channel ch, void *dst, size_t secn) {
+    insl(regb(ch, BR_DATA), dst, (SECTSZ * secn)/4);
 }
 
 
-/* Write n sectors. Size of `src` should be bigger than (secn * SECTSZ)
+/*! Read synchronously from the ide. This function will block.
+ *  @ch   Channel
+ *  @dst  Memory read to. The size of `dst` should be bigger
+ *        than (SECTSZ * secn).
+ *  @secn read n sectors
+ * */
+void ide_read_sync(Channel ch, void *dst, unsigned lba, size_t secn) {
+    ide_read_request(ch, lba, secn);
+    ide_wait(ch);
+    ide_read(ch, dst, secn);
+}
+
+
+/* Write to the disk.
  * @ch   Device channel
- * @src  memory chunk write to the disk
- * @n    size of memory to write
- * @lba  disk address to write to
+ * @src  memory chunk write to the disk. Should at least be bigger
+ *       than (SECTSZ * secn).
  * @secn n sectors per write
  * */
-void ide_write_secn(Channel ch, char* src,  unsigned lba, unsigned secn) {
+void ide_write_sync(Channel ch, void* src, unsigned lba, size_t secn) {
     ide_wait(ch);
-    ide_request(ch, lba, secn);
-    outb(regb(ch, BR_COMMAND), C_WT(secn));
-    outsl(regb(ch, BR_DATA), src, secn/4);    // /4 because outsl write words.
-    ide_wait(ch);
+    ATACmd cmd = secn == 1 ? ATA_CMD_WT1 : ATA_CMD_WTN;
+    ide_request(ch, cmd, lba, secn);
+    // /4 because insl read words
+    outsl(regb(ch, BR_DATA), src, (SECTSZ * secn)/4);
 }

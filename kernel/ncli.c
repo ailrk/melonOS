@@ -4,12 +4,12 @@
 #include "i386.h"
 #include "process/proc.h"
 
-
 /* n push_cli requires n pop_cli to undo.
  *
  * If interrupt was disabled before pushing then
  * when ncli is 0 don't do anything.
  * */
+
 
 void push_cli() {
     uint32_t eflags = readeflags();
@@ -19,6 +19,7 @@ void push_cli() {
     }
     this_cpu()->ncli += 1;
 }
+
 
 void pop_cli() {
     if (--this_cpu()->ncli <  0) {
