@@ -105,13 +105,13 @@ inline static unsigned short regc(Channel ch, unsigned short r) {
 void ide_wait(Channel ch) {
     uint8_t mask = ATA_S_RDY | ATA_S_BSY;
     uint8_t ready = ATA_S_RDY;
-    while((regc(ch, CR_ALTSTATUS) & mask) != ready);
+    while((inb(regc(ch, CR_ALTSTATUS)) & mask) != ready);
 }
 
 
 /*! Check ide errors */
 bool ide_check_error(Channel ch) {
-    return regc(ch, CR_ALTSTATUS) & (ATA_S_ERR | ATA_S_DFE);
+    return inb(regc(ch, CR_ALTSTATUS)) & (ATA_S_ERR | ATA_S_DFE);
 }
 
 

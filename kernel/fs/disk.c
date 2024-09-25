@@ -1,5 +1,6 @@
 #include "spinlock.h"
 #include "mutex.h"
+#include "string.h"
 #include "drivers/ide.h"
 #include "fs/disk.h"
 #include "fs/buffer.h"

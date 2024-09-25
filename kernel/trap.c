@@ -8,6 +8,7 @@
 #include "sys/syscall.h"
 #include "drivers/kbd.h"
 #include "drivers/pic.h"
+#include "fs/disk.h"
 #include "process/proc.h"
 
 #define DEBUG 1
@@ -125,6 +126,7 @@ void handle_I_IRQ_MOUSE() {
 
 void handle_I_IRQ_IDE() {
     debug_printf("irq ide\n");
+    disk_handler();
     pic_eoi();
 }
 

@@ -111,7 +111,7 @@ BNode *bcache_read(DevNum dev, unsigned blockno) {
         panic("bcache read");
     }
 
-    if (b->valid) {
+    if (!b->valid) {
         disk_sync(b);
     }
     return b;
@@ -129,7 +129,7 @@ void bcache_write(BNode *b) {
  * */
 static void bcache_free(BNode *b) {
     b->nref--;
-    if (b->nref == 0)
+    if (b->nref == 0) {
         b->next->prev = b->prev;
         b->prev->next = b->next;
 
@@ -139,6 +139,7 @@ static void bcache_free(BNode *b) {
         bcache.head->prev = b;
 
         bcache.head = b;
+    }
 }
 
 /*! Release the BNode.

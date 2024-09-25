@@ -11,6 +11,7 @@
 #include "drivers/uart.h"
 #include "process/proc.h"
 #include "fs/buffer.h"
+#include "fs/disk.h"
 #include "fs/file.h"
 
 #define DBG 0
