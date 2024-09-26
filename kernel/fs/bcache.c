@@ -1,7 +1,7 @@
 #include "err.h"
 #include "mutex.h"
 #include "spinlock.h"
-#include "fs/buffer.h"
+#include "fs/bcache.h"
 #include "fs/disk.h"
 #include "fs/fdefs.h"
 
@@ -80,6 +80,7 @@ static BNode *bcache_allocate(unsigned dev, unsigned blockno) {
             b->valid   = 0;
             return b;
         }
+        b = b->next;
     } while (b != bcache.head);
 
     return 0;

@@ -5,7 +5,7 @@
 #include "string.h"
 #include "drivers/ide.h"
 #include "fs/disk.h"
-#include "fs/buffer.h"
+#include "fs/bcache.h"
 
 #define SECN (BSIZE/SECTSZ)
 #define BLK2SEC(blk) (SECN * blk)
@@ -39,6 +39,7 @@ static void dq_enqueue(BNode *b) {
     b->qnext = 0;
     if (!disk_queue.head) {
         disk_queue.head = b;
+        return;
     }
     BNode *last = dq_last();
     last->qnext = b;

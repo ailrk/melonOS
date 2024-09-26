@@ -10,7 +10,7 @@
 #include "drivers/pic.h"
 #include "drivers/uart.h"
 #include "process/proc.h"
-#include "fs/buffer.h"
+#include "fs/bcache.h"
 #include "fs/disk.h"
 #include "fs/file.h"
 
