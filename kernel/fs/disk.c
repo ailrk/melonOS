@@ -88,15 +88,6 @@ static bool synced(BNode *b) {
 }
 
 
-/*! Zero a disk block */
-void disk_zero(DevNum dev, unsigned blockno) {
-    BNode *b = bcache_read(dev, blockno);
-    memset(b->cache, 0, BSIZE);
-    bcache_write(b);
-    bcache_release(b);
-}
-
-
 /*! Syncronize the buffer cache with disk
  *  If `b->dirty`, write buffer to disk then clean `b->dirty`, set `b->valid`.
  *  If `!b->dirty` && `b->valid`, read from disk and set `b->valid`.

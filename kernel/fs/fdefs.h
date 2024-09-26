@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include <stddef.h>
 #include "fdefs.fwd.h"
 #include "mutex.h"
 
@@ -16,6 +17,15 @@
 #define DIR_SZ  512            // max number of directories
 #define MAXBLKS 1000           // max file system size
 
+
+typedef struct SuperBlock {
+    unsigned nblocks;    // total size of fs in blocks
+    unsigned ninodes;    // number of inodes
+    unsigned ndata;      // number of data blocks
+    unsigned inodestart; // blockno of the first ino
+    unsigned bmapstart;  // blockno of the first free bit map
+    unsigned datastart;  // blockno of the first ino
+} SuperBlock;
 
 
 /* In disk representation of an inode */
