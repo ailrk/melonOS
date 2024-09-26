@@ -16,14 +16,10 @@
 
 #define DBG 0
 
-/* defined in `kernel.ld.
- *`first address after kernel loaded from ELF file
- */
-extern char end[];
+extern char end[];  // defined in `kernel.ld.
+extern char data[]; // elf segment
+char *      kstack;       // kernel stack. userd in entry.s
 
-char *kstack;             // kernel stack. userd in entry.s
-
-extern char data[];
 
 void kmain(void) {
     tty_init();

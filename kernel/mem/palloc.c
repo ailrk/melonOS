@@ -9,12 +9,13 @@ extern char end[];
 
 
 /* memory list */
-
 typedef struct KernelMem {
     Run *freelist;
 } KernelMem;
 
+
 KernelMem kernel_mem;
+
 
 /*! free the memory from vstart to vend
  * */
@@ -33,6 +34,7 @@ void palloc_init(void *vstart, void *vend) {
     tty_printf("\033[32mok\033[0m\n");
 }
 
+
 /*! alloc a PAGE_SZ memory aligned at page boundry
  *  return 0 if the memory cannot be allocated.
  * */
@@ -47,9 +49,6 @@ char *palloc() {
     return (char*)r;
 }
 
-Run *r() {
-    return kernel_mem.freelist;
-}
 
 /*! free a page of physical memory pointed by v
  *  v needs to align at page boundry otherwise we panic.

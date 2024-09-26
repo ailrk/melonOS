@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stdbool.h>
 #include "fdefs.fwd.h"
 #include "mutex.h"
@@ -42,16 +41,16 @@ typedef struct Inode {
 
 /* Buffer cache node */
 typedef struct BNode {
-    struct BNode *next;
-    struct BNode *prev;
-    struct BNode *qnext; // next node on disk queue.
-    Mutex         mutex;
-    bool          dirty; // needs to be writtent to disk.
-    bool          valid; // has been read from disk.
-    unsigned      nref;
-    DevNum        dev;
-    unsigned      blockno;
-    char          cache[BSIZE];
+    struct BNode * next;
+    struct BNode * prev;
+    struct BNode * qnext; // next node on disk queue.
+    Mutex          mutex;
+    bool           dirty; // needs to be writtent to disk.
+    bool           valid; // has been read from disk.
+    unsigned       nref;
+    DevNum         dev;
+    unsigned       blockno;
+    char           cache[BSIZE];
 } BNode;
 
 
@@ -64,8 +63,8 @@ typedef struct Dev {
 
 /* Directory entry */
 typedef struct DirEntry {
-  InodeNum   inum;
-  char       name[DIR_SZ];
+  InodeNum  inum;
+  char      name[DIR_SZ];
 } DirEntry;
 
 
@@ -75,9 +74,9 @@ typedef struct DirEntry {
 #define T_DEV  3 // device
 
 typedef struct Stat {
-    short        type;  // file type
-    DevNum       dev;   // disk device
-    InodeNum     inum;  // inode number
-    short        nlink; // number of links
-    unsigned     size;  // file size
+    short    type;  // file type
+    DevNum   dev;   // disk device
+    InodeNum inum;  // inode number
+    short    nlink; // number of links
+    unsigned size;  // file size
 } Stat;

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stdint.h>
 
 
@@ -8,11 +7,7 @@ typedef struct GDTRecord {
     uint32_t  base;       // pointer to GDT array
 } __attribute__((packed)) GDTRecord;
 
+typedef uint64_t GDTEntry;
 
-typedef uint64_t GDTEntry; 
-
-
-void gdt_init();
-
-
+void     gdt_init();
 GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag);

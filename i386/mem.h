@@ -1,24 +1,24 @@
 #pragma once
 
-/* Define some virtual address markers 
+/* Define some virtual address markers
  *
- * NOTE: this file is used with CPP on the linker file as well, 
+ * NOTE: this file is used with CPP on the linker file as well,
  * so please don't add comment after #define because CPP will
  * not remove C comment by itself.
  *
  * The virtual memory mapping looks like this:
  *
  *            <Virtual memory>                     <Physical memory>
- *  
+ *
  *       4GB +------------------+             4GB +------------------+
  *           |  device memory   |                 |  device memory   |
  *           |                  |                 |                  |
- * DEV_SPACE +------------------+-----> DEV_SPACE +------------------+        
+ * DEV_SPACE +------------------+-----> DEV_SPACE +------------------+
  *           |                  |                 |                  |
  *           |                  |                 |                  |
  *           |                  |                 |                  |
  *           |                  |                 |                  |
- *           +------------------+----->   PHYSTOP +------------------+        
+ *           +------------------+----->   PHYSTOP +------------------+
  *           |  free memory     |                 |                  |
  *           |                  |                 |                  |
  *       end +------------------+                 |                  |
@@ -46,19 +46,19 @@
  * */
 
 /* Start of extended memory */
-#define EXTMEM     0x100000
+#define EXTMEM    0x100000
 
 /* Max virtual address */
-#define MAXVA      0xFFFFFFFF
+#define MAXVA     0xFFFFFFFF
 
 /* Top physical memory */
-#define PHYSTOP    0x8000000
+#define PHYSTOP   0x8000000
 
 /* peripheral device at high address */
-#define DEV_SPACE  0xFE000000
+#define DEV_SPACE 0xFE000000
 
 /* separation between ker and user space */
-#define KERN_BASE  0x80000000
+#define KERN_BASE 0x80000000
 
 /* kernel links here */
 #define KERN_LINK (KERN_BASE+EXTMEM)

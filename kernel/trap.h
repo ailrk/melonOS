@@ -1,5 +1,4 @@
 #pragma once
-
 #include "traps.h"
 #include <stdint.h>
 

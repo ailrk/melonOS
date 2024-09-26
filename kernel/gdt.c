@@ -4,15 +4,14 @@
 #include "mmu.h"
 #include "process/proc.h"
 
-
 /* GDT is not useful if you have paging, but x86 protected mode requires you
  * to setup one. We simply map all segments to the entire memory.
  * */
 
+
 extern char data[]; // defined by kernel.ld
+extern CPU  cpu;
 
-
-extern CPU cpu;
 
 GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag) {
     GDTEntry descriptor;
@@ -35,8 +34,8 @@ GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag) {
 
 void gdt_init() {
     tty_printf("[\033[32mboot\033[0m] gdt...");
-    cpu.gdtr.limit = sizeof(GDTEntry) * NSEGS - 1;
-    cpu.gdtr.base = (uint32_t)&cpu.gdt;
+    cpu.gdtr.limit     = sizeof(GDTEntry) * NSEGS - 1;
+    cpu.gdtr.base      = (uint32_t)&cpu.gdt;
 
     cpu.gdt[SEG_NULL]  = create_descriptor(0, 0, 0);
 
@@ -69,5 +68,5 @@ void gdt_init() {
     }
 
     lgdt((void*)&cpu.gdtr);
-    tty_printf("\033[32mok\033[0m\n");
+    tty_printf("\033[32moki\033[0m\n");
 }

@@ -16,20 +16,20 @@
 
 #define DEBUG 1
 
-extern void trapret();
-extern void swtch(Context **save, Context *load);
-CPU cpu;
-
 
 typedef struct PTable {
     SpinLock lk;
-    Process t[NPROC];
+    Process  t[NPROC];
 } PTable;
 
-PTable ptable;
 
-int nextpid = 1;
+PTable   ptable;
+int      nextpid = 1;
 Process *proc_init1;
+CPU      cpu;
+extern void trapret();
+extern void swtch(Context **save, Context *load);
+
 
 void ptable_init() {
     ptable.lk = new_lock("ptable.lk");
@@ -45,6 +45,7 @@ void dump_context(const Context *c) {
     debug_printf("[CTX|%#x, %#x, %#x, %#x, %#x]",
                  c->edi, c->esi, c->ebx, c->ebp, c->eip);
 }
+
 
 void dump_process(const Process *p) {
     if (p->pid > NPROC)
@@ -92,6 +93,7 @@ CPU *this_cpu() {
     return &cpu;
 }
 
+
 /* Return the current process */
 Process *this_proc() {
     Process *p;
@@ -100,6 +102,7 @@ Process *this_proc() {
     pop_cli();
     return p;
 }
+
 
 /*! Return a forked child process to the user space */
 void forkret() {
@@ -151,16 +154,14 @@ static bool setup_process_stack(Process *p) {
         return false;
     }
 
-    char *sp = p->kstack + KSTACK_SZ;
-
-    sp -= sizeof(TrapFrame);
-    p->trapframe = (TrapFrame*)sp;
-
-    sp -= sizeof(uintptr_t);
+    char *sp        = p->kstack + KSTACK_SZ;
+    sp             -= sizeof(TrapFrame);
+    p->trapframe    = (TrapFrame*)sp;
+    sp             -= sizeof(uintptr_t);
     *(uintptr_t*)sp = (uintptr_t)trapret;
+    sp             -= sizeof(Context);
+    p->context      = (Context*)sp;
 
-    sp -= sizeof(Context);
-    p->context = (Context*)sp;
     memset(p->context, 0, sizeof(Context));
 
     // swtch returns on `forkret`
@@ -180,7 +181,7 @@ static Process *allocate_process() {
         return 0;
     }
     p->state = PROC_CREATED;
-    p->pid = nextpid++;
+    p->pid   = nextpid++;
     unlock(&ptable.lk);
     if (!setup_process_stack(p)) return 0;
     return p;
@@ -202,14 +203,14 @@ static void deallocate_process(Process *p) {
         pfree(p->kstack);
         p->kstack = 0;
     }
-    p->kstack = 0;
-    p->pid = 0;
-    p->parent = 0;
-    p->state = PROC_UNUSED;
+    p->kstack    = 0;
+    p->pid       = 0;
+    p->parent    = 0;
+    p->state     = PROC_UNUSED;
     p->trapframe = 0;
-    p->context = 0;
-    p->chan = 0;
-    p->killed = 0;
+    p->context   = 0;
+    p->chan      = 0;
+    p->killed    = 0;
     memset(p->name, 0, sizeof(p->name));
     unlock(&ptable.lk);
 }
@@ -221,13 +222,13 @@ static void deallocate_process(Process *p) {
  * */
 static void set_pid1_trapframe(Process *p) {
     memset(p->trapframe, 0, sizeof(*p->trapframe));
-    p->trapframe->cs = (SEG_UCODE << 3) | DPL_U; // set segment DPL
-    p->trapframe->ds = (SEG_UDATA << 3) | DPL_U;
-    p->trapframe->es = p->trapframe->ds;
-    p->trapframe->ss = p->trapframe->ds;
+    p->trapframe->cs     = (SEG_UCODE << 3) | DPL_U; // set segment DPL
+    p->trapframe->ds     = (SEG_UDATA << 3) | DPL_U;
+    p->trapframe->es     = p->trapframe->ds;
+    p->trapframe->ss     = p->trapframe->ds;
     p->trapframe->eflags = FL_IF;
-    p->trapframe->esp = PAGE_SZ;
-    p->trapframe->eip = 0; // start of the program
+    p->trapframe->esp    = PAGE_SZ;
+    p->trapframe->eip    = 0; // start of the program
 }
 
 
@@ -328,9 +329,9 @@ int fork() {
         return -1;
     }
 
-    child->size = thisp->size;
-    child->parent = thisp;
-    *child->trapframe = *thisp->trapframe;
+    child->size           = thisp->size;
+    child->parent         = thisp;
+    *child->trapframe     = *thisp->trapframe;
     child->trapframe->eax = 0;
     strncpy(child->name, thisp->name, sizeof(thisp->name));
 
@@ -446,7 +447,7 @@ void sleep(void *chan, SpinLock *lk) {
         unlock(lk);
     }
 
-    p->chan = chan;
+    p->chan  = chan;
     p->state = PROC_SLEEPING;
 
     sched();

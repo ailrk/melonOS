@@ -39,29 +39,29 @@ typedef struct Context {
 
 
 typedef struct Process {
-    uint32_t        size;         // size of process memory
-    PD *            pgdir;        // per process page table
-    char *          kstack;       // bottom of kernel stack for this process
-    unsigned        pid;          // process id
-    struct Process *parent;       // parent pid
-    ProcState       state;        // process state
-    TrapFrame *     trapframe;    // process trapframe
-    Context *       context;      // process context
-    void *          chan;         // sleep on chan if it's not zero
-    bool            killed;       // is process killed
-    File            file[NOFILE]; // files
-    char            name[16];     // name of the process
+    uint32_t         size;         // size of process memory
+    PD *             pgdir;        // per process page table
+    char *           kstack;       // bottom of kernel stack for this process
+    unsigned         pid;          // process id
+    struct Process * parent;       // parent pid
+    ProcState        state;        // process state
+    TrapFrame *      trapframe;    // process trapframe
+    Context *        context;      // process context
+    void *           chan;         // sleep on chan if it's not zero
+    bool             killed;       // is process killed
+    File             file[NOFILE]; // files
+    char             name[16];     // name of the process
 } Process;
 
 
 /* Per CPU state */
 typedef struct CPU {
-    GDTRecord       gdtr;
-    GDTEntry        gdt[NSEGS];
-    TaskState       ts;
-    Context *       scheduler; // Scheduler context. Points to kernel stack.
-    volatile bool   started;
-    bool            int_on; // was int enabled when ncli = 0
-    int             ncli;   // levels of pushcli
-    Process *       proc;
+    GDTRecord     gdtr;
+    GDTEntry      gdt[NSEGS];
+    TaskState     ts;
+    Context *     scheduler; // Scheduler context. Points to kernel stack.
+    volatile bool started;
+    bool          int_on; // was int enabled when ncli = 0
+    int           ncli;   // levels of pushcli
+    Process *     proc;
 } CPU;

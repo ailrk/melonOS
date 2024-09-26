@@ -16,9 +16,6 @@
 #define ATA_S_RDY  (1 << 6) // ready. 0=drive is spun down or error.
 #define ATA_S_BSY  (1 << 7) // busy. 1=drive is preparing to send/receive
 
-#define C_RD(n) ((n == 1) ? C_RD1SEC : C_RDNSECS)
-#define C_WT(n) ((n == 1) ? C_WT1SEC : C_WTNSECS)
-
 
 typedef enum InterfaceType {
     IDE_ATA,
@@ -72,8 +69,7 @@ typedef enum Error {
 } Error;
 
 
-
-static ChannelReg channels[] = {
+ChannelReg channels[] = {
     [ATA_PRIMARY] = (ChannelReg){
         .base = 0x1f0,
         .ctrl = 0x3f6,
@@ -85,12 +81,12 @@ static ChannelReg channels[] = {
 };
 
 
-inline static unsigned short regb(Channel ch, unsigned short r) {
+inline static uint16_t regb(Channel ch, uint8_t r) {
     return channels[ch].base + r;
 }
 
 
-inline static unsigned short regc(Channel ch, unsigned short r) {
+inline static uint16_t regc(Channel ch, uint8_t r) {
     return channels[ch].ctrl + r;
 }
 
@@ -130,6 +126,7 @@ void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn) {
     outb(regb(ch, BR_HDDEVSEL), (lba >> 24) | 0xe0);
     outb(regb(ch, BR_COMMAND) , cmd);
 }
+
 
 /*! Send read request to ide without waiting.
  *  @ch   Channel

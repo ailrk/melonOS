@@ -2,8 +2,9 @@
 #include "ctype.h"
 #include "errno.h"
 
+
 int atoi(const char *p) {
-    int k = 0;
+    int k   = 0;
     int neg = 0;
     while (isspace(*p)) p++;
 
@@ -24,8 +25,7 @@ int atoi(const char *p) {
 }
 
 
-
-/*! Convert string to long integer 
+/*! Convert string to long integer
  *  this strtol only support hexdecimal, octal and decimal.
  *  If an error occurs, `strtol` returns a 0 and set `errno`  to ERANGE.
  *  @str:       pointer to the string
@@ -39,10 +39,10 @@ long int strtol (const char *str, const char **endptr) {
         *endptr = p;
     }
     long int k = 0;
-    int neg = 0; 
+    int neg = 0;
 
     while (isspace(*p)) p++;
-    
+
     if (*p == '+') p++;
     else if (*p == '-') {
         neg = 1;
@@ -50,7 +50,7 @@ long int strtol (const char *str, const char **endptr) {
     }
 
     if (p[0] == '0' && p[1] == 'x') { // hex
-        p += 2;                                      
+        p += 2;
         while (isdigit(*p) || *p > 'a' && *p < 'f' || *p > 'A' && *p < 'F') {
             k = k * 16;
             if (isdigit(*p))
@@ -59,18 +59,18 @@ long int strtol (const char *str, const char **endptr) {
                 k += *p - 'a' + 10;
             else if (*p > 'A' && *p < 'F')
                 k += *p - 'A' + 10;
-            else 
+            else
                 goto abort;
             p++;
         }
 
     } else if (p[0] == '0') { // oct
-        p += 1;                              
+        p += 1;
         while(isdigit(*p)) {
             k = k * 8 + (*p - '0');
             p++;
         }
-       
+
     } else if (isdigit(p[0])) { // dec
         while(isdigit(*p)) {
             k = k * 10 + (*p - '0');
@@ -82,7 +82,7 @@ long int strtol (const char *str, const char **endptr) {
 
     if (neg)
         return -k;
-    else 
+    else
         return k;
 
 abort:

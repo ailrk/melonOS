@@ -19,10 +19,10 @@
 
 #define DEBUG 0
 
-PD *kernel_page_dir;     // kernel only page directory.
-extern char data[];      // defined by kernel.ld
 
-VMap kmap[4];
+extern char data[];              // defined by kernel.ld
+PD *        kernel_page_dir;     // kernel only page directory.
+VMap        kmap[4];
 
 
 /*! There is one page table for each process. The following
@@ -68,24 +68,29 @@ static void init_kmap() {
         };
 }
 
+
 /*! Some untilities for handling page table access */
 static PDE* get_pde(PD *page_dir, const void *vaddr) {
     return &page_dir[page_directory_idx((uintptr_t)vaddr)];
 }
+
 
 static PTE* get_pt(PD *page_dir, const void *vaddr) {
     PDE *pde = get_pde(page_dir, vaddr);
     return (PTE *)P2V(pte_addr(*pde));
 }
 
+
 static PTE* get_pt1(PDE *pde) {
     return (PTE *)P2V(pte_addr(*pde));
 }
+
 
 static PTE* get_pte(PD *page_dir, const void *vaddr) {
     PTE *pt = get_pt(page_dir, vaddr);
     return &pt[page_table_idx((uintptr_t)vaddr)];
 }
+
 
 static PTE* get_pte1(PDE *pde, const void *vaddr) {
     PTE *pt = get_pt1(pde);
@@ -118,7 +123,6 @@ static PTE *walk(PD *page_dir, const void *vaddr) {
 }
 
 
-
 /*! Create PTE for virtual addresses starting at vaddr mapped to paddr
  *  virtual address doesn't need to align on page boundry, `map_pages
  *  will automatically round down the address.
@@ -126,11 +130,11 @@ static PTE *walk(PD *page_dir, const void *vaddr) {
  *  @return true if pages are mapped successfully. false otherwise.
  * */
 static bool map_pages(PD *page_dir, const VMap *k) {
-    int           size   = k->pend - k->pstart;
-    char *        vstart = (char *)page_aligndown((uintptr_t)k->virt);
-    char *        vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
+    int size             = k->pend - k->pstart;
+    char *vstart         = (char *)page_aligndown((uintptr_t)k->virt);
+    char *vend           = (char *)page_aligndown((uintptr_t)k->virt + size);
     physical_addr pstart = k->pstart;
-    PTE *         pte;
+    PTE *pte;
 
 #if DEBUG
     tty_printf("\nmap_pages> <VMap %#x, (%#x, %#x), %#x>", k->virt, k->pstart, k->pend, k->perm);
@@ -151,6 +155,7 @@ static bool map_pages(PD *page_dir, const VMap *k) {
     }
     return true;
 }
+
 
 /*! Setup the kernel part of the page table. we allocate
  *  a single page to hold the PD. Then we map pages base
@@ -180,12 +185,10 @@ PD *allocate_kernel_vmem() {
 }
 
 
-
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running
  * */
 void switch_kernel_vmem() { set_cr3(V2P_C(kernel_page_dir)); }
-
 
 
 /*! Setup kernel virtual memory */
@@ -216,10 +219,10 @@ void init_user_vmem(PD *page_dir, char *init, size_t sz) {
     memset(mem, 0, PAGE_SZ);
 
     VMap mmap =
-        { .virt = 0,
+        { .virt   = 0,
           .pstart = V2P_C(mem),
-          .pend = V2P_C(mem + PAGE_SZ),
-          .perm = PTE_W | PTE_U
+          .pend   = V2P_C(mem + PAGE_SZ),
+          .perm   = PTE_W | PTE_U
         };
     map_pages(page_dir, &mmap);
     memmove(mem, init, sz);
@@ -237,8 +240,8 @@ static void write_tss(Process *p) {
     uint8_t  rpl   = 0; // request privilege level
     memset((void*)base, 0, limit);
     this_cpu()->gdt[SEG_TSS] = create_descriptor(base, limit, flag);
-    this_cpu()->ts.ss0 = SEG_KDATA << 3;
-    this_cpu()->ts.esp0 = (uintptr_t)p->kstack + KSTACK_SZ;
+    this_cpu()->ts.ss0       = SEG_KDATA << 3;
+    this_cpu()->ts.esp0      = (uintptr_t)p->kstack + KSTACK_SZ;
     ltr(SEG_TSS << 3 | rpl);
     pop_cli();
 }
@@ -282,10 +285,10 @@ int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
 
         memset(mem, 0, PAGE_SZ);
         VMap mmap =
-            { .virt = (char *)p,
+            { .virt   = (char *)p,
               .pstart = V2P_C(mem),
-              .pend = V2P_C(mem + PAGE_SZ),
-              .perm = PTE_W | PTE_U
+              .pend   = V2P_C(mem + PAGE_SZ),
+              .perm   = PTE_W | PTE_U
             };
 
         if (!map_pages(page_dir, &mmap)) {
@@ -321,7 +324,7 @@ PD * copy_user_vmem(PD *page_dir, size_t sz) {
             panic("copy_user_vmem: page not present");
 
         physical_addr pa = pte_addr(*pte);
-        unsigned flags = pte_flags(*pte);
+        unsigned flags   = pte_flags(*pte);
 
         if ((mem = palloc()) == 0) {
             free_vmem(new_pgdir);
@@ -331,10 +334,10 @@ PD * copy_user_vmem(PD *page_dir, size_t sz) {
         memmove(mem, (char *)P2V_C(pa), PAGE_SZ);
 
         VMap mmap =
-            { .virt = (char *)i,
+            { .virt   = (char *)i,
               .pstart = V2P_C(mem),
-              .pend = V2P_C(mem + PAGE_SZ),
-              .perm = flags
+              .pend   = V2P_C(mem + PAGE_SZ),
+              .perm   = flags
             };
         if (!map_pages(new_pgdir, &mmap)) {
             free_vmem(new_pgdir);

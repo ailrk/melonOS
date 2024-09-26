@@ -7,10 +7,12 @@
 #include "errno.h"
 #include "drivers/uart.h"
 
+
 static const char *uart_putc1(const char *c) {
     uart_putc(*c++);
     return c;
 }
+
 
 void debug_printf(const char *fmt, ...) {
     FmtIO io = {
@@ -45,8 +47,8 @@ void debug_printf(const char *fmt, ...) {
 void debug_memdump(const char *cmd, ...) {
     char *addr;
     unsigned n = 1;
-    char f = 'x';
-    char sz = 1;
+    char f     = 'x';
+    char sz    = 1;
 
     va_list args;
     va_start(args, cmd);

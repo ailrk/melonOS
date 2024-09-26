@@ -13,13 +13,13 @@
  * - OCW (operation command word)
  * */
 
+
 #define PIC1            0x20        // master pic port
 #define PIC2            0xA0        // slave pic port
 #define PIC1_COMMAND    PIC1
 #define PIC1_DATA       (PIC1+1)
 #define PIC2_COMMAND    PIC2
 #define PIC2_DATA       (PIC2+1)
-
 
 #define ICW1_ICW4       0x01        // ICW4 will be present
 #define ICW1_SINGLE     0x02        // single mode
@@ -36,7 +36,6 @@
 #define PIC_EOI         0x20
 
 
-
 /* send a EOI to pic to indicate end of interrupt handler.
  *
  * If IRQ comes from slave, master needs to be notified too. We simply
@@ -46,7 +45,6 @@ void pic_eoi() {
     outb(PIC2_COMMAND, PIC_EOI);
     outb(PIC1_COMMAND, PIC_EOI);
 }
-
 
 
 /* Define the vector offset for pic.

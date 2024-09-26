@@ -6,7 +6,6 @@
 #include "sys/syscalls.h"
 #include "process/proc.h"
 
-
 /* Copying system call arguments from user stack to
  *
  * After `int I_SYSCALL`, the user stack on system call looks
@@ -24,6 +23,7 @@
  * and TSS switch the stack. We need to manually fetch arguments
  * from the user stack on each sytemcall.
  * */
+
 
 /*! Get arguments from user stack.
  *  p: pointer
@@ -63,21 +63,26 @@ int sys_fork() {
     return fork();
 }
 
+
 int sys_exit() {
     exit();
     return 0;
 }
 
+
 int sys_exec() {
 }
+
 
 int sys_sbrk() {
 
 }
 
+
 int sys_getpid() {
     return this_proc()->pid;
 }
+
 
 static int (* system_calls[])() = {
     [SYS_FORK]   = sys_fork,

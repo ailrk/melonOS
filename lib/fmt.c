@@ -25,6 +25,7 @@ static const char *write_string(const char *data, FmtIO io) {
     return data;
 }
 
+
 typedef struct PrintCtl {
     bool  upper; // If true, print upper case letters in base n number;
     bool  flush; // If true, write to the output. Otherwise only return the size to output.
@@ -39,7 +40,7 @@ static int print_uint(unsigned n, PrintCtl ctl) {
     static const char digits[] = "0123456789abcdef";
 
     char buf[32];
-    int i = 0;
+    int  i = 0;
 
     do {
         int c =  digits[n % ctl.base];
@@ -79,17 +80,10 @@ static void pad(int n, char c, FmtIO io) {
 }
 
 
-
 /* Shorthand for print ctl */
 #define PCTL_d(flush_) (PrintCtl){ .base = 10, .upper = false, .io = io, .sign = true, .flush = flush_}
 #define PCTL_x(flush_) (PrintCtl){ .base = 16, .upper = false, .io = io, .sign = false, .flush = flush_}
 #define PCTL_X(flush_) (PrintCtl){ .base = 16, .upper = true, .io = io, .sign = false, .flush = flush_}
-
-
-typedef struct Closure {
-    uintptr_t f;
-    void * args;
-} Closure;
 
 
 /*! formatter. supports %d, %x, %X, %p, %s, %c.
@@ -112,10 +106,10 @@ typedef struct Closure {
  *  @... data to be formatted
  * */
 void format(FmtIO io, const char *fmt, va_list args) {
-    bool pad0 = false;
-    bool leftpad = false;
-    bool hex = false;
-    unsigned width = 0;
+    bool     pad0    = false;
+    bool     leftpad = false;
+    bool     hex     = false;
+    unsigned width   = 0;
 
     while(*fmt) {
         if (*fmt == '%') {

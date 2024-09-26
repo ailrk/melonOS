@@ -8,8 +8,8 @@
 SpinLock new_lock(const char *name) {
     return (SpinLock) {
         .locked = 0,
-        .cpu = 0,
-        .name = name
+        .cpu    = 0,
+        .name   = name
     };
 }
 

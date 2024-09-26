@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "string.h"
 
+
 int memcmp(const void *v1, const void *v2, size_t n) {
     const char* s1 = v1;
     const char* s2 = v2;
@@ -14,8 +15,8 @@ int memcmp(const void *v1, const void *v2, size_t n) {
 
 
 void *memmove(void *dest, const void *src, size_t n) {
-    char* d = dest;
-    const char* s = src;
+    char * d = dest;
+    const char *s = src;
 
     if (s < d && s + n > d) {
         s += n;
@@ -35,7 +36,6 @@ void memcpy(void *dest, const void *src, size_t n) {
 }
 
 
-
 void* memset(void *tgt, int v, size_t n) {
     char *p = (char*)tgt;
     while(n--) {
@@ -43,7 +43,6 @@ void* memset(void *tgt, int v, size_t n) {
     }
     return tgt;
 }
-
 
 
 size_t strlen(const char *s) {
@@ -62,7 +61,6 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 }
 
 
-
 char *strncpy(char *dest, const char *src, size_t n) {
     while (n-- && ((*dest++ = *src++) != 0));
     while (n-- > 0) *dest++ = 0;
@@ -70,7 +68,7 @@ char *strncpy(char *dest, const char *src, size_t n) {
 }
 
 
- char *strrev(char *s) {
+char *strrev(char *s) {
     char *b = s;
     char *e = s;
     char tmp;

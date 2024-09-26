@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stdbool.h>
 
 
@@ -7,25 +6,25 @@
 
 
 typedef enum ANSIColor {
-    ANSIColor_FBLK = 30, 
-    ANSIColor_FRED = 31, 
-    ANSIColor_FGRN = 32, 
-    ANSIColor_FYLW = 33, 
-    ANSIColor_FBLU = 34, 
-    ANSIColor_FMAG = 35, 
-    ANSIColor_FCYA = 36, 
-    ANSIColor_FWHT = 37, 
-    ANSIColor_FDEF = 39, 
-    ANSIColor_BBLK = 40, 
-    ANSIColor_BRED = 41, 
-    ANSIColor_BGRN = 42, 
-    ANSIColor_BYLW = 43, 
-    ANSIColor_BBLU = 44, 
-    ANSIColor_BMAG = 45, 
-    ANSIColor_BCYA = 46, 
-    ANSIColor_BWHT = 47, 
-    ANSIColor_BDEF = 49, 
-    ANSIColor_RES = 0, 
+    ANSIColor_FBLK = 30,
+    ANSIColor_FRED = 31,
+    ANSIColor_FGRN = 32,
+    ANSIColor_FYLW = 33,
+    ANSIColor_FBLU = 34,
+    ANSIColor_FMAG = 35,
+    ANSIColor_FCYA = 36,
+    ANSIColor_FWHT = 37,
+    ANSIColor_FDEF = 39,
+    ANSIColor_BBLK = 40,
+    ANSIColor_BRED = 41,
+    ANSIColor_BGRN = 42,
+    ANSIColor_BYLW = 43,
+    ANSIColor_BBLU = 44,
+    ANSIColor_BMAG = 45,
+    ANSIColor_BCYA = 46,
+    ANSIColor_BWHT = 47,
+    ANSIColor_BDEF = 49,
+    ANSIColor_RES  = 0,
 } ANSIColor;
 
 
@@ -63,12 +62,12 @@ typedef struct ANSIState {
     } tag;
 
     union {
-        ANSIColor color;
+        ANSIColor  color;
         ANSICursor cursor;
-        ANSIErase erase;
+        ANSIErase  erase;
     } value;
 
-    int buf[ANSI_BUFSZ];
+    int  buf[ANSI_BUFSZ];
     int *buf_top;
 
 } ANSIState;

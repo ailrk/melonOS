@@ -16,7 +16,7 @@
  * */
 typedef struct DiskQueue {
     SpinLock lk;
-    BNode *head;
+    BNode *  head;
 } DiskQueue;
 
 DiskQueue disk_queue;

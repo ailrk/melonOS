@@ -22,11 +22,11 @@ typedef enum FileType {
 
 
 typedef struct File {
-    FileType  type;
-    int       nref;       // reference count
-    bool      readable;
-    bool      writable;
-    unsigned  offset;
-    Inode *   ino;
+    FileType type;
+    int      nref;       // reference count
+    bool     readable;
+    bool     writable;
+    unsigned offset;
+    Inode *  ino;
 } File;
 

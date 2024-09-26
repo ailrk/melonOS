@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stddef.h>
 #include "mmu.h"
 #include "i386.h"
@@ -13,7 +12,6 @@ typedef struct VMap {
     physical_addr pend;
     int           perm;
 } VMap;
-
 
 
 void kernel_vmem_init();

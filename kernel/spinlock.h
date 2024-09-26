@@ -1,5 +1,4 @@
 #pragma once
-
 #include "process/pdefs.h"
 
 
@@ -11,5 +10,5 @@ typedef struct SpinLock {
 
 
 SpinLock new_lock(const char *name);
-void lock(SpinLock *);
-void unlock(SpinLock *);
+void     lock(SpinLock *);
+void     unlock(SpinLock *);

@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "mem.h"
+
 /*
  * For 32-bit linux, e.g PD and PT are both 10 bits long, and each page is 4096 bytes.
  * So in total, PD and PT can index (2**10)**2, or , or 1MB pages, and together with
@@ -8,9 +9,9 @@
  */
 
 
-#define PTESZ           4       // size of PTE
-#define NPDES           1024    // # directory entries per page directory
-#define NPTES           1024    // # PTEs per page table
+#define PTESZ 4    // size of PTE
+#define NPDES 1024 // # directory entries per page directory
+#define NPTES 1024 // # PTEs per page table
 
 
 /* PD and PT entries (PTE):
@@ -34,17 +35,17 @@ typedef uintptr_t PD; // page directory
 
 
 /* PTE flags */
-#define PTE_P           0x01   // 1 = present in physical memory
-#define PTE_W           0x02   // 1 = read/write, 0 = read only
-#define PTE_U           0x04   // 1 = user, 0 = supervisor only
-#define PTE_D           0x20   // 1 = dirty, 0 has not been written to
+#define PTE_P 0x01   // 1 = present in physical memory
+#define PTE_W 0x02   // 1 = read/write, 0 = read only
+#define PTE_U 0x04   // 1 = user, 0 = supervisor only
+#define PTE_D 0x20   // 1 = dirty, 0 has not been written to
 
 
 /* PDE flags are the same as PTE except no dirty bit */
-#define PDE_P           PTE_P  // 1 = present in physical memory
-#define PDE_W           PTE_W  // 1 = read/write, 0 = read only
-#define PDE_U           PTE_U  // 1 = user, 0 = supervisor only
-#define PDE_PS          0x80   // 1 = 4MB page size, 0 = 4Kb page size
+#define PDE_P  PTE_P  // 1 = present in physical memory
+#define PDE_W  PTE_W  // 1 = read/write, 0 = read only
+#define PDE_U  PTE_U  // 1 = user, 0 = supervisor only
+#define PDE_PS 0x80   // 1 = 4MB page size, 0 = 4Kb page size
 
 
 
@@ -53,42 +54,57 @@ typedef uintptr_t PD; // page directory
  * | Page dir index | page table index |  offset |
  */
 
-#define PT_IDX_SHIFT       12     // offset of PT_IDX in a linear address
-#define PD_IDX_SHIFT       22     // offset of PD_IDX in a linear address
+#define PT_IDX_SHIFT 12     // offset of PT_IDX in a linear address
+#define PD_IDX_SHIFT 22     // offset of PD_IDX in a linear address
 
 
-static inline uintptr_t vaddr_offset(const void *vaddr) {
+static inline uintptr_t
+vaddr_offset(const void *vaddr) {
     return (uintptr_t)vaddr & 0xfff;
 }
 
-static inline uintptr_t page_directory_idx(uintptr_t vaddr) {
+
+static inline uintptr_t
+page_directory_idx(uintptr_t vaddr) {
     return ((vaddr) >> PD_IDX_SHIFT) & 0x3FF;
 }
 
-static inline uintptr_t page_table_idx(uintptr_t vaddr) {
+
+static inline uintptr_t
+page_table_idx(uintptr_t vaddr) {
     return ((vaddr) >> PT_IDX_SHIFT) & 0x3FF;
 }
 
-static inline uintptr_t page_alignup(int sz) {
+
+static inline uintptr_t
+page_alignup(int sz) {
     return ((sz)+PAGE_SZ-1) & ~(PAGE_SZ-1);
 }
 
-static inline uintptr_t page_aligndown(uintptr_t addr) {
+
+static inline uintptr_t
+page_aligndown(uintptr_t addr) {
     return (addr) & ~(PAGE_SZ-1);
 }
 
+
 /* Address in page table or page directory entry */
-static inline uintptr_t pte_addr(PTE pte) {
+static inline uintptr_t
+pte_addr(PTE pte) {
     return (uintptr_t)(pte) & ~0xFFF;
 }
 
+
 /* Flag in page table or page directory entry */
-static inline unsigned pte_flags(PTE pte) {
+static inline unsigned
+pte_flags(PTE pte) {
     return (unsigned)(pte) &  0xFFF;
 }
 
+
 /*! Construct virtual address from indexes and offsets */
-static inline unsigned page_addr(PDE pde, PTE pte, int offset) {
+static inline unsigned
+page_addr(PDE pde, PTE pte, int offset) {
     return (uint32_t)((pde) << PD_IDX_SHIFT | (pte) << PT_IDX_SHIFT | (offset));
 }
 

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stdbool.h>
 #include "spinlock.h"
 
@@ -15,6 +14,6 @@ typedef struct Mutex {
 
 
 Mutex new_mutex(const char *name);
-void lock_mutex(Mutex *);
-void unlock_mutex(Mutex *);
-bool holding_mutex(Mutex *);
+void  lock_mutex(Mutex *);
+void  unlock_mutex(Mutex *);
+bool  holding_mutex(Mutex *);

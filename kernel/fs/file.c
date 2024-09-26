@@ -2,15 +2,17 @@
 #include "spinlock.h"
 #include "fs/file.h"
 
-
 /* file descriptor */
+
 
 Dev devs[NDEV];
 
+
 typedef struct FTable {
     SpinLock lk;
-    File t[NFILE];
+    File     t[NFILE];
 } FTable;
+
 
 FTable ftable;
 

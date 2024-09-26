@@ -27,7 +27,7 @@ vga_entry(unsigned char uc, uint8_t color) {
 }
 
 
-static size_t const VGA_WIDTH = 80;
+static size_t const VGA_WIDTH  = 80;
 static size_t const VGA_HEIGHT = 25;
 
 
@@ -47,7 +47,7 @@ static void set_fg_color(VgaColor fg) {
 
 
 void tty_clear() {
-    term.row = 0;
+    term.row    = 0;
     term.column = 0;
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
         for (size_t x = 0; x < VGA_WIDTH; ++x)
@@ -62,9 +62,9 @@ void newline() {
 
 
 void tty_init() {
-    term.row = 0;
+    term.row    = 0;
     term.column = 0;
-    term.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+    term.color  = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     term.buffer = (uint16_t *)(TERMBUF_START);
     tty_clear();
     tty_printf("melonos 0.0.1\n");

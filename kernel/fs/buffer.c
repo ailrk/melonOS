@@ -5,7 +5,6 @@
 #include "fs/disk.h"
 #include "fs/fdefs.h"
 
-
 /* BCache is a circular doubly linked list for buffering disk blocks in memory.
  * Caching blocks allow us to perform expensive updates in memory and
  * flush them to the disk when necessary.
@@ -15,19 +14,21 @@
  * buffers getting updated and overwrite each other.
  * */
 
+
 typedef struct BCache {
     SpinLock lk;
-    BNode *head;
-    BNode buffer[NBUF];
+    BNode *  head;
+    BNode    buffer[NBUF];
 } BCache;
-
 
 
 BCache bcache;
 
+
 /*! Init the doubly linked list for bcache. */
 void bcache_init() {
     bcache.lk = new_lock("bcache.lk");
+
     BNode *head = &bcache.buffer[0];
     BNode *tail = &bcache.buffer[NBUF - 1];
 
@@ -63,6 +64,7 @@ static BNode* bcachce_lookup(unsigned dev, unsigned blockno) {
     return 0;
 }
 
+
 /*! Allocate an unused bcache node for the block. If no block is
  *  available return 0;
  * */
@@ -71,11 +73,11 @@ static BNode *bcache_allocate(unsigned dev, unsigned blockno) {
 
     do {
         if (b->nref == 0 && !b->dirty) {
-            b->nref = 1;
-            b->dev = dev;
+            b->nref    = 1;
+            b->dev     = dev;
             b->blockno = blockno;
-            b->dirty = 0;
-            b->valid = 0;
+            b->dirty   = 0;
+            b->valid   = 0;
             return b;
         }
     } while (b != bcache.head);
@@ -130,17 +132,15 @@ void bcache_write(BNode *b) {
 static void bcache_free(BNode *b) {
     b->nref--;
     if (b->nref == 0) {
-        b->next->prev = b->prev;
-        b->prev->next = b->next;
-
-        b->next = bcache.head;
-        b->prev = bcache.head->prev;
-
+        b->next->prev     = b->prev;
+        b->prev->next     = b->next;
+        b->next           = bcache.head;
+        b->prev           = bcache.head->prev;
         bcache.head->prev = b;
-
-        bcache.head = b;
+        bcache.head       = b;
     }
 }
+
 
 /*! Release the BNode.
  * */
