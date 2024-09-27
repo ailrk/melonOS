@@ -40,6 +40,8 @@ sysroot
 *.pp.s
 
 .qemu.log
+.bochs.log
+.bochsrc
 .uart.log
 .ccls-cache
 .cache
@@ -58,3 +60,4 @@ libmelon.a
 
 # Generated files should be obtained from the Makefile
 vectors.s
+.venv

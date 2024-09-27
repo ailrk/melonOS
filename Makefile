@@ -66,6 +66,12 @@ qemu-log:
 		-serial file:.uart.log \
 		-monitor stdio
 
+qemu-debug:
+	$(QEMU) -drive format=raw,file=$(OUT) -d 'int,cpu_reset,guest_errors,in_asm,exec' \
+		-s -S \
+		-no-reboot -D .qemu.log \
+		-serial file:.uart.log
+
 elf-headers:
 	readelf -headers $(KERNEL)
 
