@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "MelonOS",
+      "type": "lldb",
+      "request": "attach",
+      "program": "melonos-kernel",
+      "stopOnEntry": false,
+      "attachCommands": ["gdb-remote localhost:1234"]
+    }
+  ]
+}
