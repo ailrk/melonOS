@@ -1,13 +1,13 @@
+#include <stdint.h>
 #include "i386.h"
+#include "defs.h"
 #include "elf.h"
 #include "mem.h"
 #include "mmu.h"
 #include "string.h"
-#include <stdint.h>
 
 #define DEBUG       0
-#define SECTSZ      512
-static uint32_t elf_offset = SECTSZ * 20;
+static uint32_t elf_offset = SECSZ * BOOTLDSECN;
 
 
 #define IDE_S_RDY  (1 << 6) // 0 when drive is spun down, or after an error.
@@ -37,22 +37,22 @@ void read_sector(void *dst, uint32_t lba) {
     outb(0x1F6, (lba >> 24) | 0xE0);
     outb(0x1F7, 0x20); // read data cmd
     wait_disk();
-    insl(0x1F0, dst, SECTSZ/4);     // /4 because insl read words
+    insl(0x1F0, dst, SECSZ/4);     // /4 because insl read words
 }
 
 
 /* read n bytes from lba 0 + offset bytes on the disk to dst
  *
- * The dst buffer size should be greater than (n/SECTSZ)+1.
+ * The dst buffer size should be greater than (n/SECSZ)+1.
  * */
 void read_offset(void *dst, uint32_t n, uint32_t offset) {
     char *p = dst;
-    uint32_t lba = offset / SECTSZ;
-    int remained = (n / SECTSZ) + 1;
+    uint32_t lba = offset / SECSZ;
+    int remained = (n / SECSZ) + 1;
 
-    char buf[SECTSZ];
-    int trash = offset % SECTSZ;
-    int rest = SECTSZ - trash;
+    char buf[SECSZ];
+    int trash = offset % SECSZ;
+    int rest = SECSZ - trash;
     read_sector(buf, lba++);
     memcpy(p, &buf[trash], rest);
     remained--;
@@ -60,7 +60,7 @@ void read_offset(void *dst, uint32_t n, uint32_t offset) {
 
     while (remained) {
         read_sector(p, lba++);
-        p += SECTSZ;
+        p += SECSZ;
         remained--;
     }
 }

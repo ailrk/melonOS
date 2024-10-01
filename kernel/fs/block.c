@@ -11,10 +11,7 @@
  * */
 
 
-#define SUPERBLKNO   20
 #define BITS_PER_BLK (BSIZE * 8) // number of bmap bits per block
-
-
 SuperBlock super_block;
 
 

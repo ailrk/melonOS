@@ -4,14 +4,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "defs.h"
 #include "gdt.h"
 #include "mmu.h"
 #include "trap.h"
 #include "fs/fdefs.fwd.h"
-
-
-#define NPROC    64 // max number of processes
-#define NOFILE   32 // max number of open files per process
 
 
 typedef enum ProcState {
