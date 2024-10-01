@@ -13,6 +13,8 @@
 #include "fs/bcache.h"
 #include "fs/disk.h"
 #include "fs/file.h"
+#include "debug.h"
+#include "string.h"
 
 #define DBG 0
 

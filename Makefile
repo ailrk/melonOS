@@ -3,6 +3,7 @@ CC = $(ARCH)-elf-gcc
 LD = $(ARCH)-elf-ld
 AS = nasm -f elf32
 AR = ar rcs
+CPP = cpp
 HOSTCC = gcc
 CFLAGS = -ffreestanding -g -nostdlib
 CWARNS = -Wall -Wextra -fno-exceptions
@@ -63,22 +64,43 @@ echo:
 	@echo 'CFLAGS $(CFLAGS)'
 	@echo 'CWARNS $(CWARNS)'
 
+QEMUDRVS = \
+	-drive format=raw,file=$(MELONOS),index=0,media=disk \
+	-drive format=raw,file=$(MELONFS),index=1,media=disk
+
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
 
 qemu:
-	$(QEMU) -drive format=raw,file=$(MELONOS) -device virtio-vga,xres=640,yres=320
-
-qemu-log:
-	$(QEMU) -drive format=raw,file=$(MELONOS) -d 'int,cpu_reset,guest_errors,in_asm,exec' \
+	$(QEMU) \
+		$(QEMUDRVS) \
+		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
 		-no-reboot -D .qemu.log \
 		-serial file:.uart.log \
 		-monitor stdio
 
-qemu-debug:
-	$(QEMU) -drive format=raw,file=$(MELONOS) -d 'int,cpu_reset,guest_errors,in_asm,exec' \
-		-s -S \
+qemu-ncurse:
+	$(QEMU) \
+		$(QEMUDRVS) \
+		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
 		-no-reboot -D .qemu.log \
+		-serial file:.uart.log \
+		-display curses \
+		-monitor stdio
+
+qemu-debug-ncurse:
+	$(QEMU) \
+		$(QEMUDRVS) \
+		-s -S \
+		-no-reboot \
+		-serial file:.uart.log \
+		-display curses
+
+qemu-debug:
+	$(QEMU) \
+		$(QEMUDRVS) \
+		-s -S \
+		-no-reboot \
 		-serial file:.uart.log
 
 elf-headers:
