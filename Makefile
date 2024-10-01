@@ -3,7 +3,7 @@ CC = $(ARCH)-elf-gcc
 LD = $(ARCH)-elf-ld
 AS = nasm -f elf32
 AR = ar rcs
-CPP = cpp
+HOSTCC = gcc
 CFLAGS = -ffreestanding -g -nostdlib
 CWARNS = -Wall -Wextra -fno-exceptions
 
@@ -11,12 +11,19 @@ B_DIR = boot
 K_DIR = kernel
 L_DIR = lib
 M_DIR = melon
+F_DIR = mkfs
+
 
 BOOT = melonos-bootloader
 KERNEL = melonos-kernel
+MELONOS = melonos.img
+MELONFS = melonfs.img
+
+MKFS = mkfs.melonfs
+
 LIBUTILS = libutils.a
 LIBMELON = libmelon.a
-MELONOS = melonos.img
+
 
 QEMU = qemu-system-i386
 
@@ -32,6 +39,8 @@ $(MELONOS): $(BOOT) $(KERNEL)
 	dd if=$(BOOT) of=$(MELONOS) conv=notrunc
 	dd if=$(KERNEL) of=$(MELONOS) seek=20 conv=notrunc
 
+$(MELONFS): $(MKFS)
+	./$(MKFS) $(MELONFS)
 
 .PHONY: clean qemu-debug copy echo
 clean:
@@ -91,5 +100,7 @@ cc:
 include boot/Makefile
 include kernel/Makefile
 include lib/Makefile
+include mkfs/Makefile
+
 
 -include .local.mk
