@@ -4,7 +4,6 @@
 #include "stdlib.h"
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stdint.h>
 
 /* IO agnostic formatting functions */
 
@@ -15,9 +14,9 @@
  *  @size   size of character to write
  *  @return the pointer to the character one after the last character been printed.
  * */
-static const char *write_string(const char *data, FmtIO io) {
-    const char *end = data + strlen(data);
-    const char *p;
+static char *write_string(char *data, FmtIO io) {
+    char *end = data + strlen(data);
+    char *p;
     while (data < end) {
         p =  io.putchar(data);
         data = p;
@@ -105,7 +104,7 @@ static void pad(int n, char c, FmtIO io) {
  *  @fmt formatted string
  *  @... data to be formatted
  * */
-void format(FmtIO io, const char *fmt, va_list args) {
+void format(FmtIO io, char *fmt, va_list args) {
     bool     pad0    = false;
     bool     leftpad = false;
     bool     hex     = false;
@@ -178,10 +177,10 @@ void format(FmtIO io, const char *fmt, va_list args) {
                 fmt++;
             } else if (*fmt == 'c') {
                 int c = va_arg(args, int);
-                TRY_PAD(width - 1, io.putchar((const char *)&c));
+                TRY_PAD(width - 1, io.putchar((char *)&c));
                 fmt++;
             } else if (*fmt == 's') {
-                const char *s = va_arg(args, const char *);
+                char *s = va_arg(args, char *);
                 int w = strlen(s);
                 TRY_PAD(width - w, write_string(s, io));
                 fmt++;

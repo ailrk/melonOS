@@ -35,7 +35,7 @@ all: $(MELONOS)
 boot: $(BOOT)
 kernel: $(KERNEL)
 
-$(MELONOS): $(BOOT) $(KERNEL)
+$(MELONOS): $(BOOT) $(KERNEL) $(MELONFS)
 	dd if=/dev/zero of=$(MELONOS) count=10000
 	dd if=$(BOOT) of=$(MELONOS) conv=notrunc
 	dd if=$(KERNEL) of=$(MELONOS) seek=20 conv=notrunc
@@ -48,7 +48,8 @@ clean:
 	find $(K_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(B_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(L_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	rm -rf *.o *.pp.* $(MELONOS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
+	find $(K_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
+	rm -rf *.o *.pp.* $(MELONOS) $(MELONFS) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 
 echo:
 	@echo 'CC $(CC)'
@@ -79,29 +80,22 @@ qemu:
 		-serial file:.uart.log \
 		-monitor stdio
 
-qemu-ncurse:
-	$(QEMU) \
-		$(QEMUDRVS) \
-		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
-		-no-reboot -D .qemu.log \
-		-serial file:.uart.log \
-		-display curses \
-		-monitor stdio
-
-qemu-debug-ncurse:
+qemu-debug-nox:
 	$(QEMU) \
 		$(QEMUDRVS) \
 		-s -S \
-		-no-reboot \
+		-no-reboot -D .qemu.log \
 		-serial file:.uart.log \
-		-display curses
+		-nographic \
+		-monitor stdio
 
 qemu-debug:
 	$(QEMU) \
 		$(QEMUDRVS) \
 		-s -S \
 		-no-reboot \
-		-serial file:.uart.log
+		-serial file:.uart.log \
+		-monitor stdio
 
 elf-headers:
 	readelf -headers $(KERNEL)

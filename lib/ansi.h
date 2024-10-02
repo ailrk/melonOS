@@ -73,4 +73,4 @@ typedef struct ANSIState {
 } ANSIState;
 
 
-const char *ansi_parse(ANSIState *state, const char *c);
+char *ansi_parse(ANSIState *state, char *c);

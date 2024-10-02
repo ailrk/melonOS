@@ -7,8 +7,8 @@
 #include "fs/disk.h"
 #include "fs/bcache.h"
 
-#define SECN (BSIZE/SECTSZ)
-#define BLK2SEC(blk) (SECN * blk)
+#define SECN (BSIZE/SECSZ)           // number of sectors per block
+#define BLK2SEC(blk) (SECN * blk)    // convert block number to sector number
 
 
 /* The disk queue maintains a queue of pending BNodes waiting
@@ -102,6 +102,8 @@ void disk_sync(BNode *b) {
     dq_enqueue(b);
 
     disk_cmd_request(b);
+
+    while (!synced(b));  // TODO should sleep if block is not synced yet.
 }
 
 

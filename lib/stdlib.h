@@ -1,5 +1,5 @@
 #pragma once
 
 
-int      atoi(const char *str);
-long int strtol(const char *str, const char **endptr);
+int      atoi(char *str);
+long int strtol(char *str, char **endptr);

@@ -3,11 +3,11 @@
   "configurations": [
     {
       "name": "MelonOS",
-      "type": "lldb",
+      "type": "gdb",
       "request": "attach",
+      "target": "localhost:1234",
       "program": "melonos-kernel",
-      "stopOnEntry": false,
-      "attachCommands": ["gdb-remote localhost:1234"]
+      "stopOnEntry": false
     }
   ]
 }

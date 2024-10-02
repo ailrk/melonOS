@@ -131,7 +131,7 @@ void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn) {
 /*! Send read request to ide without waiting.
  *  @ch   Channel
  *  @dst  Memory read to. The size of `dst` should be bigger
- *        than (SECTSZ * secn).
+ *        than (SECSZ * secn).
  *  @secn read n sectors
  * */
 void ide_read_request(Channel ch, unsigned lba, size_t secn) {
@@ -144,14 +144,14 @@ void ide_read_request(Channel ch, unsigned lba, size_t secn) {
 /*! Read immediately without sending a read request.
  * */
 void ide_read(Channel ch, void *dst, size_t secn) {
-    insl(regb(ch, BR_DATA), dst, (SECTSZ * secn)/4);
+    insl(regb(ch, BR_DATA), dst, (SECSZ * secn)/4);
 }
 
 
 /* Write to the disk.
  * @ch   Device channel
  * @src  memory chunk write to the disk. Should at least be bigger
- *       than (SECTSZ * secn).
+ *       than (SECSZ * secn).
  * @secn n sectors per write
  * */
 void ide_write_request(Channel ch, void* src, unsigned lba, size_t secn) {
@@ -159,5 +159,5 @@ void ide_write_request(Channel ch, void* src, unsigned lba, size_t secn) {
     ATACmd cmd = secn == 1 ? ATA_CMD_WT1 : ATA_CMD_WTN;
     ide_request(ch, cmd, lba, secn);
     // /4 because insl read words
-    outsl(regb(ch, BR_DATA), src, (SECTSZ * secn)/4);
+    outsl(regb(ch, BR_DATA), src, (SECSZ * secn)/4);
 }

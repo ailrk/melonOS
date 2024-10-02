@@ -37,14 +37,14 @@ typedef struct Terminal {
 }Terminal;
 
 
-void        tty_init();
-void        tty_clear();
-void        tty_load_page(uint16_t page);
-void        tty_newline();
-void        tty_set_cursor(uint16_t x, uint16_t y);
-void        tty_set_color(uint8_t color);
-void        tty_put_entry_at(char c);
-void        tty_putchar(char c);
-const char *tty_writec(const char *data);
-void        tty_printf(const char *fmt, ...);
-void        tty_repl();
+void  tty_init();
+void  tty_clear();
+void  tty_load_page(uint16_t page);
+void  tty_newline();
+void  tty_set_cursor(uint16_t x, uint16_t y);
+void  tty_set_color(uint8_t color);
+void  tty_put_entry_at(char c);
+void  tty_putchar(char c);
+char *tty_writec(char *data);
+void  tty_printf(char *fmt, ...);
+void  tty_repl();

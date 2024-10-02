@@ -121,7 +121,7 @@ static bool set_state(ANSIState *s, char c) {
  *  @return:  return the top pointer of the stack. The pointer points to
  *            one element after the last integral number being parsed.
  * */
-static int *parse_list(int *top, const char **cbegin) {
+static int *parse_list(int *top, char **cbegin) {
     int n;
     while (*cbegin && ((n = strtol(*cbegin, cbegin)) != 0 || errno != ERANGE)) {
         *top++ = n;
@@ -143,7 +143,7 @@ static int *parse_list(int *top, const char **cbegin) {
  *  @size:   max size of the string
  *  @return  the pointer to one plus the last character from the escape code
  * */
-const char *ansi_parse(ANSIState *state, const char *c) {
+char *ansi_parse(ANSIState *state, char *c) {
     int *top;
     if (*c++ == '\033' && *c++ == '[') {
 

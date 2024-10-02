@@ -13,14 +13,12 @@
 #include "fs/bcache.h"
 #include "fs/disk.h"
 #include "fs/file.h"
-#include "debug.h"
-#include "string.h"
 
 #define DBG 0
 
 extern char end[];  // defined in `kernel.ld.
 extern char data[]; // elf segment
-char *      kstack;       // kernel stack. userd in entry.s
+char *      kstack; // kernel stack. userd in entry.s
 
 
 void kmain(void) {

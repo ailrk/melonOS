@@ -6,7 +6,7 @@ B_INCS = -I$(L_DIR) -Ii386
 B_LIBS = -L. -lutils
 
 $(BOOT): $(B_OBJS) $(LIBUTILS)
-	$(CC) -T $(B_LINKER) -o $@ $(CFLAGS) $(CWARNS) $(B_OBJS) -lgcc $(B_LIBS)
+	$(LD) -T $(B_LINKER) -o $@ $(B_OBJS) $(B_LIBS)
 
 $(B_CFILES:.c=.o): %.o: %.c
 	$(CC) $(B_INCS) $(CFLAGS) $(CWARNS) -c -o $@ $*.c

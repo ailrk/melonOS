@@ -178,11 +178,11 @@ static void ansi_cntl(const ANSIState *ansi) {
 /*! Write a single char to the screen. If it encounters an escape code, consume
  *  it first then print the next character.
  * */
-const char *tty_writec(const char *data) {
+char *tty_writec(char *data) {
     ANSIState ansi;
 
     if (*data == '\033') { // ansi
-        const char *p;
+        char *p;
         if ((p = ansi_parse(&ansi, data)) != 0) {
             ansi_cntl(&ansi);
             data = p;
@@ -202,7 +202,7 @@ const char *tty_writec(const char *data) {
  *  @fmt formatted string
  *  @... data to be formatted
  * */
-void tty_printf(const char *fmt, ...) {
+void tty_printf(char *fmt, ...) {
     FmtIO io = {
         .putchar = &tty_writec,
     };

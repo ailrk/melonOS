@@ -55,7 +55,9 @@ compile_commands.json
 # Targets
 melonos-bootloader
 melonos-kernel
-melonos-img
+mkfs.melonfs
+melonos.img
+melonosfs.img
 libmelon.a
 
 # Generated files should be obtained from the Makefile

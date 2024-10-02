@@ -3,7 +3,7 @@
 #include "errno.h"
 
 
-int atoi(const char *p) {
+int atoi(char *p) {
     int k   = 0;
     int neg = 0;
     while (isspace(*p)) p++;
@@ -33,8 +33,8 @@ int atoi(const char *p) {
  *
  *  @return:    0 if error
  * */
-long int strtol (const char *str, const char **endptr) {
-    const char *p = str;
+long int strtol (char *str, char **endptr) {
+    char *p = str;
     if (endptr) {
         *endptr = p;
     }

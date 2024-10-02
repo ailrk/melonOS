@@ -8,13 +8,13 @@
 #include "drivers/uart.h"
 
 
-static const char *uart_putc1(const char *c) {
+static char *uart_putc1(char *c) {
     uart_putc(*c++);
     return c;
 }
 
 
-void debug_printf(const char *fmt, ...) {
+void debug_printf(char *fmt, ...) {
     FmtIO io = {
         .putchar = &uart_putc1
     };
@@ -44,7 +44,7 @@ void debug_printf(const char *fmt, ...) {
  *      debug_memdump("10b %p", (char *)ptr);
  *      debug_memdump("10dg %p", (char *)ptr);
  * */
-void debug_memdump(const char *cmd, ...) {
+void debug_memdump(char *cmd, ...) {
     char *addr;
     unsigned n = 1;
     char f     = 'x';
@@ -99,7 +99,7 @@ void debug_memdump(const char *cmd, ...) {
     va_end(args);
 
 #define sp(n) { if (i == 0 || i % n) debug_printf(" "); else debug_printf("\n"); }
-    for (int i = 0; i < n; ++i) {
+    for (unsigned i = 0; i < n; ++i) {
         char *p = &addr[i * sz];
         switch (sz) {
             case 1:

@@ -23,7 +23,7 @@
  * }
  * ```
  * */
-typedef const char *putchar_f(const char *c);
+typedef char *putchar_f(char *c);
 
 
 typedef struct FmtIO {
@@ -31,4 +31,4 @@ typedef struct FmtIO {
 } FmtIO;
 
 
-void format(FmtIO io, const char *fmt, va_list args);
+void format(FmtIO io, char *fmt, va_list args);
