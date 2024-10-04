@@ -2,10 +2,8 @@
 #include <stdbool.h>
 #include "ide.h"
 #include "i386.h"
-#include "string.h"
+#include "defs.h"
 #include "err.h"
-#include "tty.h"
-#include "spinlock.h"
 
 /* Only support ATA channel for now */
 
@@ -15,18 +13,6 @@
 #define ATA_S_DFE  (1 << 5) // drive write fault
 #define ATA_S_RDY  (1 << 6) // ready. 0=drive is spun down or error.
 #define ATA_S_BSY  (1 << 7) // busy. 1=drive is preparing to send/receive
-
-
-typedef enum InterfaceType {
-    IDE_ATA,
-    IDE_ATAPI   // not supported
-} InterfaceType;
-
-
-typedef enum Drive {
-    ATA_MASTER,
-    ATA_SLAVE
-} Drive;
 
 
 typedef struct ChannelReg {
@@ -48,6 +34,11 @@ typedef enum BaseReg {
     BR_COMMAND    = 0x07,
     BR_STATUS     = 0x07, // this blocks interrupt.
 } BaseReg;
+
+
+#define HDDEVSEL_CLS 0xa0
+#define HDDEVSEL_LBA 0xe0
+#define HDDEVSEL_DRIVE(_slave_bit) (_slave_bit << 4)
 
 
 /* ATA register offset from ctl. */
@@ -113,8 +104,13 @@ bool ide_check_error(Channel ch) {
 
 /*! Send ide command request. This returns immediately so we can
  *  perform disk IO asynchronously.
+ *  @ch   Channel
+ *  @d    Channel drive
+ *  @cmd  ATA command
+ *  @lba  LBA address
+ *  @secn Sector counts
  * */
-void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn) {
+void ide_request(Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn) {
     if (secn == 0)
         panic("[IDE] ide_request");
     ide_wait(ch);
@@ -123,21 +119,22 @@ void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn) {
     outb(regb(ch, BR_LBA0)    , lba);
     outb(regb(ch, BR_LBA1)    , lba >> 8);
     outb(regb(ch, BR_LBA2)    , lba >> 16);
-    outb(regb(ch, BR_HDDEVSEL), (lba >> 24) | 0xe0);
+    outb(regb(ch, BR_HDDEVSEL), (lba >> 24) | HDDEVSEL_LBA | HDDEVSEL_DRIVE(d));
     outb(regb(ch, BR_COMMAND) , cmd);
 }
 
 
 /*! Send read request to ide without waiting.
  *  @ch   Channel
+ *  @d    Channel drive
  *  @dst  Memory read to. The size of `dst` should be bigger
  *        than (SECSZ * secn).
  *  @secn read n sectors
  * */
-void ide_read_request(Channel ch, unsigned lba, size_t secn) {
+void ide_read_request(Channel ch, Drive d, unsigned lba, size_t secn) {
     ide_wait(ch);
     ATACmd cmd = secn == 1 ? ATA_CMD_RD1 : ATA_CMD_RDN;
-    ide_request(ch, cmd, lba, secn);
+    ide_request(ch, d, cmd, lba, secn);
 }
 
 
@@ -150,14 +147,15 @@ void ide_read(Channel ch, void *dst, size_t secn) {
 
 /* Write to the disk.
  * @ch   Device channel
+ * @d    Channel drive
  * @src  memory chunk write to the disk. Should at least be bigger
  *       than (SECSZ * secn).
  * @secn n sectors per write
  * */
-void ide_write_request(Channel ch, void* src, unsigned lba, size_t secn) {
+void ide_write_request(Channel ch, Drive d, void* src, unsigned lba, size_t secn) {
     ide_wait(ch);
     ATACmd cmd = secn == 1 ? ATA_CMD_WT1 : ATA_CMD_WTN;
-    ide_request(ch, cmd, lba, secn);
+    ide_request(ch, d, cmd, lba, secn);
     // /4 because insl read words
     outsl(regb(ch, BR_DATA), src, (SECSZ * secn)/4);
 }

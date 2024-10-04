@@ -1,11 +1,8 @@
 #include "err.h"
 #include "fdefs.h"
 #include "spinlock.h"
-#include "mutex.h"
-#include "string.h"
 #include "drivers/ide.h"
 #include "fs/disk.h"
-#include "fs/bcache.h"
 
 #define SECN (BSIZE/SECSZ)           // number of sectors per block
 #define BLK2SEC(blk) (SECN * blk)    // convert block number to sector number
@@ -69,9 +66,9 @@ void disk_init() {
  * */
 static void disk_cmd_request(BNode *b) {
     if (b->dirty) {
-        ide_write_request(ATA_PRIMARY, b->cache, BLK2SEC(b->blockno), SECN);
+        ide_write_request(ATA_PRIMARY, ATA_SLAVE, b->cache, BLK2SEC(b->blockno), SECN);
     } else {
-        ide_read_request(ATA_PRIMARY, BLK2SEC(b->blockno), SECN);
+        ide_read_request(ATA_PRIMARY, ATA_SLAVE, BLK2SEC(b->blockno), SECN);
     }
 }
 

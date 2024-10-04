@@ -1,5 +1,4 @@
 #pragma once
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -8,6 +7,12 @@ typedef enum Channel {
     ATA_PRIMARY,
     ATA_SECONDARY
 } Channel;
+
+
+typedef enum Drive {
+    ATA_MASTER,
+    ATA_SLAVE
+} Drive;
 
 
 /* ATA Commands */
@@ -20,10 +25,8 @@ typedef enum ATACmd {
 
 
 void ide_wait(Channel ch);
-void ide_request(Channel ch, ATACmd cmd, unsigned lba, size_t secn);
-
-void ide_read_request(Channel ch, unsigned lba, size_t secn);
+void ide_request(Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn);
+void ide_read_request(Channel ch, Drive d, unsigned lba, size_t secn);
 void ide_read(Channel ch, void *dst, size_t secn);
-void ide_write_request(Channel ch, void *src, unsigned lba, size_t secn);
-
+void ide_write_request(Channel ch, Drive d, void *src, unsigned lba, size_t secn);
 bool ide_check_error(Channel ch);
