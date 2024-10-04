@@ -11,7 +11,7 @@
 #define BOOTLDSECN  20
 
 /* File system parameters */
-#define SUPERBLKNO  1
+#define SUPERBLKNO  0
 #define BSIZE       (SECSZ)        // block size
 #define NDEV        32             // max number of devices
 #define NFILE       128            // max number of open filese in the system

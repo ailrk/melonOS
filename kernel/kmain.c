@@ -16,6 +16,7 @@
 
 #define DBG 0
 
+
 extern char end[];  // defined in `kernel.ld.
 extern char data[]; // elf segment
 char *      kstack; // kernel stack. userd in entry.s

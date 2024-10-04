@@ -1,3 +1,4 @@
+#include "defs.h"
 #include "string.h"
 #include "err.h"
 #include "fs/fdefs.h"
@@ -35,7 +36,10 @@ void block_zero(DevNum dev, unsigned blockno) {
 void block_super(DevNum dev, SuperBlock *sb, bool update) {
     if (update) {
         BNode *b = bcache_read(dev, SUPERBLKNO);
-        memmove(&sb, b->cache, BSIZE);
+        memmove(sb, b->cache, sizeof(SuperBlock));
+        if (sb != &super_block) {
+            memmove(&super_block, b->cache, sizeof(SuperBlock));
+        }
         bcache_release(b);
     } else {
         *sb = super_block;
@@ -43,89 +47,95 @@ void block_super(DevNum dev, SuperBlock *sb, bool update) {
 }
 
 
-typedef enum FreeMapOp {
-    O_CHECK,
-    O_SET,
-    O_UNSET,
-    O_SEARCH
-} FreeMapOp;
+/*! Freemap bit address.
+ *  The freemap stores blocks of bits to indicate whether a data block is in use.
+ *  the nth bit from super_block.bmapstart indicates the availability of
+ *  (super_block.datastart + nth bit).
+ *
+ *  To access the bit for a specific `blockno`, you need to  obtain the bitmap block with
+ *  `super_block.bmapstart + (blockno - super_block.datastart)`, then access the nth
+ *  bit in that block counts from MSB.
+ *  */
+typedef struct FreemapAddr {
+    unsigned bno;  // the block that contains the bit.
+    unsigned nbit; // n bits from `bmapstart`
+} FreemapAddr;
 
 
-typedef enum FreeMapRet {
-    F_0,
-    F_1,
-    F_DONE,
-    F_FULL,
-    F_ERR
-} FreeMapRet;
-
-
-/*! Operating on freemap blocks.
- *  It assumes `super_block` is up to date.
- *  @dev     device number
- *  @op      free map operation
- *  @blockno the blockno to operate on
- *  @out     out ptr
- *  @outsz   size of data by outptr
+/*! Get freemap bit address for `blockno`.
  * */
-static FreeMapRet freemap_ctl(DevNum dev, FreeMapOp op, unsigned blockno, void *out, size_t outsz) {
-    FreeMapRet ret = F_ERR;
-
-    switch (op) { // type check
-        case O_CHECK:
-            if (outsz != sizeof(unsigned))
-                panic("freemap_ctl: O_SEARCH");
-        default:
-            if (out != 0 || outsz != 0)
-                panic("freemap_ctl: unused out");
+static FreemapAddr freemap_addr(unsigned blockno) {
+    FreemapAddr addr;
+    if (blockno < super_block.datastart) {
+        panic("freemap_addr: blockno smaller than data start");
     }
 
-    if (op >= O_CHECK && op <= O_UNSET) {
-        unsigned pg    = blockno / BITS_PER_BLK;
-        unsigned nbit  = blockno - (pg * BITS_PER_BLK);
-        unsigned bbno  = super_block.bmapstart + pg;
-        BNode *b       = bcache_read(dev, bbno);
-        char *freemap  = b->cache;
-        switch (op) {
-            case O_CHECK:
-                if (freemap[nbit / 8] & (1 << (nbit % 8))) {
-                    ret = F_1;
-                } else {
-                    ret = F_0;
-                }
-                break;
-            case O_SET:
-                freemap[nbit / 8] |= (1 << (nbit % 8));
-                ret = F_DONE;
-                break;
-            case O_UNSET:
-                freemap[nbit / 8] &= ~(1 << (nbit % 8));
-                ret = F_DONE;
-                break;
-            default:
-                panic("freemap_ctl");
-        }
-        bcache_release(b);
-        return ret;
+    if (blockno > super_block.nblocks) {
+        panic("freemap_addr: blockno larger then file system size");
     }
 
-    if (op == O_SEARCH) {
-        unsigned fmapblks = super_block.datastart - super_block.bmapstart;
-        for (unsigned pg = 0; pg < fmapblks; ++pg) {
-            BNode *b      = bcache_read(dev, super_block.bmapstart + pg);
-            char *freemap = b->cache;
-            for (unsigned i = 0; i < sizeof(freemap); ++i) {
-                if (freemap[i] & 0xff) {
-                    unsigned n       = __builtin_ffs(freemap[i]);
-                    unsigned fbno    = pg * BITS_PER_BLK + n;
-                    *(unsigned *)out = fbno;
-                    return F_DONE;
-                }
+    unsigned off = blockno - super_block.datastart;
+    addr.bno  = off / BITS_PER_BLK + super_block.bmapstart;
+    addr.nbit = off % BITS_PER_BLK;
+    return addr;
+}
+
+
+/*! Check if `blockno` is used */
+static bool freemap_check(DevNum dev, unsigned blockno) {
+    FreemapAddr addr = freemap_addr(blockno);
+    BNode *b         = bcache_read(dev, addr.bno);
+    char *freemap    = b->cache;
+    bool ret         = freemap[addr.nbit / 8] & (0x80 >> (addr.nbit % 8));
+    bcache_release(b);
+    return ret;
+}
+
+
+/*! Set freemap bit */
+static void freemap_set(DevNum dev, unsigned blockno, bool used) {
+    if (blockno < super_block.datastart) {
+        panic("freemap_set");
+    }
+    FreemapAddr addr    = freemap_addr(blockno);
+    BNode *b            = bcache_read(dev, addr.bno);
+    unsigned char *byte = &((unsigned char *)b->cache)[addr.nbit / 8];
+    if (used) {
+        *byte |= (0x80 >> (addr.nbit % 8));
+    } else {
+        *byte &= ~(0x80 >> (addr.nbit % 8));
+    }
+    bcache_write(b);
+    bcache_release(b);
+}
+
+
+/*! Search for the first free block in the freemap */
+static unsigned freemap_search(DevNum dev, unsigned *out) {
+    unsigned nblks = super_block.datastart - super_block.bmapstart;
+    for (unsigned off = 0; off < nblks; ++off) {
+        BNode *b      = bcache_read(dev, off + super_block.bmapstart);
+        for (unsigned i = 0; i < sizeof(b->cache); ++i) {
+            unsigned char byte = b->cache[i];
+
+            if (byte == 0) {
+                *out = super_block.datastart + off * BITS_PER_BLK;
+                bcache_release(b);
+                return true;
+            }
+
+            if (byte & 0xff) { // has 1
+                unsigned n = 0;
+                for (; byte & (1 << 7); byte <<= 1, ++n);
+                unsigned fbno = super_block.datastart + off * BITS_PER_BLK + n;
+                *out = fbno;
+                bcache_release(b);
+                return true;
             }
         }
-        return F_FULL;
+        bcache_release(b);
     }
-    return ret;
+    return false;
 }
 
 
@@ -135,41 +145,24 @@ static FreeMapRet freemap_ctl(DevNum dev, FreeMapOp op, unsigned blockno, void *
  *  @return  the allocated blockno. 0 if the allocation is failed.
  * */
 unsigned block_alloc(DevNum dev) {
-    unsigned blockno = super_block.datastart;
     unsigned fbno;
 
-    switch (freemap_ctl(dev, blockno, O_SEARCH, &fbno, sizeof(unsigned))) {
-        case F_DONE:
-            if (!fbno)
-                panic("bloc_alloc");
-
-            if (freemap_ctl(dev, fbno, O_SET, 0, 0) != F_DONE)
-                panic("bloc_alloc");
-
-            return fbno;
-            break;
-        case F_FULL:
-            perror("block_alloc: disk full");
-            return 0;
-        default:
-            panic("block_alloc");
-            __builtin_unreachable();
+    if (freemap_search(dev, &fbno)) {
+        if (!fbno)
+            panic("bad_alloc");
+        freemap_set(dev, fbno, true);
+        return fbno;
     }
+
+    return 0;
 }
 
 
 /*! Free a block */
 void block_free(DevNum dev, unsigned blockno) {
-    switch(freemap_ctl(dev, blockno, O_CHECK, 0, 0)) {
-        case F_0:
-            panic("block_free: block is already free");
-            break;
-        case F_1:
-            if (freemap_ctl(dev, blockno, O_UNSET, 0, 0) != F_DONE)
-                panic("block_free: can't free block");
-            break;
-        default:
-            panic("block_free");
-            break;
+    if (!freemap_check(dev, blockno)) {
+        panic("block_free: block is already free");
+        return;
     }
+    freemap_set(dev, blockno, false);
 }

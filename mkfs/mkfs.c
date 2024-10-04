@@ -45,30 +45,30 @@ int main(int argc, char *argv[]) {
         .nblocks   = 30,
         .ninodes   = 5,
         .ndata     = 20,
-        .bmapstart = 7,
-        .datastart = 8,
+        .bmapstart = 6,
+        .datastart = 7,
     };
 
     // sb
     memset(buf, 0, sizeof(buf));
     memcpy(buf, &sb, sizeof(SuperBlock));
-    wsec(1, buf);
+    wsec(0, buf);
 
     // inodes
     memset(buf, 0, sizeof(buf));
+    wsec(1, buf);
     wsec(2, buf);
     wsec(3, buf);
     wsec(4, buf);
     wsec(5, buf);
-    wsec(6, buf);
 
     // bmap
-    wsec(7, buf);
+    wsec(6, buf);
 
     // data
     for (unsigned i = 8; i <= sb.nblocks; ++i) {
         wsec(i, buf);
     }
 
-    return 0;
+    return 240;
 }

@@ -103,7 +103,7 @@ void disk_sync(BNode *b) {
 
     disk_cmd_request(b);
 
-    while (!synced(b));  // TODO should sleep if block is not synced yet.
+    while (!synced(b)) {}  // TODO should sleep if block is not synced yet.
 }
 
 
