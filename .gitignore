@@ -47,6 +47,7 @@ sysroot
 .cache
 .vim-session
 .vimrc
+.gdbinit
 compile_commands.json
 
 # Allows you to append your local dev commands

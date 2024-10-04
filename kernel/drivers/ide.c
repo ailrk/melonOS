@@ -30,7 +30,7 @@ typedef enum BaseReg {
     BR_LBA0       = 0x03, // lower 8 bytes lba address
     BR_LBA1       = 0x04, // next 8 bytes lba address
     BR_LBA2       = 0x05, // next 8 bytes lba address
-    BR_HDDEVSEL   = 0x06, // last 8 bytes lba address
+    BR_HDDEVSEL   = 0x06, // remaining lba and selecting drive
     BR_COMMAND    = 0x07,
     BR_STATUS     = 0x07, // this blocks interrupt.
 } BaseReg;
@@ -93,6 +93,22 @@ void ide_wait(Channel ch) {
     uint8_t mask = ATA_S_RDY | ATA_S_BSY;
     uint8_t ready = ATA_S_RDY;
     while((inb(regc(ch, CR_ALTSTATUS)) & mask) != ready);
+}
+
+
+
+/* !Check if disk 1 exists
+ * */
+bool ide_has_secondary(Channel ch) {
+    bool flag = false;
+    outb(regb(ch, BR_HDDEVSEL), HDDEVSEL_LBA | HDDEVSEL_DRIVE(ATA_SECONDARY));
+    for (int i = 0; i < 1024; ++i) {
+        if (inb(regb(ch, BR_STATUS)) != 0) {
+            flag = true;
+        }
+    }
+    outb(regb(ch, BR_HDDEVSEL), HDDEVSEL_LBA | HDDEVSEL_DRIVE(ATA_PRIMARY));
+    return flag;
 }
 
 

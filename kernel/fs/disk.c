@@ -54,12 +54,6 @@ static BNode *dq_dequeue() {
 }
 
 
-/*! Initialize disk */
-void disk_init() {
-    disk_queue.lk = new_lock("disk_queue.lk");
-}
-
-
 /*! Send disk command for BNode b.
  *  If `b->dirty` is true, write `b->cache` to the disk, otherwise
  *  read the block b corresponds to into `b->cache`.
@@ -82,6 +76,15 @@ static void read_block(BNode *b) {
 /*! Check if the cache synchronized synchronized with the disk */
 static bool synced(BNode *b) {
     return b->valid && !b->dirty;
+}
+
+
+/*! Initialize disk */
+void disk_init() {
+    disk_queue.lk = new_lock("disk_queue.lk");
+    if (!ide_has_secondary(ATA_PRIMARY)) {
+        panic("Secondary disk doesn't exist");
+    }
 }
 
 
