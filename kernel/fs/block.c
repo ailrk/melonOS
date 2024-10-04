@@ -7,7 +7,7 @@
 /* Block allocation
  *
  * On disk block structures:
- * [ boot | super | log | inode .. | freemap .. | data .. ]
+ * [ super | log | inode .. | freemap .. | data .. ]
  * */
 
 
