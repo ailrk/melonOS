@@ -7,9 +7,9 @@
 #include "ncli.h"
 #include "pdefs.h"
 #include "trap.h"
-#include "tty.h"
 #include "string.h"
 #include "spinlock.h"
+#include "drivers/vga.h"
 #include "process/proc.h"
 #include "mem/palloc.h"
 #include "mem/vmem.h"
@@ -149,7 +149,7 @@ static Process *get_unused_process() {
 static bool setup_process_stack(Process *p) {
     // allocate and build the kernel stack
     if ((p->kstack = palloc()) == 0) {
-        tty_printf("found %#x", p);
+        vga_printf("found %#x", p);
         p->state = PROC_UNUSED;
         return false;
     }
@@ -234,7 +234,7 @@ static void set_pid1_trapframe(Process *p) {
 
 /*! Initialize the first user space process. */
 void init_pid1() {
-    tty_printf("[\033[32mboot\033[0m] init1...");
+    vga_printf("[\033[32mboot\033[0m] init1...");
     Process *p;
     if ((p = allocate_process()) == 0) {
         panic("init_pid1: failed to allocate process");
@@ -257,7 +257,7 @@ void init_pid1() {
     proc_init1 = p;
     unlock(&ptable.lk);
 
-    tty_printf("\033[32mok\033[0m\n");
+    vga_printf("\033[32mok\033[0m\n");
 }
 
 
@@ -291,7 +291,7 @@ bool grow_process(int n) {
  *  back to the scheduler.
  * */
 void scheduler() {
-    tty_printf("[\033[32mboot\033[0m] scheduler...\n");
+    vga_printf("[\033[32mboot\033[0m] scheduler...\n");
     CPU *cpu = this_cpu();
     cpu->proc = 0;
     for(;;) {

@@ -1,6 +1,6 @@
 #include "ps2.h"
 #include "i386.h"
-#include "tty.h"
+#include "drivers/vga.h"
 #include "err.h"
 #include <stdbool.h>
 
@@ -136,7 +136,7 @@ static uint8_t scancode(uint8_t scancode) {
 
 #if DEBUG
 static void debug() {
-    tty_printf("[\033[33mkbd\033[0m] status %#x, data %#x\n", inb(KBP_STAT), inb(KBP_DATA));
+    vga_printf("[\033[33mkbd\033[0m] status %#x, data %#x\n", inb(KBP_STAT), inb(KBP_DATA));
 }
 #endif
 
@@ -150,7 +150,7 @@ static void debug() {
 #define CCB_P1_TRA  6 // port 1 translation 1=enabled
 
 void ps2_init() {
-    tty_printf("[\033[32mboot\033[0m] ps2...");
+    vga_printf("[\033[32mboot\033[0m] ps2...");
 
     echo_test();
 
@@ -177,5 +177,5 @@ void ps2_init() {
 
     // enable port 1 interrupts
     write_ccb(read_ccb() | (1 << CCB_P1_INT) | (1 << CCB_P1_TRA));
-    tty_printf("\033[32mok\033[0m\n");
+    vga_printf("\033[32mok\033[0m\n");
 }

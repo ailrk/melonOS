@@ -1,8 +1,8 @@
+#include <stdint.h>
 #include "palloc.h"
 #include "mem.h"
 #include "err.h"
-#include "tty.h"
-#include <stdint.h>
+#include "drivers/vga.h"
 
 
 extern char end[];
@@ -29,9 +29,9 @@ void pfree_range(void *vstart, void *vend) {
 
 /*! free the memory from vstart to vend */
 void palloc_init(void *vstart, void *vend) {
-    tty_printf("[\033[32mboot\033[0m] palloc_init...");
+    vga_printf("[\033[32mboot\033[0m] palloc_init...");
     pfree_range(vstart, vend);
-    tty_printf("\033[32mok\033[0m\n");
+    vga_printf("\033[32mok\033[0m\n");
 }
 
 

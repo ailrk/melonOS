@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "debug.h"
 #include "defs.h"
 #include "err.h"
 #include "gdt.h"
@@ -11,7 +10,7 @@
 #include "ncli.h"
 #include "pdefs.h"
 #include "string.h"
-#include "tty.h"
+#include "drivers/vga.h"
 #include "mem/vmem.h"
 #include "mem/palloc.h"
 #include "process/proc.h"
@@ -137,8 +136,8 @@ static bool map_pages(PD *page_dir, const VMap *k) {
     PTE *pte;
 
 #if DEBUG
-    tty_printf("\nmap_pages> <VMap %#x, (%#x, %#x), %#x>", k->virt, k->pstart, k->pend, k->perm);
-    tty_printf("\n           <vstart %#x, vend %#x>\n", vstart, vend);
+    vga_printf("\nmap_pages> <VMap %#x, (%#x, %#x), %#x>", k->virt, k->pstart, k->pend, k->perm);
+    vga_printf("\n           <vstart %#x, vend %#x>\n", vstart, vend);
 #endif
 
     if ((uintptr_t)vstart % PAGE_SZ > 0 || (uintptr_t)vend % PAGE_SZ > 0)
@@ -193,13 +192,13 @@ void switch_kernel_vmem() { set_cr3(V2P_C(kernel_page_dir)); }
 
 /*! Setup kernel virtual memory */
 void kernel_vmem_init() {
-    tty_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
+    vga_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
     init_kmap();
     if ((kernel_page_dir = allocate_kernel_vmem()) == 0) {
         panic("kernel_vmem_init");
     }
     switch_kernel_vmem();
-    tty_printf("\033[32mok\033[0m\n");
+    vga_printf("\033[32mok\033[0m\n");
 }
 
 

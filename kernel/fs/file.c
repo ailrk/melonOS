@@ -5,9 +5,6 @@
 /* file descriptor */
 
 
-Dev devs[NDEV];
-
-
 typedef struct FTable {
     SpinLock lk;
     File     t[NFILE];

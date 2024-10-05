@@ -1,18 +1,23 @@
-#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "tty.h"
+#include <stdarg.h>
 #include "mem.h"
 #include "ansi.h"
-#include "string.h"
 #include "fmt.h"
-
-/**
- * VGA buffer starts at 0xb8000 and provides 256k display memory.
- */
+#include "drivers/vga.h"
 
 
-Terminal term;
+/* The vga screen */
+typedef struct Screen {
+    size_t    row;
+    size_t    column;
+    uint8_t   color;
+    uint16_t *buffer;
+    uint16_t *cursor;
+}Screen;
+
+
+Screen screen;
 
 
 static inline uint8_t
@@ -37,58 +42,58 @@ static size_t const VGA_HEIGHT = 25;
 
 
 static void set_bg_color(VgaColor bg) {
-    term.color |= bg << 4;
+    screen.color |= bg << 4;
 }
 
 
 static void set_fg_color(VgaColor fg) {
-    term.color = vga_entry_color(fg, term.color >> 4);
+    screen.color = vga_entry_color(fg, screen.color >> 4);
 }
 
 
-void tty_clear() {
-    term.row    = 0;
-    term.column = 0;
+void vga_clear() {
+    screen.row    = 0;
+    screen.column = 0;
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
         for (size_t x = 0; x < VGA_WIDTH; ++x)
-            term.buffer[y * VGA_WIDTH + x] = vga_entry(' ', term.color);
+            screen.buffer[y * VGA_WIDTH + x] = vga_entry(' ', screen.color);
 }
 
 
 void newline() {
-    term.column = 0;
-    term.row += 1;
+    screen.column = 0;
+    screen.row += 1;
 }
 
 
-void tty_init() {
-    term.row    = 0;
-    term.column = 0;
-    term.color  = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
-    term.buffer = (uint16_t *)(TERMBUF_START);
-    tty_clear();
-    tty_printf("melonos 0.0.1\n");
+void vga_init() {
+    screen.row    = 0;
+    screen.column = 0;
+    screen.color  = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+    screen.buffer = (uint16_t *)(TERMBUF_START);
+    vga_clear();
+    vga_printf("melonos 0.0.1\n");
 }
 
 
-void tty_set_cursor(uint16_t x, uint16_t y) {
-    term.cursor = term.buffer + (y * VGA_WIDTH + x );
+void vga_set_cursor(uint16_t x, uint16_t y) {
+    screen.cursor = screen.buffer + (y * VGA_WIDTH + x );
 }
 
 
-void tty_set_color(uint8_t color) { term.color = color; }
+void vga_set_color(uint8_t color) { screen.color = color; }
 
 
 void put_entry_at(char c) {
-    size_t x = term.column;
-    size_t y = term.row;
-    term.buffer[y * VGA_WIDTH + x] = vga_entry(c, term.color);
+    size_t x = screen.column;
+    size_t y = screen.row;
+    screen.buffer[y * VGA_WIDTH + x] = vga_entry(c, screen.color);
 }
 
 
-void tty_putchar(char c) {
-    if (term.row > VGA_HEIGHT) {
-        tty_clear();
+void vga_putchar(char c) {
+    if (screen.row > VGA_HEIGHT) {
+        vga_clear();
     }
 
     if (c == '\n') {
@@ -97,10 +102,10 @@ void tty_putchar(char c) {
     }
 
     put_entry_at(c);
-    if (++term.column == VGA_WIDTH) {
-        term.column = 0;
-        if (++term.row == VGA_HEIGHT)
-            term.row = 0;
+    if (++screen.column == VGA_WIDTH) {
+        screen.column = 0;
+        if (++screen.row == VGA_HEIGHT)
+            screen.row = 0;
     }
 }
 
@@ -164,7 +169,7 @@ static void ansi_cntl(const ANSIState *ansi) {
                 set_fg_color(VGA_COLOR_WHITE);
                 break;
             case ANSIColor_RES:
-                term.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+                screen.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
                 break;
             default: break;
             }
@@ -178,7 +183,7 @@ static void ansi_cntl(const ANSIState *ansi) {
 /*! Write a single char to the screen. If it encounters an escape code, consume
  *  it first then print the next character.
  * */
-char *tty_writec(char *data) {
+char *vga_writec(char *data) {
     ANSIState ansi;
 
     if (*data == '\033') { // ansi
@@ -189,32 +194,25 @@ char *tty_writec(char *data) {
         }
     }
 
-    tty_putchar(*data++);
+    vga_putchar(*data++);
     return data;
 }
 
 
-/*! The implementation should always use `tty_write_string` because it handles
+/*! The implementation should always use `vga_write_string` because it handles
  *  ansi escapes properly.
  *
- *  `tty_printf` is driven by `format` and it supports all it's format specifiers.
+ *  `vga_printf` is driven by `format` and it supports all it's format specifiers.
  *
  *  @fmt formatted string
  *  @... data to be formatted
  * */
-void tty_printf(char *fmt, ...) {
+void vga_printf(char *fmt, ...) {
     FmtIO io = {
-        .putchar = &tty_writec,
+        .putchar = &vga_writec,
     };
     va_list args;
     va_start (args, fmt);
     format(io, fmt, args);
     va_end (args);
-}
-
-
-void tty_repl() {
-    while(1) {
-        tty_printf("kernel>");
-    }
 }

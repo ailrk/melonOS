@@ -3,11 +3,11 @@
 #include "err.h"
 #include "mmu.h"
 #include "traps.h"
-#include "tty.h"
 #include "idt.h"
 #include "sys/syscall.h"
 #include "drivers/kbd.h"
 #include "drivers/pic.h"
+#include "drivers/vga.h"
 #include "fs/disk.h"
 #include "process/proc.h"
 
@@ -88,7 +88,7 @@ void handle_I_IRQ_KBD() {
     char c;
     kbd_handler();
     if ((c = kbd_getc()) != -1) {
-        tty_printf("%c", c);
+        vga_printf("%c", c);
         debug_printf("%c", c);
     }
     pic_eoi();

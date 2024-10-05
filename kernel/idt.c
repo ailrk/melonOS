@@ -1,7 +1,7 @@
-#include "idt.h"
-#include "tty.h"
 #include <stdint.h>
-#include "drivers/pic.h"
+#include "idt.h"
+#include "drivers/vga.h"
+
 
 /* an array of IDT entries; */
 IDTEntry idt[IDT_MAX_VECTOR];
@@ -32,9 +32,9 @@ void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
 
 
 void idt_init() {
-    tty_printf("[\033[32mboot\033[0m] idt...");
+    vga_printf("[\033[32mboot\033[0m] idt...");
     idtr.base  = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     lidt((void*)&idtr);
-    tty_printf("\033[32mok\033[0m\n");
+    vga_printf("\033[32mok\033[0m\n");
 }

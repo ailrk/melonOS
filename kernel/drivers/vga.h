@@ -1,6 +1,6 @@
 #pragma once
+
 #include <stdint.h>
-#include <stddef.h>
 
 #define CMD_PGUP    (1 << 0)
 #define CMD_PGDOWN  (1 << 1)
@@ -27,24 +27,13 @@ typedef enum VgaColor {
 
 
 
-/* The vga terminal */
-typedef struct Terminal {
-    size_t    row;
-    size_t    column;
-    uint8_t   color;
-    uint16_t *buffer;
-    uint16_t *cursor;
-}Terminal;
-
-
-void  tty_init();
-void  tty_clear();
-void  tty_load_page(uint16_t page);
-void  tty_newline();
-void  tty_set_cursor(uint16_t x, uint16_t y);
-void  tty_set_color(uint8_t color);
-void  tty_put_entry_at(char c);
-void  tty_putchar(char c);
-char *tty_writec(char *data);
-void  tty_printf(char *fmt, ...);
-void  tty_repl();
+void  vga_init();
+void  vga_clear();
+void  vga_load_page(uint16_t page);
+void  vga_newline();
+void  vga_set_cursor(uint16_t x, uint16_t y);
+void  vga_set_color(uint8_t color);
+void  vga_put_entry_at(char c);
+void  vga_putchar(char c);
+char *vga_writec(char *data);
+void  vga_printf(char *fmt, ...);

@@ -32,6 +32,7 @@ typedef struct Inode {
     DevNum   dev;    // device number
     InodeNum inum;   // inode number
     int      nref;   // ref count
+    Mutex    lk;
     bool     read;   // has been read from disk?
     DInode   dinode; // copy of disk inode.
 } Inode;

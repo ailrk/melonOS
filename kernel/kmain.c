@@ -1,11 +1,11 @@
 #include "mem.h"
 #include "trap.h"
-#include "tty.h"
 #include "idt.h"
 #include "mmu.h"
 #include "gdt.h"
 #include "mem/vmem.h"
 #include "mem/palloc.h"
+#include "drivers/vga.h"
 #include "drivers/ps2.h"
 #include "drivers/pic.h"
 #include "drivers/uart.h"
@@ -23,7 +23,7 @@ char *      kstack; // kernel stack. userd in entry.s
 
 
 void kmain(void) {
-    tty_init();
+    vga_init();
     palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
     kernel_vmem_init();
     gdt_init();
