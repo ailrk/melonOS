@@ -2,7 +2,6 @@
 #include "driver/vga.h"
 #include "fs/dev.h"
 
-
 void init_console() {
     vga_init();
     devices[DEV_CONSOLE].read = 0x0;

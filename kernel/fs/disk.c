@@ -4,8 +4,8 @@
 #include "driver/ide.h"
 #include "fs/disk.h"
 
-#define SECN (BSIZE/SECSZ)           // number of sectors per block
-#define BLK2SEC(blk) (SECN * blk)    // convert block number to sector number
+#define SECN (BSIZE/SECSZ)        // number of sectors per block
+#define BLK2SEC(blk) (SECN * blk) // convert block number to sector number
 
 
 /* The disk queue maintains a queue of pending BNodes waiting

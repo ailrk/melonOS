@@ -1,6 +1,5 @@
 #pragma once
 #include <stdbool.h>
-#include <stddef.h>
 #include "defs.h"
 #include "fdefs.fwd.h"
 #include "mutex.h"

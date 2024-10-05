@@ -4,7 +4,6 @@
 #include "i386.h"
 #include "process/pdefs.h"
 
-
 /* Virtual addrses mapping */
 typedef struct VMap {
     void *        virt;

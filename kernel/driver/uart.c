@@ -5,6 +5,7 @@
 
 #define COM1    0x3f8
 
+
 static bool init_serial() {
    outb(COM1 + 1, 0x00);    // Disable all interrupts
    outb(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
@@ -34,29 +35,33 @@ void uart_init() {
     }
 }
 
+
 static int serial_received() {
    return inb(COM1 + 5) & 1;
 }
 
+
 static char read_serial() {
    while (serial_received() == 0);
-
    return inb(COM1);
 }
+
 
 char uart_getc() {
     return read_serial();
 }
 
+
 static int is_transmit_empty() {
    return inb(COM1 + 5) & 0x20;
 }
 
+
 static void write_serial(char a) {
    while (is_transmit_empty() == 0);
-
    outb(COM1,a);
 }
+
 
 void uart_putc(char c) {
     write_serial(c);

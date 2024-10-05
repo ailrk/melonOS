@@ -4,7 +4,6 @@
 #include "err.h"
 #include "driver/vga.h"
 
-
 extern char end[];
 
 

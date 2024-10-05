@@ -7,7 +7,9 @@ typedef struct ITable {
     Inode    inodes[NINODE];
 } ITable;
 
+
 ITable itable;
+
 
 void  inode_init(DevNum dev) {
     itable.lk = new_lock("itable.lk");

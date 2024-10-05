@@ -3,7 +3,6 @@
 #include "fdefs.fwd.h"
 #include "fdefs.h"
 
-
 #define ROOTINO 1  // root i-number
 
 
