@@ -1,5 +1,5 @@
 #include "i386.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 #include "traps.h"
 #include <stdint.h>
 

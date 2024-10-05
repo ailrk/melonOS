@@ -5,7 +5,7 @@
 #include "stdlib.h"
 #include "ctype.h"
 #include "errno.h"
-#include "drivers/uart.h"
+#include "driver/uart.h"
 
 
 static char *uart_putc1(char *c) {

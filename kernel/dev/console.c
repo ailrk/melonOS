@@ -1,5 +1,5 @@
 #include "dev/console.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 #include "fs/dev.h"
 
 

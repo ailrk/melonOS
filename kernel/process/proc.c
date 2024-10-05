@@ -9,7 +9,7 @@
 #include "trap.h"
 #include "string.h"
 #include "spinlock.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 #include "process/proc.h"
 #include "mem/palloc.h"
 #include "mem/vmem.h"

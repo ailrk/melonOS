@@ -1,7 +1,7 @@
 #include "err.h"
 #include "fdefs.h"
 #include "spinlock.h"
-#include "drivers/ide.h"
+#include "driver/ide.h"
 #include "fs/disk.h"
 
 #define SECN (BSIZE/SECSZ)           // number of sectors per block

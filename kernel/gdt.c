@@ -1,7 +1,7 @@
 #include "gdt.h"
 #include "i386.h"
 #include "mmu.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 #include "process/proc.h"
 
 /* GDT is not useful if you have paging, but x86 protected mode requires you

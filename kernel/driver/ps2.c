@@ -1,6 +1,6 @@
 #include "ps2.h"
 #include "i386.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 #include "err.h"
 #include <stdbool.h>
 

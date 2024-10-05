@@ -5,9 +5,9 @@
 #include "traps.h"
 #include "idt.h"
 #include "sys/syscall.h"
-#include "drivers/kbd.h"
-#include "drivers/pic.h"
-#include "drivers/vga.h"
+#include "driver/kbd.h"
+#include "driver/pic.h"
+#include "driver/vga.h"
 #include "fs/disk.h"
 #include "process/proc.h"
 

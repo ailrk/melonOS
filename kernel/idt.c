@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "idt.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 
 
 /* an array of IDT entries; */

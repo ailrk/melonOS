@@ -10,7 +10,7 @@
 #include "ncli.h"
 #include "pdefs.h"
 #include "string.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 #include "mem/vmem.h"
 #include "mem/palloc.h"
 #include "process/proc.h"

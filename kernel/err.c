@@ -1,6 +1,6 @@
 #include "err.h"
 #include "i386.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 
 
 __attribute__((noreturn))

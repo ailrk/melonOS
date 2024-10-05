@@ -4,7 +4,7 @@
 #include "mem.h"
 #include "ansi.h"
 #include "fmt.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 
 
 /* The vga screen */

@@ -2,7 +2,7 @@
 #include "palloc.h"
 #include "mem.h"
 #include "err.h"
-#include "drivers/vga.h"
+#include "driver/vga.h"
 
 
 extern char end[];
