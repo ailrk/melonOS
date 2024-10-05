@@ -1,4 +1,4 @@
-#include "memory/palloc.h"
+#include "defs.h"
 #include "trap.h"
 #include "memory.h"
 #include "fs.h"
@@ -9,21 +9,17 @@
 
 #define DBG 0
 
-
-extern char end[];  // defined in `kernel.ld.
-extern char data[]; // elf segment
-char *      kstack; // kernel stack. userd in entry.s
+char        kstack[KSTACK_SZ]; // kernel stack. userd in entry.s
 
 
 void kmain(void) {
     vga_init();
-    palloc_init(end, P2V_C(PTESZ * NPDES * NPTES));
     mem_init1();
     uart_init();
     ptable_init();
-    trap_init();
     ps2_init();
     mem_init2();
+    trap_init();
     fs_init();
     init_pid1();
     scheduler();

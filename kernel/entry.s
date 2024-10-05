@@ -1,4 +1,4 @@
-KSTACKSZ equ 16384      ; kernel stack size is 16kb
+#include "defs.h"
     global _start
     extern kmain
     extern kstack
@@ -8,7 +8,11 @@ KSTACKSZ equ 16384      ; kernel stack size is 16kb
 ; so we are using virtual address at this point.
 _start:
 entry:
-    ; ; from this point paging is enabled.
-    mov esp, (kstack + KSTACKSZ)
+    ; 4MB virtual memory should already be avaialable at this point.
+    ; The kernel stack should be completely located in [data, end)
+    ; We need to make sure (kstack + KSTACKSZ) < end so the kernel stack
+    ; doesn't overwrite into the rest of the data section.
+    ; this means we need kstack <= end - KSTACKSZ.
+    mov esp, (kstack + KSTACK_SZ)
     mov eax, kmain
     jmp eax

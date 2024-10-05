@@ -1,6 +1,6 @@
 #include "err.h"
-#include "mutex.h"
-#include "spinlock.h"
+#include "process/mutex.h"
+#include "process/spinlock.h"
 #include "fs/bcache.h"
 #include "fs/disk.h"
 #include "fs/fdefs.h"

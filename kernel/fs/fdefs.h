@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "defs.h"
 #include "fdefs.fwd.h"
-#include "concucrrency/mutex.h"
+#include "process/mutex.h"
 
 
 typedef struct SuperBlock {

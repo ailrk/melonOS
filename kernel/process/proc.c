@@ -8,7 +8,7 @@
 #include "trap.h"
 #include "string.h"
 #include "trap/ncli.h"
-#include "concucrrency/spinlock.h"
+#include "process/spinlock.h"
 #include "driver/vga.h"
 #include "process/proc.h"
 #include "memory/palloc.h"

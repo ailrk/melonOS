@@ -5,6 +5,7 @@
 #define PATCH_VER "1"
 #define VERSION MAJOR_VER "." MINOR_VER "." PATCH_VER
 
+/* Kernel stack size */
 #define KSTACK_SZ   4096
 
 #define SECSZ       512

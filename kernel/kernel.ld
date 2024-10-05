@@ -1,6 +1,6 @@
 #include "mem.h"
 
-ENTRY(_start)              
+ENTRY(_start)
 
 /* ouput elf format */
 OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
@@ -57,7 +57,7 @@ SECTIONS {
         *(.data.*)
     }
 
-    PROVIDE(edata = .);  /* end of data */    
+    PROVIDE(edata = .);  /* end of data */
 
     . = ALIGN(PAGE_SZ);
     .bss :
