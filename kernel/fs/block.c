@@ -30,16 +30,18 @@ void block_zero(DevNum dev, unsigned blockno) {
 }
 
 
-/*! Read superblock. If `update` is true, read the superblock
- *  from the disk.
+/*! Read superblock. If `update` is true, read the superblock from the disk.
+ *  @dev     Device number.
+ *  @sb      Output. If it's 0, don't output anything.
+ *  @update  If `update` is true, read the superblock from  the disk
  * */
 void block_super(DevNum dev, SuperBlock *sb, bool update) {
     if (update) {
         BNode *b = bcache_read(dev, SUPERBLKNO);
-        memmove(sb, b->cache, sizeof(SuperBlock));
-        if (sb != &super_block) {
+        if (sb)
+            memmove(sb, b->cache, sizeof(SuperBlock));
+        if (sb != &super_block)
             memmove(&super_block, b->cache, sizeof(SuperBlock));
-        }
         bcache_release(b);
     } else {
         *sb = super_block;

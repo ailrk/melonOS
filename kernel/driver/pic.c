@@ -1,6 +1,6 @@
 #include "i386.h"
 #include "driver/vga.h"
-#include "traps.h"
+#include "trap/traps.h"
 #include <stdint.h>
 
 /* handles hardware interrupts and map them to the system interrupt.

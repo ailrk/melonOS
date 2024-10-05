@@ -1,4 +1,4 @@
-#include "traps.h"
+#include "trap/traps.h"
 #include "sys/syscalls.h"
 
 section .init1

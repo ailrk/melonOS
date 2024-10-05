@@ -1,9 +1,9 @@
-#include "fmt.h"
-#include "string.h"
-#include "ctype.h"
 #include "stdlib.h"
 #include <stdarg.h>
 #include <stdbool.h>
+#include "fmt.h"
+#include "string.h"
+#include "ctype.h"
 
 /* IO agnostic formatting functions */
 

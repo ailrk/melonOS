@@ -1,5 +1,4 @@
 #pragma once
-
 #include <stdint.h>
 
 #define CMD_PGUP    (1 << 0)

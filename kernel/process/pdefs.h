@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "defs.h"
-#include "gdt.h"
 #include "mmu.h"
 #include "trap.h"
+#include "memory/gdt.h"
 #include "fs/fdefs.fwd.h"
 
 

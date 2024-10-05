@@ -2,14 +2,14 @@
 #include "debug.h"
 #include "err.h"
 #include "mmu.h"
-#include "traps.h"
-#include "idt.h"
 #include "sys/syscall.h"
 #include "driver/kbd.h"
 #include "driver/pic.h"
 #include "driver/vga.h"
-#include "fs/disk.h"
 #include "process/proc.h"
+#include "fs/disk.h"
+#include "trap/idt.h"
+#include "trap/traps.h"
 
 #define DEBUG 1
 
@@ -54,6 +54,9 @@ void trap_init() {
             I_SYSCALL,
             vectors[I_SYSCALL],
             GATE_P(1) | GATE_DPL(DPL_U) | TRAP_GATE);
+
+    pic_init();
+    idt_init();
 }
 
 

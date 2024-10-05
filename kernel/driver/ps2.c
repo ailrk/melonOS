@@ -149,6 +149,7 @@ static void debug() {
 #define CCB_P2_CLK  5 // port 2 clock 1=disbaled
 #define CCB_P1_TRA  6 // port 1 translation 1=enabled
 
+
 void ps2_init() {
     vga_printf("[\033[32mboot\033[0m] ps2...");
 

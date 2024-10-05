@@ -6,7 +6,7 @@
 #define ROOTINO 1  // root i-number
 
 
-void   inode_init(DevNum dev);
+void   inode_init();
 Inode *inode_get(DevNum dev, InodeNum inum);
 Inode *inode_allocate(DevNum dev, FileType type);
 void   inode_update(Inode *ino);

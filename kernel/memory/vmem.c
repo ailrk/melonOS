@@ -3,16 +3,16 @@
 #include <stdint.h>
 #include "defs.h"
 #include "err.h"
-#include "gdt.h"
 #include "i386.h"
 #include "mem.h"
 #include "mmu.h"
-#include "ncli.h"
 #include "pdefs.h"
 #include "string.h"
+#include "trap/ncli.h"
 #include "driver/vga.h"
-#include "mem/vmem.h"
-#include "mem/palloc.h"
+#include "memory/vmem.h"
+#include "memory/gdt.h"
+#include "memory/palloc.h"
 #include "process/proc.h"
 
 #define DEBUG 0

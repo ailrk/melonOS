@@ -7,7 +7,7 @@
 K_CFILES = $(shell find $(K_DIR) -name "*.c")
 
 # vectors.s is generated from vectors.py
-K_VECTORS = $(K_DIR)/vectors.s
+K_VECTORS = $(K_DIR)/trap/vectors.s
 
 K_ASMFILES = $(filter-out $(K_VECTORS) $(shell find $(K_DIR) -name "*.pp.s"),$(shell find $(K_DIR) -name "*.s")) $(K_VECTORS)
 
@@ -35,4 +35,4 @@ $(K_ASMFILES:.s=.o): %.o: %.s
 
 $(K_VECTORS): $(K_VECTORS:.s=.py)
 	rm -f $(K_VECTORS) $(K_VECTORS:.s=.pp.s)
-	$(K_DIR)/vectors.py > $@
+	$(K_DIR)/trap/vectors.py > $@

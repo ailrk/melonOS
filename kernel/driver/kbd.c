@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include "kbd.h"
 #include "ps2.h"
-#include "driver/vga.h"
 
 #define DEBUG 1
 

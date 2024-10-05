@@ -1,6 +1,6 @@
-#include "gdt.h"
 #include "i386.h"
 #include "mmu.h"
+#include "memory/gdt.h"
 #include "driver/vga.h"
 #include "process/proc.h"
 

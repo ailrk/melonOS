@@ -4,15 +4,15 @@
 #include "err.h"
 #include "i386.h"
 #include "mem.h"
-#include "ncli.h"
 #include "pdefs.h"
 #include "trap.h"
 #include "string.h"
-#include "spinlock.h"
+#include "trap/ncli.h"
+#include "concucrrency/spinlock.h"
 #include "driver/vga.h"
 #include "process/proc.h"
-#include "mem/palloc.h"
-#include "mem/vmem.h"
+#include "memory/palloc.h"
+#include "memory/vmem.h"
 
 #define DEBUG 1
 

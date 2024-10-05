@@ -1,5 +1,4 @@
 #pragma once
-#include "i386.h"
 
 #define NO              0
 

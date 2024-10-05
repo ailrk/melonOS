@@ -1,5 +1,6 @@
 #include <stdint.h>
-#include "idt.h"
+#include "i386.h"
+#include "trap/idt.h"
 #include "driver/vga.h"
 
 
