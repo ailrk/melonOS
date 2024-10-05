@@ -50,7 +50,7 @@ void bcache_init() {
 
 /*! Lookup for block cached in bcache. If the block is not cached,
  *  return 0 */
-static BNode* bcachce_lookup(unsigned dev, unsigned blockno) {
+static BNode* bcachce_lookup(unsigned dev, blockno blockno) {
     BNode *b = bcache.head;
 
     do {
@@ -68,7 +68,7 @@ static BNode* bcachce_lookup(unsigned dev, unsigned blockno) {
 /*! Allocate an unused bcache node for the block. If no block is
  *  available return 0;
  * */
-static BNode *bcache_allocate(unsigned dev, unsigned blockno) {
+static BNode *bcache_allocate(unsigned dev, blockno blockno) {
     BNode *b = bcache.head;
 
     do {
@@ -88,7 +88,7 @@ static BNode *bcache_allocate(unsigned dev, unsigned blockno) {
 
 
 /*! Look for buffer cache on dev. Allocate if the cache is not found. */
-static BNode *bcache_acquire(unsigned dev, unsigned blockno) {
+static BNode *bcache_acquire(unsigned dev, blockno blockno) {
     BNode *b;
 
     if ((b = bcachce_lookup(dev, blockno))) {
@@ -108,7 +108,7 @@ static BNode *bcache_acquire(unsigned dev, unsigned blockno) {
  *  mutex on that node. The node needs to be released manually
  *  to be available in the bcache again.
   * */
-BNode *bcache_read(DevNum dev, unsigned blockno) {
+BNode *bcache_read(devnum dev, blockno blockno) {
     BNode *b;
     if ((b = bcache_acquire(dev, blockno)) == 0) {
         panic("bcache read");

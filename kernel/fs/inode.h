@@ -7,8 +7,8 @@
 
 
 void   inode_init();
-Inode *inode_get(DevNum dev, InodeNum inum);
-Inode *inode_allocate(DevNum dev, FileType type);
+Inode *inode_get(devnum dev, inodenum inum);
+Inode *inode_allocate(devnum dev, FileType type);
 void   inode_update(Inode *ino);
 void   inode_dup(Inode *ino);
 void   inode_lock(Inode *ino);

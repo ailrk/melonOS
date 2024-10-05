@@ -20,6 +20,12 @@ void  inode_init() {
 }
 
 
+/*! Allocate an inode on device */
+Inode *inode_allocate(devnum dev, FileType type) {
+
+}
+
+
 /*! Get stat from inode */
 void inode_stat(const Inode *ino, Stat *stat) {
     stat->dev   = ino->dev;

@@ -9,9 +9,9 @@ typedef struct SuperBlock {
     unsigned nblocks;    // total size of fs in blocks
     unsigned ninodes;    // number of inodes
     unsigned ndata;      // number of data blocks
-    unsigned inodestart; // blockno of the first ino
-    unsigned bmapstart;  // blockno of the first free bit map
-    unsigned datastart;  // blockno of the first ino
+    blockno  inodestart; // blockno of the first ino
+    blockno  bmapstart;  // blockno of the first free bit map
+    blockno  datastart;  // blockno of the first ino
 } SuperBlock;
 
 
@@ -28,8 +28,8 @@ typedef struct DInode {
 
 /* Memory representation of an inode */
 typedef struct Inode {
-    DevNum   dev;    // device number
-    InodeNum inum;   // inode number
+    devnum   dev;    // device number
+    inodenum inum;   // inode number
     int      nref;   // ref count
     Mutex    lk;
     bool     read;   // has been read from disk?
@@ -46,8 +46,8 @@ typedef struct BNode {
     bool           dirty; // needs to be writtent to disk.
     bool           valid; // has been read from disk.
     unsigned       nref;
-    DevNum         dev;
-    unsigned       blockno;
+    devnum         dev;
+    blockno        blockno;
     char           cache[BSIZE];
 } BNode;
 
@@ -61,7 +61,7 @@ typedef struct Dev {
 
 /* Directory entry */
 typedef struct DirEntry {
-  InodeNum  inum;
+  inodenum  inum;
   char      name[DIR_SZ];
 } DirEntry;
 
@@ -73,8 +73,8 @@ typedef struct DirEntry {
 
 typedef struct Stat {
     short    type;  // file type
-    DevNum   dev;   // disk device
-    InodeNum inum;  // inode number
+    devnum   dev;   // disk device
+    inodenum inum;  // inode number
     short    nlink; // number of links
     unsigned size;  // file size
 } Stat;

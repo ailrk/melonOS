@@ -9,8 +9,9 @@ struct Inode;
 typedef struct Inode Inode;
 
 
-typedef unsigned InodeNum;
-typedef unsigned DevNum;
+typedef unsigned blockno;
+typedef unsigned inodenum;
+typedef unsigned devnum;
 
 
 /* File types */

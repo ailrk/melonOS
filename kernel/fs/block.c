@@ -16,13 +16,13 @@
 SuperBlock super_block;
 
 
-void block_init(DevNum dev) {
+void block_init(devnum dev) {
     block_super(dev, &super_block, true);
 }
 
 
 /*! Zero a disk block */
-void block_zero(DevNum dev, unsigned blockno) {
+void block_zero(devnum dev, blockno blockno) {
     BNode *b = bcache_read(dev, blockno);
     memset(b->cache, 0, BSIZE);
     bcache_write(b);
@@ -35,7 +35,7 @@ void block_zero(DevNum dev, unsigned blockno) {
  *  @sb      Output. If it's 0, don't output anything.
  *  @update  If `update` is true, read the superblock from  the disk
  * */
-void block_super(DevNum dev, SuperBlock *sb, bool update) {
+void block_super(devnum dev, SuperBlock *sb, bool update) {
     if (update) {
         BNode *b = bcache_read(dev, SUPERBLKNO);
         if (sb)
@@ -59,7 +59,7 @@ void block_super(DevNum dev, SuperBlock *sb, bool update) {
  *  bit in that block counts from MSB.
  *  */
 typedef struct FreemapAddr {
-    unsigned bno;  // the block that contains the bit.
+    blockno bno;   // the block that contains the bit.
     unsigned nbit; // n bits from `bmapstart`
 } FreemapAddr;
 
@@ -84,7 +84,7 @@ static FreemapAddr freemap_addr(unsigned blockno) {
 
 
 /*! Check if `blockno` is used */
-static bool freemap_check(DevNum dev, unsigned blockno) {
+static bool freemap_check(devnum dev, blockno blockno) {
     FreemapAddr addr = freemap_addr(blockno);
     BNode *b         = bcache_read(dev, addr.bno);
     char *freemap    = b->cache;
@@ -95,7 +95,7 @@ static bool freemap_check(DevNum dev, unsigned blockno) {
 
 
 /*! Set freemap bit */
-static void freemap_set(DevNum dev, unsigned blockno, bool used) {
+static void freemap_set(devnum dev, blockno blockno, bool used) {
     if (blockno < super_block.datastart) {
         panic("freemap_set");
     }
@@ -113,7 +113,7 @@ static void freemap_set(DevNum dev, unsigned blockno, bool used) {
 
 
 /*! Search for the first free block in the freemap */
-static unsigned freemap_search(DevNum dev, unsigned *out) {
+static unsigned freemap_search(devnum dev, blockno *out) {
     unsigned nblks = super_block.datastart - super_block.bmapstart;
     for (unsigned off = 0; off < nblks; ++off) {
         BNode *b      = bcache_read(dev, off + super_block.bmapstart);
@@ -129,7 +129,7 @@ static unsigned freemap_search(DevNum dev, unsigned *out) {
             if (byte & 0xff) { // has 1
                 unsigned n = 0;
                 for (; byte & (1 << 7); byte <<= 1, ++n);
-                unsigned fbno = super_block.datastart + off * BITS_PER_BLK + n;
+                blockno fbno = super_block.datastart + off * BITS_PER_BLK + n;
                 *out = fbno;
                 bcache_release(b);
                 return true;
@@ -146,8 +146,8 @@ static unsigned freemap_search(DevNum dev, unsigned *out) {
  *
  *  @return  the allocated blockno. 0 if the allocation is failed.
  * */
-unsigned block_alloc(DevNum dev) {
-    unsigned fbno;
+unsigned block_alloc(devnum dev) {
+    blockno fbno;
 
     if (freemap_search(dev, &fbno)) {
         if (!fbno)
@@ -161,7 +161,7 @@ unsigned block_alloc(DevNum dev) {
 
 
 /*! Free a block */
-void block_free(DevNum dev, unsigned blockno) {
+void block_free(devnum dev, blockno blockno) {
     if (!freemap_check(dev, blockno)) {
         panic("block_free: block is already free");
         return;
