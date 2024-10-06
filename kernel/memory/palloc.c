@@ -18,8 +18,8 @@ KernelMem kernel_mem;
 
 /*! free the memory in range [vstart, vend) */
 void pfree_range(void *vstart, void *vend) {
-    char *p = (char*)vstart;
-    for (; p + PAGE_SZ <= (char*)vend; p += PAGE_SZ) {
+    char *p = (char *)vstart;
+    for (; p + PAGE_SZ <= (char *)vend; p += PAGE_SZ) {
         pfree(p);
     }
 }
@@ -44,7 +44,7 @@ char *palloc() {
     } else {
         perror("palloc: no memory available\n");
     }
-    return (char*)r;
+    return (char *)r;
 }
 
 

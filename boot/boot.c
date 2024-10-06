@@ -115,9 +115,9 @@ void boot3() {
         __asm__ volatile ("cli; hlt");
     }
 
-    ELF32ProgramHeader *ph = (ELF32ProgramHeader*)((char*)elf + elf->e_phoff);
+    ELF32ProgramHeader *ph = (ELF32ProgramHeader *)((char *)elf + elf->e_phoff);
     for (ELF32ProgramHeader* p = ph; p < ph + elf->e_phnum; ++p) {
-        paddr = (char*)p->p_paddr;
+        paddr = (char *)p->p_paddr;
         read_offset_from_kernel(paddr, p->p_filesz, p->p_offset);
 
         // pad till memsz

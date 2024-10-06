@@ -19,7 +19,7 @@
 
 
 extern char data[];              // defined by kernel.ld
-PD *        kernel_page_dir;     // kernel only page directory.
+PD         *kernel_page_dir;     // kernel only page directory.
 VMap        kmap[4];
 
 
@@ -35,7 +35,7 @@ VMap        kmap[4];
 static void init_kmap() {
     // IO space
     kmap[0] = (VMap)
-        { .virt   = (void*)KERN_BASE,
+        { .virt   = (void *)KERN_BASE,
           .pstart = 0,
           .pend   = EXTMEM,
           .perm   = PTE_W
@@ -43,7 +43,7 @@ static void init_kmap() {
 
     // kernel text & rodata
     kmap[1] = (VMap)
-        { .virt   = (void*)KERN_LINK,
+        { .virt   = (void *)KERN_LINK,
           .pstart = V2P_C(KERN_LINK),
           .pend   = V2P_C(data),
           .perm   = 0
@@ -51,7 +51,7 @@ static void init_kmap() {
 
     kmap[2] = (VMap)
         // kernel data & memory
-        { .virt   = (void*)(data),
+        { .virt   = (void *)(data),
           .pstart = V2P_C(data),
           .pend   = PHYSTOP,
           .perm   = PTE_W
@@ -59,7 +59,7 @@ static void init_kmap() {
 
     kmap[3] = (VMap)
         // devices is mapped to identical address.
-        { .virt   = (void*)(DEV_SPACE),
+        { .virt   = (void *)(DEV_SPACE),
           .pstart = DEV_SPACE,
           .pend   = 0, // wraps over
           .perm   = PTE_W
@@ -68,29 +68,29 @@ static void init_kmap() {
 
 
 /*! Some untilities for handling page table access */
-static PDE* get_pde(PD *page_dir, const void *vaddr) {
+static PDE *get_pde(PD *page_dir, const void *vaddr) {
     return &page_dir[page_directory_idx((uintptr_t)vaddr)];
 }
 
 
-static PTE* get_pt(PD *page_dir, const void *vaddr) {
+static PTE *get_pt(PD *page_dir, const void *vaddr) {
     PDE *pde = get_pde(page_dir, vaddr);
     return (PTE *)P2V(pte_addr(*pde));
 }
 
 
-static PTE* get_pt1(PDE *pde) {
+static PTE *get_pt1(PDE *pde) {
     return (PTE *)P2V(pte_addr(*pde));
 }
 
 
-static PTE* get_pte(PD *page_dir, const void *vaddr) {
+static PTE *get_pte(PD *page_dir, const void *vaddr) {
     PTE *pt = get_pt(page_dir, vaddr);
     return &pt[page_table_idx((uintptr_t)vaddr)];
 }
 
 
-static PTE* get_pte1(PDE *pde, const void *vaddr) {
+static PTE *get_pte1(PDE *pde, const void *vaddr) {
     PTE *pt = get_pt1(pde);
     return &pt[page_table_idx((uintptr_t)vaddr)];
 }
@@ -128,9 +128,9 @@ static PTE *walk(PD *page_dir, const void *vaddr) {
  *  @return true if pages are mapped successfully. false otherwise.
  * */
 static bool map_pages(PD *page_dir, const VMap *k) {
-    int size             = k->pend - k->pstart;
-    char *vstart         = (char *)page_aligndown((uintptr_t)k->virt);
-    char *vend           = (char *)page_aligndown((uintptr_t)k->virt + size);
+    int           size   = k->pend - k->pstart;
+    char         *vstart = (char *)page_aligndown((uintptr_t)k->virt);
+    char         *vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
     physical_addr pstart = k->pstart;
     PTE *pte;
 
@@ -274,7 +274,7 @@ int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
         return oldsz;
 
     for (uintptr_t p = page_alignup(oldsz); p < newsz; p += PAGE_SZ) {
-        char * mem;
+        char *mem;
         if ((mem = palloc()) == 0) {
             perror("allocate_user_vmem: out of memory");
             deallocate_user_vmem(page_dir, newsz, oldsz);

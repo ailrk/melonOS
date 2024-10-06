@@ -2,7 +2,7 @@
 #include "mmu.h"
 #include "memory/gdt.h"
 #include "driver/vga.h"
-#include "process/proc.h"
+#include "process/pdefs.h"
 
 /* GDT is not useful if you have paging, but x86 protected mode requires you
  * to setup one. We simply map all segments to the entire memory.

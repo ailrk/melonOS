@@ -23,16 +23,16 @@ typedef struct ChannelReg {
 
 /* ATA register offset from base. */
 typedef enum BaseReg {
-    BR_DATA       = 0x00,
-    BR_ERROR      = 0x01, // always 0x0
-    BR_FEATURES   = 0x01,
-    BR_SECN0      = 0x02, // sector count
-    BR_LBA0       = 0x03, // lower 8 bytes lba address
-    BR_LBA1       = 0x04, // next 8 bytes lba address
-    BR_LBA2       = 0x05, // next 8 bytes lba address
-    BR_HDDEVSEL   = 0x06, // remaining lba and selecting drive
-    BR_COMMAND    = 0x07,
-    BR_STATUS     = 0x07, // this blocks interrupt.
+    BR_DATA     = 0x00,
+    BR_ERROR    = 0x01, // always 0x0
+    BR_FEATURES = 0x01,
+    BR_SECN0    = 0x02, // sector count
+    BR_LBA0     = 0x03, // lower 8 bytes lba address
+    BR_LBA1     = 0x04, // next 8 bytes lba address
+    BR_LBA2     = 0x05, // next 8 bytes lba address
+    BR_HDDEVSEL = 0x06, // remaining lba and selecting drive
+    BR_COMMAND  = 0x07,
+    BR_STATUS   = 0x07, // this blocks interrupt.
 } BaseReg;
 
 
@@ -49,14 +49,14 @@ typedef enum CtrlReg {
 
 
 typedef enum Error {
-    ER_BBK     = 0x80, // Bad block
-    ER_UNC     = 0x40, // Uncorrectable data
-    ER_MC      = 0x20, // Media changed
-    ER_IDNF    = 0x10, // ID mark not found
-    ER_MCR     = 0x08, // Media change request
-    ER_ABRT    = 0x04, // Command aborted
-    ER_TK0NF   = 0x02, // Track 0 not found
-    ER_AMNF    = 0x01, // No address mark
+    ER_BBK   = 0x80, // Bad block
+    ER_UNC   = 0x40, // Uncorrectable data
+    ER_MC    = 0x20, // Media changed
+    ER_IDNF  = 0x10, // ID mark not found
+    ER_MCR   = 0x08, // Media change request
+    ER_ABRT  = 0x04, // Command aborted
+    ER_TK0NF = 0x02, // Track 0 not found
+    ER_AMNF  = 0x01, // No address mark
 } Error;
 
 
@@ -168,7 +168,7 @@ void ide_read(Channel ch, void *dst, size_t secn) {
  *       than (SECSZ * secn).
  * @secn n sectors per write
  * */
-void ide_write_request(Channel ch, Drive d, void* src, unsigned lba, size_t secn) {
+void ide_write_request(Channel ch, Drive d, void *src, unsigned lba, size_t secn) {
     ide_wait(ch);
     ATACmd cmd = secn == 1 ? ATA_CMD_WT1 : ATA_CMD_WTN;
     ide_request(ch, d, cmd, lba, secn);

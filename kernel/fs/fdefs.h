@@ -39,23 +39,23 @@ typedef struct Inode {
 
 /* Buffer cache node */
 typedef struct BNode {
-    struct BNode * next;
-    struct BNode * prev;
-    struct BNode * qnext; // next node on disk queue.
-    Mutex          mutex;
-    bool           dirty; // needs to be writtent to disk.
-    bool           valid; // has been read from disk.
-    unsigned       nref;
-    devnum         dev;
-    blockno        blockno;
-    char           cache[BSIZE];
+    struct BNode *next;
+    struct BNode *prev;
+    struct BNode *qnext; // next node on disk queue.
+    Mutex         mutex;
+    bool          dirty; // needs to be writtent to disk.
+    bool          valid; // has been read from disk.
+    unsigned      nref;
+    devnum        dev;
+    blockno       blockno;
+    char          cache[BSIZE];
 } BNode;
 
 
 /* Devices need to implement this interface */
 typedef struct Dev {
-    int (*read)(Inode *ino, char * addr, int n);
-    int (*write)(Inode *ino, const char * addr, int n);
+    int (*read)(Inode *ino, char *addr, int n);
+    int (*write)(Inode *ino, const char *addr, int n);
 } Dev;
 
 

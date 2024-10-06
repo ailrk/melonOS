@@ -59,7 +59,7 @@ void block_super(devnum dev, SuperBlock *sb, bool update) {
  *  bit in that block counts from MSB.
  *  */
 typedef struct FreemapAddr {
-    blockno bno;   // the block that contains the bit.
+    blockno  bno;   // the block that contains the bit.
     unsigned nbit; // n bits from `bmapstart`
 } FreemapAddr;
 
@@ -77,8 +77,8 @@ static FreemapAddr freemap_addr(unsigned blockno) {
     }
 
     unsigned off = blockno - super_block.datastart;
-    addr.bno  = off / BITS_PER_BLK + super_block.bmapstart;
-    addr.nbit = off % BITS_PER_BLK;
+    addr.bno     = off / BITS_PER_BLK + super_block.bmapstart;
+    addr.nbit    = off % BITS_PER_BLK;
     return addr;
 }
 
@@ -99,8 +99,8 @@ static void freemap_set(devnum dev, blockno blockno, bool used) {
     if (blockno < super_block.datastart) {
         panic("freemap_set");
     }
-    FreemapAddr addr    = freemap_addr(blockno);
-    BNode *b            = bcache_read(dev, addr.bno, false);
+    FreemapAddr    addr = freemap_addr(blockno);
+    BNode         *b    = bcache_read(dev, addr.bno, false);
     unsigned char *byte = &((unsigned char *)b->cache)[addr.nbit / 8];
     if (used) {
         *byte |= (0x80 >> (addr.nbit % 8));
@@ -116,7 +116,7 @@ static void freemap_set(devnum dev, blockno blockno, bool used) {
 static unsigned freemap_search(devnum dev, blockno *out) {
     unsigned nblks = super_block.datastart - super_block.bmapstart;
     for (unsigned off = 0; off < nblks; ++off) {
-        BNode *b      = bcache_read(dev, off + super_block.bmapstart, false);
+        BNode *b = bcache_read(dev, off + super_block.bmapstart, false);
         for (unsigned i = 0; i < sizeof(b->cache); ++i) {
             unsigned char byte = b->cache[i];
 

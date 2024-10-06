@@ -3,8 +3,8 @@
 
 
 int memcmp(const void *v1, const void *v2, size_t n) {
-    const char* s1 = v1;
-    const char* s2 = v2;
+    const char *s1 = v1;
+    const char *s2 = v2;
 
     while(n--) {
         if (*s1 != *s2) return *s1 - *s2;
@@ -15,7 +15,7 @@ int memcmp(const void *v1, const void *v2, size_t n) {
 
 
 void *memmove(void *dest, const void *src, size_t n) {
-    char * d = dest;
+    char *d = dest;
     const char *s = src;
 
     if (s < d && s + n > d) {
@@ -37,7 +37,7 @@ void memcpy(void *dest, const void *src, size_t n) {
 
 
 void* memset(void *tgt, int v, size_t n) {
-    char *p = (char*)tgt;
+    char *p = (char *)tgt;
     while(n--) {
         *p++ = (unsigned char)v & 0xff;
     }

@@ -17,7 +17,7 @@
 
 typedef struct BCache {
     SpinLock lk;
-    BNode *  head;
+    BNode   *head;
     BNode    buffer[NBUF];
 } BCache;
 

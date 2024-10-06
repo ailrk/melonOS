@@ -1,8 +1,8 @@
+#include <stdbool.h>
 #include "ps2.h"
 #include "i386.h"
-#include "driver/vga.h"
 #include "err.h"
-#include <stdbool.h>
+#include "driver/vga.h"
 
 #define DEBUG 0
 

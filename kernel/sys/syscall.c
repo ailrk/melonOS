@@ -3,9 +3,9 @@
 #include "err.h"
 #include "file.h"
 #include "pdefs.h"
+#include "process.h"
 #include "sys/syscall.h"
 #include "sys/syscalls.h"
-#include "process.h"
 
 /* Copying system call arguments from user stack to
  *
@@ -104,22 +104,22 @@ int sys_getpid() {
 
 int sys_read() {
     static char *args = "dpd";
-    int          fd   =         getint(1, args);
-    char *       buf  = (void *)getptr(2, args);
-    int          sz   =         getint(3, args);
-    Process *    p    =         this_proc();
-    File *       f    =         p->file[fd];
+    int          fd   = getint(1, args);
+    char        *buf  = (void *)getptr(2, args);
+    int          sz   = getint(3, args);
+    Process      *p   = this_proc();
+    File         *f   = p->file[fd];
     return file_read(f, buf, sz);
 }
 
 
 int sys_write() {
     static char *args = "dpd";
-    int          fd   =               getint(1, args);
-    const void*  buf  = (const void *)getptr(2, args);
-    int          sz   =               getint(3, args);
-    Process*     p    =               this_proc();
-    File*        f    =               p->file[fd];
+    int          fd   = getint(1, args);
+    const void  *buf  = (const void *)getptr(2, args);
+    int          sz   = getint(3, args);
+    Process     *p    = this_proc();
+    File        *f    = p->file[fd];
     return file_write(f, buf, sz);
 }
 

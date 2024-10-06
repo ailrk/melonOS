@@ -37,6 +37,6 @@ typedef struct File {
     bool     readable;
     bool     writable;
     unsigned offset;   // file cursor
-    Inode *  ino;
+    Inode   *ino;
 } File;
 

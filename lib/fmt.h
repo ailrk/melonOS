@@ -27,7 +27,7 @@ typedef char *putchar_f(char *c);
 
 
 typedef struct FmtIO {
-    putchar_f* putchar;
+    putchar_f *putchar;
 } FmtIO;
 
 

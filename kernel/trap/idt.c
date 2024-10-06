@@ -18,7 +18,7 @@ void *get_handler_from_idt(uint8_t vector) {
     uint32_t high = e.isr_high << 16;
     uint32_t low  = e.isr_low;
     uint32_t ptr  = high | low;
-    return (void*)ptr;
+    return (void *)ptr;
 }
 
 
@@ -36,6 +36,6 @@ void idt_init() {
     vga_printf("[\033[32mboot\033[0m] idt...");
     idtr.base  = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
-    lidt((void*)&idtr);
+    lidt((void *)&idtr);
     vga_printf("\033[32mok\033[0m\n");
 }
