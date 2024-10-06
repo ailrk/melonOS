@@ -5,7 +5,7 @@
 #include "pdefs.h"
 #include "sys/syscall.h"
 #include "sys/syscalls.h"
-#include "process/proc.h"
+#include "process.h"
 
 /* Copying system call arguments from user stack to
  *

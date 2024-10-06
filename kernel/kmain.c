@@ -4,9 +4,8 @@
 #include "memory.h"
 #include "fs.h"
 #include "driver/vga.h"
-#include "driver/ps2.h"
 #include "driver/uart.h"
-#include "process/proc.h"
+#include "process.h"
 
 #define DBG 0
 
@@ -17,12 +16,10 @@ void kmain(void) {
     vga_init();
     mem_init1();
     uart_init();
-    ptable_init();
-    ps2_init();
     mem_init2();
     trap_init();
     fs_init();
     dev_init();
-    init_pid1();
+    process_init();
     scheduler();
 }

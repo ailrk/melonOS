@@ -1,6 +1,6 @@
 #include "mutex.h"
 #include "spinlock.h"
-#include "process/proc.h"
+#include "process.h"
 
 
 Mutex new_mutex(const char *name) {
