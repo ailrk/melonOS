@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "dev.h"
 #include "trap.h"
 #include "memory.h"
 #include "fs.h"
@@ -9,7 +10,7 @@
 
 #define DBG 0
 
-char        kstack[KSTACK_SZ]; // kernel stack. userd in entry.s
+char kstack[KSTACK_SZ]; // kernel stack. userd in entry.s
 
 
 void kmain(void) {
@@ -21,6 +22,7 @@ void kmain(void) {
     mem_init2();
     trap_init();
     fs_init();
+    dev_init();
     init_pid1();
     scheduler();
 }

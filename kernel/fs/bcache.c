@@ -107,24 +107,24 @@ static BNode *bcache_acquire(unsigned dev, blockno blockno) {
  *  `bcache_read` allocates a node from `bcache` and locks the
  *  mutex on that node. The node needs to be released manually
  *  to be available in the bcache again.
-  * */
-BNode *bcache_read(devnum dev, blockno blockno) {
+ * */
+BNode *bcache_read(devnum dev, blockno blockno, bool poll) {
     BNode *b;
     if ((b = bcache_acquire(dev, blockno)) == 0) {
         panic("bcache read");
     }
 
     if (!b->valid) {
-        disk_sync(b);
+        disk_sync(b, poll);
     }
     return b;
 }
 
 
 /*! Write `BNode` to blockno */
-void bcache_write(BNode *b) {
+void bcache_write(BNode *b, bool poll) {
     b->dirty = true;
-    disk_sync(b);
+    disk_sync(b, poll);
 }
 
 

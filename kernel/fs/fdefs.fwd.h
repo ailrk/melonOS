@@ -14,16 +14,25 @@ typedef unsigned inodenum;
 typedef unsigned devnum;
 
 
-/* File types */
-typedef enum FileType {
+/* File descriptor types */
+typedef enum FDType {
     FD_NONE,
     FD_PIPE,
     FD_INODE,
+} FDType;
+
+
+/* File type */
+typedef enum FileType {
+    F_DIR,  // directory
+    F_FILE, // file
+    F_DEV   // device
 } FileType;
 
 
+
 typedef struct File {
-    FileType type;
+    FDType   type;
     int      nref;       // reference count
     bool     readable;
     bool     writable;

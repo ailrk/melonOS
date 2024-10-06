@@ -1,11 +1,11 @@
 #include "trap.h"
+#include "console.h"
 #include "debug.h"
 #include "err.h"
 #include "mmu.h"
 #include "sys/syscall.h"
 #include "driver/kbd.h"
 #include "driver/pic.h"
-#include "driver/vga.h"
 #include "process/proc.h"
 #include "fs/disk.h"
 #include "trap/idt.h"
@@ -88,12 +88,9 @@ void handle_I_IRQ_TIMER() {
 
 
 void handle_I_IRQ_KBD() {
-    char c;
+    debug_printf("irq kbd\n");
     kbd_handler();
-    if ((c = kbd_getc()) != -1) {
-        vga_printf("%c", c);
-        debug_printf("%c", c);
-    }
+    console_handler(kbd_getc);
     pic_eoi();
 }
 
@@ -129,7 +126,6 @@ void handle_I_IRQ_MOUSE() {
 
 
 void handle_I_IRQ_IDE() {
-    debug_printf("irq ide\n");
     disk_handler();
     pic_eoi();
 }

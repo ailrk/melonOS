@@ -23,9 +23,9 @@ void block_init(devnum dev) {
 
 /*! Zero a disk block */
 void block_zero(devnum dev, blockno blockno) {
-    BNode *b = bcache_read(dev, blockno);
+    BNode *b = bcache_read(dev, blockno, false);
     memset(b->cache, 0, BSIZE);
-    bcache_write(b);
+    bcache_write(b, false);
     bcache_release(b);
 }
 
@@ -37,7 +37,7 @@ void block_zero(devnum dev, blockno blockno) {
  * */
 void block_super(devnum dev, SuperBlock *sb, bool update) {
     if (update) {
-        BNode *b = bcache_read(dev, SUPERBLKNO);
+        BNode *b = bcache_read(dev, SUPERBLKNO, true);
         if (sb)
             memmove(sb, b->cache, sizeof(SuperBlock));
         if (sb != &super_block)
@@ -86,7 +86,7 @@ static FreemapAddr freemap_addr(unsigned blockno) {
 /*! Check if `blockno` is used */
 static bool freemap_check(devnum dev, blockno blockno) {
     FreemapAddr addr = freemap_addr(blockno);
-    BNode *b         = bcache_read(dev, addr.bno);
+    BNode *b         = bcache_read(dev, addr.bno, false);
     char *freemap    = b->cache;
     bool ret         = freemap[addr.nbit / 8] & (0x80 >> (addr.nbit % 8));
     bcache_release(b);
@@ -100,14 +100,14 @@ static void freemap_set(devnum dev, blockno blockno, bool used) {
         panic("freemap_set");
     }
     FreemapAddr addr    = freemap_addr(blockno);
-    BNode *b            = bcache_read(dev, addr.bno);
+    BNode *b            = bcache_read(dev, addr.bno, false);
     unsigned char *byte = &((unsigned char *)b->cache)[addr.nbit / 8];
     if (used) {
         *byte |= (0x80 >> (addr.nbit % 8));
     } else {
         *byte &= ~(0x80 >> (addr.nbit % 8));
     }
-    bcache_write(b);
+    bcache_write(b, false);
     bcache_release(b);
 }
 
@@ -116,7 +116,7 @@ static void freemap_set(devnum dev, blockno blockno, bool used) {
 static unsigned freemap_search(devnum dev, blockno *out) {
     unsigned nblks = super_block.datastart - super_block.bmapstart;
     for (unsigned off = 0; off < nblks; ++off) {
-        BNode *b      = bcache_read(dev, off + super_block.bmapstart);
+        BNode *b      = bcache_read(dev, off + super_block.bmapstart, false);
         for (unsigned i = 0; i < sizeof(b->cache); ++i) {
             unsigned char byte = b->cache[i];
 

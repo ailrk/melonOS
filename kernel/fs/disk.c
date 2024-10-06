@@ -2,6 +2,8 @@
 #include "fdefs.h"
 #include "spinlock.h"
 #include "driver/ide.h"
+#include "driver/pic.h"
+#include "trap/traps.h"
 #include "fs/disk.h"
 
 #define SECN (BSIZE/SECSZ)        // number of sectors per block
@@ -85,25 +87,39 @@ void disk_init() {
     if (!ide_has_secondary(ATA_PRIMARY)) {
         panic("Secondary disk doesn't exist");
     }
+    pic_irq_unmask(I_IRQ_IDE);
 }
 
 
 /*! Syncronize the buffer cache with disk
+ *  `disk_sync` will send disk command to IDE controller base on BNode flags.
  *  If `b->dirty`, write buffer to disk then clean `b->dirty`, set `b->valid`.
  *  If `!b->dirty` && `b->valid`, read from disk and set `b->valid`.
  *
- *  `disk_sync` will send disk command to IDE controller, once the disk is
- *  ready it will trigger an interrupt that calls `disk_handler`.
+ *  If `poll` is `false`, it works in asynchronous mode and will sleep immediately
+ *  after sending the command. Once the disk is ready, it triggers an interrupt
+ *  that calls `disk_handler` which reads the data and wake up the process.
+ *
+ *  If `poll` is true. `disk_sync` will poll until the device is ready.
  * */
-void disk_sync(BNode *b) {
+void disk_sync(BNode *b, bool poll) {
     if (synced(b))
         panic("disc_sync: nothing to do");
 
-    dq_enqueue(b);
+    if (poll) {
+        disk_cmd_request(b);
+        ide_wait(ATA_PRIMARY);
+        if (!b->valid) {
+            read_block(b);
+        }
+        b->valid = true;
+        b->dirty = false;
 
-    disk_cmd_request(b);
-
-    while (!synced(b)) {}  // TODO should sleep if block is not synced yet.
+    } else {
+        dq_enqueue(b);
+        disk_cmd_request(b);
+        while (!synced(b)); // TODO should sleep if block is not synced yet.
+    }
 }
 
 

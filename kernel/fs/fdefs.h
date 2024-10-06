@@ -22,18 +22,18 @@ typedef struct DInode {
     unsigned short  minor; // minor device number
     unsigned short  nlink; // number of links in fs
     unsigned        size;
-    unsigned        addr;  // block address.
-} DInode;
+    blockno         addrs[NDIRECT];  // block address.
+} __attribute__((packed)) DInode;
 
 
 /* Memory representation of an inode */
 typedef struct Inode {
     devnum   dev;    // device number
-    inodenum inum;   // inode number
+    inodenum inum;   // inode number.
     int      nref;   // ref count
     Mutex    lk;
     bool     read;   // has been read from disk?
-    DInode   dinode; // copy of disk inode.
+    DInode   d; // copy of disk inode.
 } Inode;
 
 
@@ -62,7 +62,7 @@ typedef struct Dev {
 /* Directory entry */
 typedef struct DirEntry {
   inodenum  inum;
-  char      name[DIR_SZ];
+  char      name[DIRNAMESZ];
 } DirEntry;
 
 
