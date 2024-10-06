@@ -14,7 +14,7 @@
 #define DEBUG 1
 
 
-extern void * vectors[];
+extern void *vectors[];
 unsigned ticks;
 
 

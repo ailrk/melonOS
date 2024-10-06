@@ -18,12 +18,12 @@ void console_handler(console_getc_t getc) {
 }
 
 
-int console_read(Inode *ino, char * addr, int n) {
+int console_read(Inode *ino, char *addr, int n) {
     return -1;
 }
 
 
-int console_write(Inode *ino, char * addr, int n) {
+int console_write(Inode *ino, const char *addr, int n) {
     while(n) {
         vga_writec(addr++);
         n--;

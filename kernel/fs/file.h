@@ -4,9 +4,9 @@
 
 
 void  ftable_init();
-File *allocate_file();
-File *dup_file(File *);
-void  close_file(File *);
-void  stat_file(File *, Stat *);
-void  read_file(File *, char *, int);
-void  write_file(File *, char *, int);
+File *file_allocate();
+File *file_dup(File *);
+void  file_close(File *);
+void  file_stat(File *, Stat *);
+int   file_read(File *, char *, int);
+int   file_write(File *, const char *, int);

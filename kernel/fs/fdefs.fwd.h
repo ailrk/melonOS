@@ -33,10 +33,10 @@ typedef enum FileType {
 
 typedef struct File {
     FDType   type;
-    int      nref;       // reference count
+    int      nref;     // reference count
     bool     readable;
     bool     writable;
-    unsigned offset;
+    unsigned offset;   // file cursor
     Inode *  ino;
 } File;
 

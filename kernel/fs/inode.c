@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include "defs.h"
 #include "driver/vga.h"
+#include "err.h"
+#include "fdefs.fwd.h"
 #include "process/spinlock.h"
 #include "fs/fdefs.h"
 
@@ -24,7 +26,7 @@ inline static blockno inode_block(inodenum inum) {
 }
 
 
-void  inode_init() {
+void inode_init() {
     vga_printf("[\033[32mboot\033[0m] inode...");
     icache.lk = new_lock("icache.lk");
     vga_printf("\033[32mok\033[0m\n");
@@ -74,41 +76,57 @@ void inode_drop(Inode *ino) {
 
 
 /*! Read data from inode.
+ *  @ino    Inode
+ *  @buf    the buffer read into
+ *  @offest cursor offset
+ *  @sz     read size
  *  @return number of bytes read. Return -1 if failed.
  * TODO implement disk operation
  * */
-int inode_read(Inode *ino, char *tgt, unsigned n) {
-    if (ino->d.type == F_DEV) {
+int inode_read(Inode *ino, char *buf, unsigned offset, unsigned sz) {
+    switch(ino->d.type) {
+    case F_DEV:
         if (ino->d.major < 0 || ino->d.major > NDEV) {
             return -1;
         }
-
         if (!devices[ino->d.major].read) {
             return -1;
         }
-
-        return devices[ino->d.major].read(ino, tgt, n);
+        return devices[ino->d.major].read(ino, buf, sz);
+    case F_DIR:
+        panic("inode_read: dir not implemented");
+        return -1;
+    case F_FILE:
+        panic("inode_read: file not implemented");
+        return -1;
     }
-    return -1;
 }
 
 /*! Write data from inode.
+ *  @ino    Inode
+ *  @buf    the buffer write from
+ *  @offest cursor offset
+ *  @sz     read size
  *  @return number of bytes written. Return -1 if failed.
  * TODO implement disk operation
  * */
-int inode_write(Inode *ino, char *tgt, unsigned n) {
-    if (ino->d.type == F_DEV) {
+int inode_write(Inode *ino, const char *buf, unsigned offset, unsigned n) {
+    switch (ino->d.type) {
+    case F_DEV:
         if (ino->d.major < 0 || ino->d.major > NDEV) {
             return -1;
         }
-
         if (!devices[ino->d.major].write) {
             return -1;
         }
-
-        return devices[ino->d.major].write(ino, tgt, n);
+        return devices[ino->d.major].write(ino, buf, n);
+    case F_DIR:
+        panic("inode_write: dir not implemented");
+        return -1;
+    case F_FILE:
+        panic("inode_write: file not implemented");
+        return -1;
     }
-    return -1;
 }
 
 

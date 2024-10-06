@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "defs.h"
 #include "err.h"
+#include "file.h"
 #include "i386.h"
 #include "mem.h"
 #include "pdefs.h"
@@ -333,6 +334,14 @@ int fork() {
     child->parent         = thisp;
     *child->trapframe     = *thisp->trapframe;
     child->trapframe->eax = 0;
+
+    for (int i = 0; i < NFILE; ++i) {
+        File *f = thisp->file[i];
+        if (f) {
+            child->file[i] = file_dup(f);
+        }
+    }
+
     strncpy(child->name, thisp->name, sizeof(thisp->name));
 
     lock(&ptable.lk);

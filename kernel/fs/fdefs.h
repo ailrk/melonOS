@@ -55,7 +55,7 @@ typedef struct BNode {
 /* Devices need to implement this interface */
 typedef struct Dev {
     int (*read)(Inode *ino, char * addr, int n);
-    int (*write)(Inode *ino, char * addr, int n);
+    int (*write)(Inode *ino, const char * addr, int n);
 } Dev;
 
 

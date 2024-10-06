@@ -14,6 +14,6 @@ Inode *inode_dup(Inode *ino);
 void   inode_lock(Inode *ino);
 void   inode_unlock(Inode *ino);
 void   inode_drop(Inode *ino);
-int    inode_read(Inode *ino, char *tgt, unsigned n);
-int    inode_write(Inode *ino, char *tgt, unsigned n);
+int    inode_read(Inode *ino, char *buf, unsigned offset, unsigned sz);
+int    inode_write(Inode *ino, const char *buf, unsigned offset, unsigned sz);
 void   inode_stat(const Inode *ino, Stat *stat);

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "err.h"
+#include "file.h"
 #include "pdefs.h"
 #include "sys/syscall.h"
 #include "sys/syscalls.h"
@@ -26,19 +27,26 @@
 
 
 /*! Get arguments from user stack.
- *  p: pointer
- *  d: int
- *  c: char
+ *  @nth    the nth argument, starts from 1.
+ *  @args   type of arguments
+ *            p: pointer
+ *            d: int
+ *            c: char
+ *  @return the pointer points to the nth argument
  * */
-void *getarg(size_t n, char *args) {
-    if (n >= strlen(args))
+void *getarg(size_t nth, char *args) {
+    if (strlen(args) == 0) {
+        panic("getarg");
+    }
+
+    if (nth >= strlen(args))
         panic("getarg");
 
     Process *thisp = this_proc();
     void *esp = (void*)thisp->trapframe->esp;
     int offset = 4;
 
-    while(n) {
+    while(nth) {
         switch (*args++) {
             case 'p':
                 offset += sizeof(uintptr_t);
@@ -52,11 +60,20 @@ void *getarg(size_t n, char *args) {
             default:
                 panic("getarg: unknown arg type");
         }
-        n--;
+        nth--;
     }
 
     return esp + offset;
 }
+
+
+int getint(size_t nth, char *args) { return *(int *)getarg(nth, args); }
+
+
+void *getptr(size_t nth, char *args) { return *(void **)getarg(nth, args); }
+
+
+char getchr(size_t nth, char *args) { return *(char *)getarg(nth, args); }
 
 
 int sys_fork() {
@@ -71,11 +88,12 @@ int sys_exit() {
 
 
 int sys_exec() {
+    return -1;
 }
 
 
 int sys_sbrk() {
-
+    return -1;
 }
 
 
@@ -84,12 +102,36 @@ int sys_getpid() {
 }
 
 
+int sys_read() {
+    static char *args = "dpd";
+    int          fd   =         getint(1, args);
+    char *       buf  = (void *)getptr(2, args);
+    int          sz   =         getint(3, args);
+    Process *    p    =         this_proc();
+    File *       f    =         p->file[fd];
+    return file_read(f, buf, sz);
+}
+
+
+int sys_write() {
+    static char *args = "dpd";
+    int          fd   =               getint(1, args);
+    const void*  buf  = (const void *)getptr(2, args);
+    int          sz   =               getint(3, args);
+    Process*     p    =               this_proc();
+    File*        f    =               p->file[fd];
+    return file_write(f, buf, sz);
+}
+
+
 static int (* system_calls[])() = {
     [SYS_FORK]   = sys_fork,
     [SYS_EXIT]   = sys_exit,
     [SYS_EXEC]   = sys_exec,
-    [SYS_SBRK]   = sys_sbrk,
     [SYS_GETPID] = sys_getpid,
+    [SYS_SBRK]   = sys_sbrk,
+    [SYS_WRITE]  = sys_write,
+    [SYS_READ]   = sys_read,
 };
 
 

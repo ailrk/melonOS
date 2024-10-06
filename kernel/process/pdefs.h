@@ -46,7 +46,7 @@ typedef struct Process {
     Context *        context;      // process context
     void *           chan;         // sleep on chan if it's not zero
     bool             killed;       // is process killed
-    File             file[NOFILE]; // files
+    File *           file[NOFILE]; // files
     char             name[16];     // name of the process
 } Process;
 
