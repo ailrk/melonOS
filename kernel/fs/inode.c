@@ -74,8 +74,8 @@ bool inode_load(Inode *ino) {
     if (ino->read)      return false;
 
     blockno_t blockno = get_inode_block(ino->inum);
-    unsigned nth      = ino->inum % inode_per_block;
-    BNode   *b        = bcache_read(ino->dev, blockno, false);
+    unsigned  nth     = ino->inum % inode_per_block;
+    BNode    *b       = bcache_read(ino->dev, blockno, false);
 
     memmove(&ino->d, &b->cache[nth * sizeof(DInode)], sizeof(DInode));
     bcache_release(b);
@@ -88,8 +88,9 @@ bool inode_load(Inode *ino) {
 
 /*! Flush in memory inode cache to disk. Needs to be called everytime inode field is updated. */
 void inode_flush(Inode *ino) {
-    BNode *b = bcache_read(ino->dev, get_inode_block(ino->inum), false);
-    memmove(b->cache, &ino->d, sizeof(DInode));
+    BNode   *b   = bcache_read(ino->dev, get_inode_block(ino->inum), false);
+    offset_t nth = ino->inum % inode_per_block;
+    memmove(&b->cache[nth * sizeof(DInode)], &ino->d, sizeof(DInode));
     bcache_write(b, false);
     bcache_release(b);
 }
