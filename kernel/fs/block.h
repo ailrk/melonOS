@@ -3,8 +3,8 @@
 #include "fs/fdefs.h"
 
 
-void     block_init(devnum dev);
-void     block_zero(devnum dev, blockno blockno);
-void     block_super(devnum dev, SuperBlock *, bool update);
-unsigned block_alloc(devnum dev);
-void     block_free(devnum dev, blockno blockno);
+void      block_init(devno_t dev);
+void      block_zero(devno_t dev, blockno_t blockno);
+void      block_super(devno_t dev, SuperBlock *, bool update);
+blockno_t block_alloc(devno_t dev);
+void      block_free(devno_t dev, blockno_t blockno);

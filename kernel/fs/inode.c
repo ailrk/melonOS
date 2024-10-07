@@ -30,7 +30,7 @@ static const size_t inode_per_block = BSIZE / sizeof(DInode);
 /*! Get the block that the inode stored at. An inode is always completely stored within
  *  a block, you will not have an inode stored across 2 blocks.
  * */
-inline static blockno get_inode_block(inodenum inum) {
+inline static blockno_t get_inode_block(inodeno_t inum) {
     return inum / inode_per_block + super_block.inodestart;
 }
 
@@ -46,7 +46,7 @@ void inode_init() {
  *  a inode in cache. This function does not read from the disk.
  *  Return 0 if there is not enough slots.
  * */
-Inode *inode_get(devnum dev, inodenum inum) {
+Inode *inode_get(devno_t dev, inodeno_t inum) {
     for (unsigned i = 0; i < sizeof(icache.inodes); ++i) {
         Inode *ino = &icache.inodes[i];
         if (ino->nref >= 0 && ino->dev == dev && ino->inum == inum) {
@@ -73,9 +73,9 @@ bool inode_load(Inode *ino) {
     if (ino->nref == 0) return false;
     if (ino->read)      return false;
 
-    blockno  blockno = get_inode_block(ino->inum);
-    unsigned nth     = ino->inum % inode_per_block;
-    BNode   *b       = bcache_read(ino->dev, blockno, false);
+    blockno_t blockno = get_inode_block(ino->inum);
+    unsigned nth      = ino->inum % inode_per_block;
+    BNode   *b        = bcache_read(ino->dev, blockno, false);
 
     memmove(&ino->d, &b->cache[nth * sizeof(DInode)], sizeof(DInode));
     bcache_release(b);
@@ -115,9 +115,9 @@ void inode_unlock(Inode *ino) {
 
 /* Return the blockno of the nth block of inode. Allocate blocks if necessary.
  * */
-blockno inode_bmap(Inode *ino, unsigned nth) {
+blockno_t inode_bmap(Inode *ino, unsigned nth) {
     if (nth < NDIRECT) {
-        blockno blockno = 0;
+        blockno_t blockno = 0;
         if ((blockno = ino->d.addrs[nth]) == 0) {
             blockno = block_alloc(ino->dev);
         }
@@ -125,9 +125,9 @@ blockno inode_bmap(Inode *ino, unsigned nth) {
     }
 
     if (nth >= NDIRECT) { // singly indirect
-        blockno ptrsno  = 0;
-        blockno offset  = nth - NDIRECT;
-        blockno blockno = 0;
+        blockno_t ptrsno  = 0;
+        offset_t  offset  = nth - NDIRECT;
+        blockno_t blockno = 0;
         if ((ptrsno = ino->d.addrs[nth]) == 0) {
             ptrsno = block_alloc(ino->dev);
         }
@@ -167,7 +167,7 @@ void inode_drop(Inode *ino) {
  *  @sz     read size
  *  @return number of bytes read. Return -1 if failed.
  * */
-int inode_read(Inode *ino, char *buf, unsigned offset, unsigned sz) {
+int inode_read(Inode *ino, char *buf, offset_t offset, unsigned sz) {
     switch(ino->d.type) {
     case F_DEV:
         if (ino->d.major < 0 || ino->d.major > NDEV) return -1;
@@ -182,10 +182,10 @@ int inode_read(Inode *ino, char *buf, unsigned offset, unsigned sz) {
         unsigned m;
         unsigned rd = 0; // bytes read
         while (rd < sz) {
-            unsigned nth     = offset / BSIZE;
-            blockno  blockno = inode_bmap(ino, nth);
-            b                = bcache_read(ino->dev, blockno, false);
-            m                = min(sz - rd, BSIZE - offset % BSIZE);
+            unsigned  nth     = offset / BSIZE;
+            blockno_t blockno = inode_bmap(ino, nth);
+            b                 = bcache_read(ino->dev, blockno, false);
+            m                 = min(sz - rd, BSIZE - offset % BSIZE);
             memmove(buf, &b->cache[offset % BSIZE], m);
             rd     += m;
             offset += m;
@@ -204,7 +204,7 @@ int inode_read(Inode *ino, char *buf, unsigned offset, unsigned sz) {
  *  @sz     read size
  *  @return number of bytes written. Return -1 if failed.
  * */
-int inode_write(Inode *ino, const char *buf, unsigned offset, unsigned sz) {
+int inode_write(Inode *ino, const char *buf, offset_t offset, unsigned sz) {
     switch (ino->d.type) {
     case F_DEV:
         if (ino->d.major < 0 || ino->d.major > NDEV) return -1;
@@ -219,10 +219,10 @@ int inode_write(Inode *ino, const char *buf, unsigned offset, unsigned sz) {
         unsigned m;
         unsigned wt = 0;
         while (wt < sz) {
-            unsigned nth     = offset / BSIZE;
-            blockno  blockno = inode_bmap(ino, nth);
-            b                = bcache_read(ino->dev, blockno, false);
-            m                = min(sz - wt, BSIZE - offset % BSIZE);
+            unsigned  nth      = offset / BSIZE;
+            blockno_t blockno = inode_bmap(ino, nth);
+            b                  = bcache_read(ino->dev, blockno, false);
+            m                  = min(sz - wt, BSIZE - offset % BSIZE);
             memmove(&b->cache[offset % BSIZE], buf, m);
             bcache_write(b, false);
             wt     += m;

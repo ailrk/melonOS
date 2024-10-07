@@ -6,12 +6,12 @@
 
 
 typedef struct SuperBlock {
-    unsigned nblocks;    // total size of fs in blocks
-    unsigned ninodes;    // number of inodes
-    unsigned ndata;      // number of data blocks
-    blockno  inodestart; // blockno of the first ino
-    blockno  bmapstart;  // blockno of the first free bit map
-    blockno  datastart;  // blockno of the first ino
+    unsigned  nblocks;    // total size of fs in blocks
+    unsigned  ninodes;    // number of inodes
+    unsigned  ndata;      // number of data blocks
+    blockno_t inodestart; // blockno of the first ino
+    blockno_t bmapstart;  // blockno of the first free bit map
+    blockno_t datastart;  // blockno of the first ino
 } SuperBlock;
 
 
@@ -28,18 +28,18 @@ typedef struct DInode {
     unsigned short  minor; // minor device number
     unsigned short  nlink; // number of links in fs
     unsigned        size;  // size of the file
-    blockno         addrs[NINOBLKS];  // block address.
+    blockno_t       addrs[NINOBLKS];  // block address.
 } __attribute__((packed)) DInode;
 
 
 /* Memory representation of an inode */
 typedef struct Inode {
-    devnum   dev;  // device number
-    inodenum inum; // The index of inode from `super_block.inodestart`
-    int      nref; // ref count
-    Mutex    lk;
-    bool     read; // has been read from disk?
-    DInode   d;    // copy of disk inode.
+    devno_t   dev;  // device number
+    inodeno_t inum; // The index of inode from `super_block.inodestart`
+    int       nref; // ref count
+    Mutex     lk;
+    bool      read; // has been read from disk?
+    DInode    d;    // copy of disk inode.
 } Inode;
 
 
@@ -52,8 +52,8 @@ typedef struct BNode {
     bool          dirty; // needs to be writtent to disk.
     bool          valid; // has been read from disk.
     unsigned      nref;
-    devnum        dev;
-    blockno       blockno;
+    devno_t       dev;
+    blockno_t     blockno;
     char          cache[BSIZE];
 } BNode;
 
@@ -67,7 +67,7 @@ typedef struct Dev {
 
 /* Directory entry */
 typedef struct DirEntry {
-  inodenum  inum;
+  inodeno_t inum;
   char      name[DIRNAMESZ];
 } DirEntry;
 
@@ -78,9 +78,9 @@ typedef struct DirEntry {
 #define T_DEV  3 // device
 
 typedef struct Stat {
-    short    type;  // file type
-    devnum   dev;   // disk device
-    inodenum inum;  // inode number
-    short    nlink; // number of links
-    unsigned size;  // file size
+    short     type;  // file type
+    devno_t   dev;   // disk device
+    inodeno_t  inum;  // inode number
+    short     nlink; // number of links
+    unsigned  size;  // file size
 } Stat;

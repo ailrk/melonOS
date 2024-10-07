@@ -9,9 +9,10 @@ struct Inode;
 typedef struct Inode Inode;
 
 
-typedef unsigned blockno;
-typedef unsigned inodenum;
-typedef unsigned devnum;
+typedef unsigned blockno_t;
+typedef unsigned inodeno_t;
+typedef unsigned devno_t;
+typedef unsigned offset_t; // byte offset
 
 
 /* File descriptor types */
@@ -36,6 +37,6 @@ typedef struct File {
     int      nref;     // reference count
     bool     readable;
     bool     writable;
-    unsigned offset;   // file cursor
+    offset_t offset;   // file cursor
     Inode   *ino;
 } File;
