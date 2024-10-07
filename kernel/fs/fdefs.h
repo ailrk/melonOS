@@ -15,25 +15,31 @@ typedef struct SuperBlock {
 } SuperBlock;
 
 
-/* In disk representation of an inode */
+/* In disk representation of an inode
+ * `addrs` holds inode block addresses. The first 12 addresses are
+ *  direct blocks, 13th address is singly indirect address, 14th
+ *  is doubly indirect address, 15th is triply indirect address.
+ *  Small files only needs to acess direct blocks, as file size grows,
+ *  more indirections are added.
+ * */
 typedef struct DInode {
     FileType        type;
     unsigned short  major; // major device number
     unsigned short  minor; // minor device number
     unsigned short  nlink; // number of links in fs
-    unsigned        size;
-    blockno         addrs[NDIRECT];  // block address.
+    unsigned        size;  // size of the file
+    blockno         addrs[NINOBLKS];  // block address.
 } __attribute__((packed)) DInode;
 
 
 /* Memory representation of an inode */
 typedef struct Inode {
-    devnum   dev;    // device number
-    inodenum inum;   // inode number.
-    int      nref;   // ref count
+    devnum   dev;  // device number
+    inodenum inum; // inode number.
+    int      nref; // ref count
     Mutex    lk;
-    bool     read;   // has been read from disk?
-    DInode   d; // copy of disk inode.
+    bool     read; // has been read from disk?
+    DInode   d;    // copy of disk inode.
 } Inode;
 
 

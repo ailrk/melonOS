@@ -1,4 +1,6 @@
 #include <stddef.h>
+#include "bcache.h"
+#include "block.h"
 #include "defs.h"
 #include "driver/vga.h"
 #include "err.h"
@@ -52,6 +54,36 @@ Inode *icache_get(devnum dev, inodenum inum) {
             ino->read = false;
             return ino;
         }
+    }
+
+    return 0;
+}
+
+
+/* Return the blockno of the nth block of inode. Allocate blocks if necessary.
+ * */
+blockno inode_map(Inode *ino, unsigned nth) {
+    if (nth < NDIRECT) {
+        blockno blockno = 0;
+        if ((blockno = ino->d.addrs[nth]) == 0) {
+            blockno = block_alloc(ino->dev);
+        }
+        return blockno;
+    }
+
+    if (nth >= NDIRECT) { // singly indirect
+        blockno ptrsno  = 0;
+        blockno offset  = nth - NDIRECT;
+        blockno blockno = 0;
+        if ((ptrsno = ino->d.addrs[nth]) == 0) {
+            ptrsno = block_alloc(ino->dev);
+        }
+        BNode *blockptrs = bcache_read(ino->dev, ptrsno, false);
+        if ((blockno = ((unsigned *)blockptrs->cache)[offset]) == 0) {
+            blockno = block_alloc(ino->dev);
+        }
+        bcache_release(blockptrs);
+        return blockno;
     }
 
     return 0;

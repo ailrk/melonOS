@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "fdefs.fwd.h"
 #include "string.h"
 #include "err.h"
 #include "fs/fdefs.h"
@@ -146,7 +147,7 @@ static unsigned freemap_search(devnum dev, blockno *out) {
  *
  *  @return  the allocated blockno. 0 if the allocation is failed.
  * */
-unsigned block_alloc(devnum dev) {
+blockno block_alloc(devnum dev) {
     blockno fbno;
 
     if (freemap_search(dev, &fbno)) {
