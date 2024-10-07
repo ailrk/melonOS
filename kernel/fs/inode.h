@@ -12,6 +12,7 @@ Inode  *inode_allocate(devnum dev, FileType type);
 void    inode_flush(Inode *ino);
 blockno inode_bmap(Inode *ino, unsigned nth);
 Inode  *inode_dup(Inode *ino);
+bool    inode_load(Inode *ino);
 void    inode_lock(Inode *ino);
 void    inode_unlock(Inode *ino);
 void    inode_drop(Inode *ino);

@@ -107,8 +107,8 @@ int sys_read() {
     int          fd   = getint(1, args);
     char        *buf  = (void *)getptr(2, args);
     int          sz   = getint(3, args);
-    Process      *p   = this_proc();
-    File         *f   = p->file[fd];
+    Process     *p    = this_proc();
+    File        *f    = p->file[fd];
     return file_read(f, buf, sz);
 }
 
@@ -124,7 +124,7 @@ int sys_write() {
 }
 
 
-static int (* system_calls[])() = {
+static int (*system_calls[])() = {
     [SYS_FORK]   = sys_fork,
     [SYS_EXIT]   = sys_exit,
     [SYS_EXEC]   = sys_exec,

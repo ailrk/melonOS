@@ -1,10 +1,12 @@
 #include <stddef.h>
+#include "mutex.h"
 #include "stdlib.h"
 #include "string.h"
 #include "bcache.h"
 #include "block.h"
 #include "defs.h"
 #include "err.h"
+#include "inode.h"
 #include "driver/vga.h"
 #include "process/spinlock.h"
 #include "fs/fdefs.fwd.h"
@@ -25,7 +27,10 @@ extern Dev        devices[NDEV];
 static const size_t inode_per_block = BSIZE / sizeof(DInode);
 
 
-inline static blockno inode_block(inodenum inum) {
+/*! Get the block that the inode stored at. An inode is always completely stored within
+ *  a block, you will not have an inode stored across 2 blocks.
+ * */
+inline static blockno get_inode_block(inodenum inum) {
     return inum / inode_per_block + super_block.inodestart;
 }
 
@@ -38,7 +43,7 @@ void inode_init() {
 
 
 /*! Get an inode from icache. If the inode is not cached, allocate
- *  a inode cache. This function does not read from the disk.
+ *  a inode in cache. This function does not read from the disk.
  *  Return 0 if there is not enough slots.
  * */
 Inode *inode_get(devnum dev, inodenum inum) {
@@ -62,13 +67,49 @@ Inode *inode_get(devnum dev, inodenum inum) {
 }
 
 
+/* Load an inode from disk. Return true if load succeeds */
+bool inode_load(Inode *ino) {
+    if (!ino)           return false;
+    if (ino->nref == 0) return false;
+    if (ino->read)      return false;
+
+    blockno  blockno = get_inode_block(ino->inum);
+    unsigned nth     = ino->inum % inode_per_block;
+    BNode   *b       = bcache_read(ino->dev, blockno, false);
+
+    memmove(&ino->d, &b->cache[nth * sizeof(DInode)], sizeof(DInode));
+    bcache_release(b);
+    ino->read = 1;
+    if (!ino->d.type)
+        panic("inode_load: inode has no file type");
+    return true;
+}
+
 
 /*! Flush in memory inode cache to disk. Needs to be called everytime inode field is updated. */
 void inode_flush(Inode *ino) {
-    BNode *b = bcache_read(ino->dev, inode_block(ino->inum), false);
+    BNode *b = bcache_read(ino->dev, get_inode_block(ino->inum), false);
     memmove(b->cache, &ino->d, sizeof(DInode));
     bcache_write(b, false);
     bcache_release(b);
+}
+
+
+/*! Lock the inode. Load disk inode if necessary */
+void inode_lock(Inode *ino) {
+    if (!ino)           panic("inode_lock, invalid inode");
+    if (ino->nref == 0) panic("inode_lock, inode is not used");
+    lock_mutex(&ino->lk);
+    if (!inode_load(ino)) unlock_mutex(&ino->lk);
+}
+
+
+/*! Unlock the locked inode. */
+void inode_unlock(Inode *ino) {
+    if (!ino)                     panic("inode_unlock: invalid inode");
+    if (!holding_mutex(&ino->lk)) panic("inode_unlock: mutex not locked");
+    if (ino->nref < 1)            panic("inode_unlock: inode is not being used");
+    unlock_mutex(&ino->lk);
 }
 
 

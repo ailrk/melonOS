@@ -35,7 +35,7 @@ typedef struct DInode {
 /* Memory representation of an inode */
 typedef struct Inode {
     devnum   dev;  // device number
-    inodenum inum; // inode number.
+    inodenum inum; // The index of inode from `super_block.inodestart`
     int      nref; // ref count
     Mutex    lk;
     bool     read; // has been read from disk?
