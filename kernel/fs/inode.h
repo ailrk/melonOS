@@ -9,9 +9,8 @@
 void    inode_init();
 Inode  *inode_get(devnum dev, inodenum inum);
 Inode  *inode_allocate(devnum dev, FileType type);
-void    inode_update(Inode *ino);
-blockno inode_map(Inode *ino, unsigned nth);
-blockno inode_maprange(Inode *ino, unsigned nth);
+void    inode_flush(Inode *ino);
+blockno inode_bmap(Inode *ino, unsigned nth);
 Inode  *inode_dup(Inode *ino);
 void    inode_lock(Inode *ino);
 void    inode_unlock(Inode *ino);

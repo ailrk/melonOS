@@ -1,11 +1,13 @@
 #include <stddef.h>
+#include "stdlib.h"
+#include "string.h"
 #include "bcache.h"
 #include "block.h"
 #include "defs.h"
-#include "driver/vga.h"
 #include "err.h"
-#include "fdefs.fwd.h"
+#include "driver/vga.h"
 #include "process/spinlock.h"
+#include "fs/fdefs.fwd.h"
 #include "fs/fdefs.h"
 
 
@@ -39,7 +41,7 @@ void inode_init() {
  *  a inode cache. This function does not read from the disk.
  *  Return 0 if there is not enough slots.
  * */
-Inode *icache_get(devnum dev, inodenum inum) {
+Inode *inode_get(devnum dev, inodenum inum) {
     for (unsigned i = 0; i < sizeof(icache.inodes); ++i) {
         Inode *ino = &icache.inodes[i];
         if (ino->nref >= 0 && ino->dev == dev && ino->inum == inum) {
@@ -60,9 +62,19 @@ Inode *icache_get(devnum dev, inodenum inum) {
 }
 
 
+
+/*! Flush in memory inode cache to disk. Needs to be called everytime inode field is updated. */
+void inode_flush(Inode *ino) {
+    BNode *b = bcache_read(ino->dev, inode_block(ino->inum), false);
+    memmove(b->cache, &ino->d, sizeof(DInode));
+    bcache_write(b, false);
+    bcache_release(b);
+}
+
+
 /* Return the blockno of the nth block of inode. Allocate blocks if necessary.
  * */
-blockno inode_map(Inode *ino, unsigned nth) {
+blockno inode_bmap(Inode *ino, unsigned nth) {
     if (nth < NDIRECT) {
         blockno blockno = 0;
         if ((blockno = ino->d.addrs[nth]) == 0) {
@@ -110,54 +122,80 @@ void inode_drop(Inode *ino) {
 /*! Read data from inode.
  *  @ino    Inode
  *  @buf    the buffer read into
- *  @offest cursor offset
+ *  @offest cursor offset. Indicates n bytes from start of the file.
  *  @sz     read size
  *  @return number of bytes read. Return -1 if failed.
- * TODO implement disk operation
  * */
 int inode_read(Inode *ino, char *buf, unsigned offset, unsigned sz) {
     switch(ino->d.type) {
     case F_DEV:
-        if (ino->d.major < 0 || ino->d.major > NDEV) {
-            return -1;
-        }
-        if (!devices[ino->d.major].read) {
-            return -1;
-        }
+        if (ino->d.major < 0 || ino->d.major > NDEV) return -1;
+        if (!devices[ino->d.major].read)             return -1;
         return devices[ino->d.major].read(ino, buf, sz);
     case F_DIR:
-        panic("inode_read: dir not implemented");
-        return -1;
     case F_FILE:
-        panic("inode_read: file not implemented");
-        return -1;
+        if (ino->d.size < offset)         return -1;
+        if ((unsigned)(-1) - offset < sz) return -1;
+        if (offset + sz > ino->d.size) sz = ino->d.size - offset; // crops
+        BNode *b;
+        unsigned m;
+        unsigned rd = 0; // bytes read
+        while (rd < sz) {
+            unsigned nth     = offset / BSIZE;
+            blockno  blockno = inode_bmap(ino, nth);
+            b                = bcache_read(ino->dev, blockno, false);
+            m                = min(sz - rd, BSIZE - offset % BSIZE);
+            memmove(buf, &b->cache[offset % BSIZE], m);
+            rd     += m;
+            offset += m;
+            buf    += m;
+            bcache_release(b);
+        }
+        return sz;
     }
 }
 
-/*! Write data from inode.
+
+/*! Write data to inode.
  *  @ino    Inode
  *  @buf    the buffer write from
- *  @offest cursor offset
+ *  @offest cursor offset, indicates n bytes from start of the file.
  *  @sz     read size
  *  @return number of bytes written. Return -1 if failed.
- * TODO implement disk operation
  * */
-int inode_write(Inode *ino, const char *buf, unsigned offset, unsigned n) {
+int inode_write(Inode *ino, const char *buf, unsigned offset, unsigned sz) {
     switch (ino->d.type) {
     case F_DEV:
-        if (ino->d.major < 0 || ino->d.major > NDEV) {
-            return -1;
-        }
-        if (!devices[ino->d.major].write) {
-            return -1;
-        }
-        return devices[ino->d.major].write(ino, buf, n);
+        if (ino->d.major < 0 || ino->d.major > NDEV) return -1;
+        if (!devices[ino->d.major].write)            return -1;
+        return devices[ino->d.major].write(ino, buf, sz);
     case F_DIR:
-        panic("inode_write: dir not implemented");
-        return -1;
     case F_FILE:
-        panic("inode_write: file not implemented");
-        return -1;
+        if (ino->d.size < offset)         return -1;
+        if ((unsigned)(-1) - offset < sz) return -1;
+        if (offset + sz > MAXFILE)        return -1;
+        BNode *b;
+        unsigned m;
+        unsigned wt = 0;
+        while (wt < sz) {
+            unsigned nth     = offset / BSIZE;
+            blockno  blockno = inode_bmap(ino, nth);
+            b                = bcache_read(ino->dev, blockno, false);
+            m                = min(sz - wt, BSIZE - offset % BSIZE);
+            memmove(&b->cache[offset % BSIZE], buf, m);
+            bcache_write(b, false);
+            wt     += m;
+            buf    += m;
+            offset += m;
+            bcache_release(b);
+        }
+
+        if (offset > ino->d.size) {
+            ino->d.size = offset;
+            inode_flush(ino);
+        }
+
+        return sz;
     }
 }
 

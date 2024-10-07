@@ -39,4 +39,3 @@ typedef struct File {
     unsigned offset;   // file cursor
     Inode   *ino;
 } File;
-
