@@ -220,10 +220,10 @@ int inode_write(Inode *ino, const char *buf, offset_t offset, unsigned sz) {
         unsigned m;
         unsigned wt = 0;
         while (wt < sz) {
-            unsigned  nth      = offset / BSIZE;
+            unsigned  nth     = offset / BSIZE;
             blockno_t blockno = inode_bmap(ino, nth);
-            b                  = bcache_read(ino->dev, blockno, false);
-            m                  = min(sz - wt, BSIZE - offset % BSIZE);
+            b                 = bcache_read(ino->dev, blockno, false);
+            m                 = min(sz - wt, BSIZE - offset % BSIZE);
             memmove(&b->cache[offset % BSIZE], buf, m);
             bcache_write(b, false);
             wt     += m;
