@@ -68,3 +68,34 @@ bool dir_link(Inode *dir, DirEntry new_entry) {
 
     return false; // no empty space
 }
+
+
+/*! Get an inode from a path name. */
+Inode *dir_abspath(char *path, size_t n) {
+    char buf[512];
+
+    if (!path) return 0;
+    if (path[0] != '/') return 0;
+
+    char *tok = strtok(path, "/");
+
+    Inode *root = inode_get(ROOTDEV, ROOTINO);
+    Inode *ino;
+
+    while (tok) {
+        // read inode
+        offset_t off;
+        if ((ino = dir_lookup(root, tok, &off)) == 0) return 0;
+        switch (ino->d.type) {
+        case F_DIR:
+            tok = strtok(0, "/");
+            break;
+        case F_FILE:
+            break;
+        default:
+            panic("dis_abspath: impossible");
+        }
+    }
+
+    return 0;
+}

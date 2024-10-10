@@ -3,7 +3,7 @@
 #include "fdefs.fwd.h"
 #include "fdefs.h"
 
-#define ROOTINO 1  // root i-number
+#define ROOTINO 1  // i-number for root directory
 
 
 void      inode_init();

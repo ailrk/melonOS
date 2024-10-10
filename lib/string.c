@@ -82,3 +82,48 @@ char *strrev(char *s) {
     }
     return s;
 }
+
+
+int strspn(const char *s1, const char *accept) {
+    int n = 0;
+    if (accept[0] == '\0') return 0;
+
+    while (*s1 != '\0') {
+        const char *a;
+        for (a = accept; *a != '\0'; ++a) {
+            if (*s1 == *a) {
+                n++;
+                s1++;
+                break;
+            }
+        }
+
+        if (*a == '\0') break; // first byte not in accept
+    }
+    return n;
+}
+
+
+char *strtok(char *str, const char *delim) {
+    static char *old;
+    return strtok_r(str, delim, &old);
+}
+
+
+char  *strtok_r(char *str, const char *delim, char **saveptr) {
+    if (delim[0] == '\0') return 0;
+
+    int n;
+    char *s, *e;
+
+    if (str == 0) s = e = *saveptr;
+    else          s = e = str + strspn(str, delim); // skip initial delim
+
+    for (; *e && (n = strspn(e, delim)) == 0; e++);
+    if (*e == '\0') return 0;
+
+    *e = '\0';
+    e += n;
+    *saveptr = e;
+    return s;
+}
