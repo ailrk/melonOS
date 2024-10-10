@@ -13,3 +13,6 @@ char  *strrev(char *s);
 char  *strtok(char *str, const char *delim);
 char  *strtok_r(char *str, const char *delim, char **saveptr);
 int    strspn(const char *s, const char *accept);
+char  *strpbrk(const char *s, const char *keys);
+char  *strncat(char *dst, const char *src, size_t n);
+char  *strchr(const char *s, int chr);

@@ -36,7 +36,7 @@ void memcpy(void *dest, const void *src, size_t n) {
 }
 
 
-void* memset(void *tgt, int v, size_t n) {
+void *memset(void *tgt, int v, size_t n) {
     char *p = (char *)tgt;
     while(n--) {
         *p++ = (unsigned char)v & 0xff;
@@ -110,7 +110,7 @@ char *strtok(char *str, const char *delim) {
 }
 
 
-char  *strtok_r(char *str, const char *delim, char **saveptr) {
+char *strtok_r(char *str, const char *delim, char **saveptr) {
     if (delim[0] == '\0') return 0;
 
     int n;
@@ -119,11 +119,45 @@ char  *strtok_r(char *str, const char *delim, char **saveptr) {
     if (str == 0) s = e = *saveptr;
     else          s = e = str + strspn(str, delim); // skip initial delim
 
-    for (; *e && (n = strspn(e, delim)) == 0; e++);
+    for (; *e && (n = strspn(e, delim)) == 0; ++e);
     if (*e == '\0') return 0;
 
     *e = '\0';
     e += n;
     *saveptr = e;
     return s;
+}
+
+
+char *strpbrk(const char *s, const char *keys) {
+    if (!s)    return 0;
+    if (!keys) return 0;
+    for (; *s != '\0'; ++s) {
+        for (const char *k = keys; *k != '\0'; ++k) {
+            if (*s == *k) return (char *)s;
+        }
+    }
+    return 0;
+}
+
+
+char *strncat(char *dst, const char *src, size_t n) {
+    if (!dst) return 0;
+    if (!src) return dst;
+
+    char *p = dst;
+    while (*p != '\0') p++;
+
+    for (int i = 0; i < n; ++i)
+        p[i] = src[i];
+
+    return dst;
+}
+
+
+char *strchr(const char *s, int chr) {
+    char b[2];
+    b[0] = chr;
+    b[1] = '\0';
+    return strpbrk(s, b);
 }
