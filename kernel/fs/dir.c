@@ -29,12 +29,11 @@ Inode *dir_lookup(Inode *dir, char *name, offset_t *offset) {
         if (inode_read(dir, (char *)&entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
             panic("dir_lookup: invalid dir");
 
-        if (entry.inum == 0)
-            continue;
+        if (entry.inum == 0) continue;
 
         if (dir_namecmp(entry.name, name)  == 0) {
             if (offset) *offset = off;
-            return inode_get(dir->dev, entry.inum);
+            return inode_getc(dir->dev, entry.inum);
         }
     }
 
@@ -70,29 +69,83 @@ bool dir_link(Inode *dir, DirEntry new_entry) {
 }
 
 
-/*! Get an inode from a path name. */
-Inode *dir_abspath(char *path, size_t n) {
-    char  buf[512];
-    char *saveptr;
+/* Index a path component of the path. If `n` > 0, get nth component from
+ * the root to child. If `n` < 0, get -nth component from child to parent.
+ * The index starts from 1.
+ * e.g dir_pathidx("/abc/def/gdi", 1)  == "abc"
+ *     dir_pathidx("/abc/def/gdi", 2)  == "def"
+ *     dir_pathidx("/abc/def/gdi", -1) == "gdi"
+ *
+ * @path  a file path
+ * @n     path component index
+ * @part  output char pointer, needs to be at least DIRNAMESZ big.
+ * */
+bool dir_pathidx(char *path, signed n, char *part) {
+    char  *savedpath;
+    char  p[DIRNAMESZ];
 
-    if (!path) return 0;
-    if (path[0] != '/') return 0;
+    memmove(p, path, DIRNAMESZ);
 
-    Inode *root = inode_get(ROOTDEV, ROOTINO);
-    Inode *ino  = root;
+    bool neg = false;
+    if (n < 0) {
+        neg = true;
+        n   = -n;
+        strrev(p);
+    }
 
-    for (char *tok  = strtok_r(path, "/", &saveptr);
+    int i = 1;
+    for (char *tok  = strtok_r(p, "/", &savedpath);
                tok != 0;
-               tok  = strtok_r(0, "/", &saveptr)) {
+               tok  = strtok_r(0, "/", &savedpath), ++i) {
+        if (i == n) {
+            memmove(part, tok, DIRNAMESZ);
+            if (neg) {
+                strrev(part);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+
+/*! Get an inode from a path name. If parent is true, return the direct parent directory
+ *  of the path file.
+ *  @path    absolute path
+ *  @parent  if true, return the direct parent directory
+ *  @return  if parent is false, return the inode to the path file, otherwise the direct
+ *           parent
+ *           of the path file.
+ * */
+Inode *dir_abspath(char *path, bool parent) {
+    if (!path)          return 0;
+    if (path[0] != '/') return 0; // not abs path
+
+    Inode *ino = inode_getc(ROOTDEV, ROOTINO);
+    char  *savedpath;
+    inode_load(ino);
+
+    for (char *tok  = strtok_r(path, "/", &savedpath);
+               tok != 0;
+               tok  = strtok_r(0, "/", &savedpath)) {
         offset_t off;
         Inode   *ino1;
         if ((ino1 = dir_lookup(ino, tok, &off)) == 0) return 0;
         switch (ino1->d.type) {
         case F_DIR:
-            // TODO
+            if (!strchr(savedpath, '/')) { // no more path component
+                if (parent)
+                    return ino;
+                return ino1;
+            }
             ino = ino1;
             continue;
         case F_FILE:
+            if (strchr(savedpath, '/'))
+                panic("dis_abspath: file is not the last path");
+            if (parent)
+                return ino;
+            return ino1;
         default:
             panic("dis_abspath");
         }

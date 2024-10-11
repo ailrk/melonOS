@@ -42,11 +42,33 @@ void inode_init() {
 }
 
 
-/*! Get an inode from icache. If the inode is not cached, allocate
- *  a inode in cache. This function does not read from the disk.
+/*!Allocate an inode on disk. */
+Inode *inode_allocate(devno_t dev, FileType type) {
+    for (inodeno_t inum = ROOTINO + 1; inum < super_block.ninodes; ++inum) {
+        BNode *b = bcache_read(dev, get_inode_block(inum), false);
+        Inode ino;
+        memmove((void *)&ino, (void *)b->cache, sizeof(Inode));
+        if (ino.d.type == 0) {
+            ino.dev    = dev;
+            ino.d.type = type;
+            bcache_write(b, false);
+            bcache_release(b);
+            return inode_getc(dev, inum);
+        }
+        bcache_release(b);
+    }
+    panic("inode_allocate: no more space for inodes");
+    __builtin_unreachable();
+}
+
+
+/*! Get an inode cache from icache. If the inode is not cached, allocate
+ *  a inode in cache. This function does not read from the disk. To
+ *  make sure it syncs with the disk, always call `inode_load` or
+ *  `inode_lock` after it.
  *  Return 0 if there is not enough slots.
  * */
-Inode *inode_get(devno_t dev, inodeno_t inum) {
+Inode *inode_getc(devno_t dev, inodeno_t inum) {
     for (unsigned i = 0; i < sizeof(icache.inodes); ++i) {
         Inode *ino = &icache.inodes[i];
         if (ino->nref >= 0 && ino->dev == dev && ino->inum == inum) {
@@ -54,7 +76,7 @@ Inode *inode_get(devno_t dev, inodeno_t inum) {
             return ino;
         }
 
-        if (ino->nref == 0) {
+        if (ino->nref == 0) { // allocate on free inode
             ino->nref = 1;
             ino->dev  = dev;
             ino->inum = inum;
@@ -71,7 +93,7 @@ Inode *inode_get(devno_t dev, inodeno_t inum) {
 bool inode_load(Inode *ino) {
     if (!ino)           return false;
     if (ino->nref == 0) return false;
-    if (ino->read)      return false;
+    if (ino->read)      return true;
 
     blockno_t blockno = get_inode_block(ino->inum);
     unsigned  nth     = ino->inum % inode_per_block;

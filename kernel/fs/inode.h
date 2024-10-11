@@ -3,11 +3,11 @@
 #include "fdefs.fwd.h"
 #include "fdefs.h"
 
-#define ROOTINO 1  // i-number for root directory
+#define ROOTINO 0  // i-number for root directory
 
 
 void      inode_init();
-Inode    *inode_get(devno_t dev, inodeno_t inum);
+Inode    *inode_getc(devno_t dev, inodeno_t inum);
 Inode    *inode_allocate(devno_t dev, FileType type);
 void      inode_flush(Inode *ino);
 blockno_t inode_bmap(Inode *ino, unsigned nth);

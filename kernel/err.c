@@ -8,6 +8,7 @@ void panic(const char *msg) {
     vga_printf("[\033[31mPANIC\033[0m] %s", msg);
     cli();
     for(;;);
+    __builtin_unreachable();
 }
 
 

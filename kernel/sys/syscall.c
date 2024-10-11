@@ -124,6 +124,11 @@ int sys_write() {
 }
 
 
+int sys_mknod() {
+
+}
+
+
 static int (*system_calls[])() = {
     [SYS_FORK]   = sys_fork,
     [SYS_EXIT]   = sys_exit,
@@ -132,6 +137,7 @@ static int (*system_calls[])() = {
     [SYS_SBRK]   = sys_sbrk,
     [SYS_WRITE]  = sys_write,
     [SYS_READ]   = sys_read,
+    [SYS_MKNOD]  = sys_mknod,
 };
 
 

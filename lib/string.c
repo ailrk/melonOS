@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdbool.h>
 #include "string.h"
 
 
@@ -84,16 +85,22 @@ char *strrev(char *s) {
 }
 
 
-int strspn(const char *s1, const char *accept) {
+static int spn_helper(const char *s, const char *accept, bool c) {
     int n = 0;
     if (accept[0] == '\0') return 0;
 
-    while (*s1 != '\0') {
+    while (*s != '\0') {
         const char *a;
         for (a = accept; *a != '\0'; ++a) {
-            if (*s1 == *a) {
+            if (c && *s != *a) { // strcspn
                 n++;
-                s1++;
+                s++;
+                break;
+            }
+
+            if (!c && *s == *a) { // strspn
+                n++;
+                s++;
                 break;
             }
         }
@@ -101,6 +108,16 @@ int strspn(const char *s1, const char *accept) {
         if (*a == '\0') break; // first byte not in accept
     }
     return n;
+}
+
+
+int strspn(const char *s, const char *accept) {
+    return spn_helper(s, accept, false);
+}
+
+
+int strcspn(const char *s, const char *accept) {
+    return spn_helper(s, accept, true);
 }
 
 
@@ -113,18 +130,25 @@ char *strtok(char *str, const char *delim) {
 char *strtok_r(char *str, const char *delim, char **saveptr) {
     if (delim[0] == '\0') return 0;
 
-    int n;
     char *s, *e;
 
     if (str == 0) s = e = *saveptr;
     else          s = e = str + strspn(str, delim); // skip initial delim
 
-    for (; *e && (n = strspn(e, delim)) == 0; ++e);
-    if (*e == '\0') return 0;
+    if (*s == '\0') {
+        *saveptr = s;
+        return 0;
+    }
+
+    e += strcspn(e, delim);
+
+    if (*e == '\0') {
+        *saveptr = e;
+        return s;
+    }
 
     *e = '\0';
-    e += n;
-    *saveptr = e;
+    *saveptr = e + 1;
     return s;
 }
 

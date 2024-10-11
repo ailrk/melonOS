@@ -7,3 +7,4 @@
 #define SYS_SBRK    5
 #define SYS_WRITE   6
 #define SYS_READ    7
+#define SYS_MKNOD   8
