@@ -4,6 +4,7 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include "defs.h"
+#include "fs/fdefs.fwd.h"
 #include "fs/fdefs.h"
 
 /* Make melonfs file image */
@@ -42,11 +43,16 @@ int main(int argc, char *argv[]) {
     fd = open(img, O_RDWR | O_CREAT, 00666);
 
     SuperBlock sb = (SuperBlock) {
-        .nblocks   = 30,
-        .ninodes   = 5,
-        .ndata     = 20,
-        .bmapstart = 6,
-        .datastart = 7,
+        .nblocks    = 100,
+        .ninodes    = 30,
+        .inodestart = 1,
+        .ndata      = 70,
+        .bmapstart  = 8,
+        .datastart  = 9,
+    };
+
+    DInode root = (DInode) {
+        .type  = F_DIR,
     };
 
     // sb
@@ -55,8 +61,9 @@ int main(int argc, char *argv[]) {
     wsec(0, buf);
 
     // inodes
-    memset(buf, 0, sizeof(buf));
+    memmove(buf, &root, sizeof(DInode));
     wsec(1, buf);
+    memset(buf, 0, sizeof(buf));
     wsec(2, buf);
     wsec(3, buf);
     wsec(4, buf);
@@ -66,7 +73,7 @@ int main(int argc, char *argv[]) {
     wsec(6, buf);
 
     // data
-    for (unsigned i = 8; i <= sb.nblocks; ++i) {
+    for (unsigned i = 7; i <= sb.nblocks; ++i) {
         wsec(i, buf);
     }
 

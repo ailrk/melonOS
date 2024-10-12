@@ -22,23 +22,23 @@
 #define NDEV        32             // max number of devices
 #define NFILE       128            // max number of open files
 #define NINODE      128            // max number of inodes
-#define NOPBLKS     512            // max # of blocks writes
+#define NOPBLKS     512            // max number of blocks writes
 #define NBUF        (NOPBLKS * 5)  // max buffer size
 #define NLOG        (NOPBLKS * 5)  // max log size
-#define DIRNAMESZ   32             //  directory name size
+#define DIRNAMESZ   24             // directory name size
+#define PATH_MAX    1024           // maximum path size
 #define ROOTDEV     1              // device number of file system root
+#define ROOTINO     0              // i-number for root directory
 
 
 /* Inode pointer structures
  * Currently support 12 direct blocks and 1 singly indirect blocks.
  * */
-#define NDIRECT     12                        // max # of direct blocks
-#define NINDIRECT1  (BSIZE/sizeof(unsigned))  // max # of singly indirect blocks
-#define NINOBLKS    (NDIRECT + 1)             // Inode addresses
-
-
-/* Max file block size */
-#define MAXFILE     (NDIRECT + NINDIRECT1)
+#define NDIRECT     12                        // max number of direct blocks
+#define NINDIRECT1  (BSIZE/sizeof(unsigned))  // max number of singly indirect blocks
+#define NINOBLKS    (NDIRECT + 1)             // number of block address stored in inode addrs field
+#define MAXFILEBLKS (NDIRECT + NINDIRECT1)    // max file block size
+#define MAXFILE     (MAXFILEBLKS * BSIZE)     // max file size in bytes
 
 
 /* Process parameters */

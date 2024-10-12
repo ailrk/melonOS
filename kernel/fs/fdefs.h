@@ -77,10 +77,11 @@ typedef struct DirEntry {
 #define T_FILE 2 // file
 #define T_DEV  3 // device
 
+
 typedef struct Stat {
-    short     type;  // file type
-    devno_t   dev;   // disk device
+    short      type;  // file type
+    devno_t    dev;   // disk device
     inodeno_t  inum;  // inode number
-    short     nlink; // number of links
-    unsigned  size;  // file size
+    short      nlink; // number of links
+    unsigned   size;  // file size
 } Stat;

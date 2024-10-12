@@ -3,11 +3,9 @@
 #include "trap.h"
 #include "memory.h"
 #include "fs.h"
+#include "process.h"
 #include "driver/vga.h"
 #include "driver/uart.h"
-#include "process.h"
-
-#define DBG 0
 
 char kstack[KSTACK_SZ]; // kernel stack. userd in entry.s
 
@@ -18,8 +16,8 @@ void kmain(void) {
     uart_init();
     mem_init2();
     trap_init();
-    fs_init();
     dev_init();
+    fs_init();
     process_init();
     scheduler();
 }

@@ -17,6 +17,7 @@ void fs_init() {
     disk_init();
     block_super(0, 0, true);
     inode_init();
+    dir_init();
 }
 
 
@@ -68,8 +69,8 @@ Inode *fs_create(char *path, FileType type, uint16_t major, uint16_t minor) {
     }
 
     entry = (DirEntry){ .inum = ino->inum };
-    memmove(entry.name, name, DIRNAMESZ);
-    if (!dir_link(ino, entry)) {
+    strncpy(entry.name, name, DIRNAMESZ);
+    if (!dir_link(dir, entry)) {
         panic("fs_create: link ");
     }
 

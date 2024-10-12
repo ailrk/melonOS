@@ -9,7 +9,7 @@
 /* Block allocation
  *
  * On disk block structures:
- * [ super | log | inode .. | freemap .. | data .. ]
+ * [ super | inode .. | freemap .. | data .. ]
  * */
 
 

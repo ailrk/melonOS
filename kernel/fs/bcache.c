@@ -1,4 +1,5 @@
 #include "err.h"
+#include "string.h"
 #include "process/mutex.h"
 #include "process/spinlock.h"
 #include "fs/bcache.h"
@@ -137,8 +138,11 @@ static void bcache_free(BNode *b) {
         b->prev->next     = b->next;
         b->next           = bcache.head;
         b->prev           = bcache.head->prev;
+        b->valid          = false;
+        b->dirty          = false;
         bcache.head->prev = b;
         bcache.head       = b;
+        memset(b->cache, 0, sizeof(b->cache));
     }
 }
 
