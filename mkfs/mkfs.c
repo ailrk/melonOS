@@ -70,5 +70,5 @@ int main(int argc, char *argv[]) {
         wsec(i, buf);
     }
 
-    return 240;
+    return 0;
 }
