@@ -14,7 +14,7 @@ static void *phystop = P2V_C(PHYSTOP);                // physical top
 /*! Allocate space for page table and switch to the new virutal memory */
 void mem_init1() {
     palloc_init(ptstart, ptend);
-    kernel_vmem_init();
+    kvm_init();
     gdt_init();
 }
 

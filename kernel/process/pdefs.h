@@ -1,14 +1,11 @@
 #pragma once
-
-#include <stdint.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "defs.h"
 #include "mmu.h"
 #include "trap.h"
-#include "memory/gdt.h"
 #include "fs/fdefs.fwd.h"
+#include "memory/gdt.h"
 
 
 typedef enum ProcState {

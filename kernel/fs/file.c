@@ -45,6 +45,27 @@ File *file_dup(File *f) {
     return 0;
 }
 
+/*! Close a file  */
+void  file_close(File *f) {
+    if (f->nref < 1)
+        panic("file_close");
+
+    if (--f->nref > 0)
+        return;
+
+    // no more references, close the file.
+    File fcpy = *f;
+    f->nref = 0;
+    f->type = FD_NONE;
+
+    switch (fcpy.type) {
+        case FD_INODE:
+            inode_drop(fcpy.ino);
+            return;
+        default:
+            return;
+    }
+}
 
 /*! Read file from file descriptor  */
 int file_read(File *f, char *buf, int n) {

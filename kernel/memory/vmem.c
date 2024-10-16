@@ -18,8 +18,8 @@
 #define DEBUG 0
 
 
-extern char data[];              // defined by kernel.ld
-PD         *kernel_page_dir;     // kernel only page directory.
+extern char data[];           // defined by kernel.ld
+PD         *kernel_pgdir;     // kernel only page directory.
 VMap        kmap[4];
 
 
@@ -68,13 +68,13 @@ static void init_kmap() {
 
 
 /*! Some untilities for handling page table access */
-static PDE *get_pde(PD *page_dir, const void *vaddr) {
-    return &page_dir[page_directory_idx((uintptr_t)vaddr)];
+static PDE *get_pde(PD *pgdir, const void *vaddr) {
+    return &pgdir[page_directory_idx((uintptr_t)vaddr)];
 }
 
 
-static PTE *get_pt(PD *page_dir, const void *vaddr) {
-    PDE *pde = get_pde(page_dir, vaddr);
+static PTE *get_pt(PD *pgdir, const void *vaddr) {
+    PDE *pde = get_pde(pgdir, vaddr);
     return (PTE *)P2V(pte_addr(*pde));
 }
 
@@ -84,8 +84,8 @@ static PTE *get_pt1(PDE *pde) {
 }
 
 
-static PTE *get_pte(PD *page_dir, const void *vaddr) {
-    PTE *pt = get_pt(page_dir, vaddr);
+static PTE *get_pte(PD *pgdir, const void *vaddr) {
+    PTE *pt = get_pt(pgdir, vaddr);
     return &pt[page_table_idx((uintptr_t)vaddr)];
 }
 
@@ -99,13 +99,13 @@ static PTE *get_pte1(PDE *pde, const void *vaddr) {
 /*! Walk the page directory, return the PTE corresponding to the virtual address.
  *  walk will allocate the page table if it doesn't exists.
  *
- *  @page_dir:  the page directory
- *  @vaddr:     virtual addess
- *  @alloc:     allocation flag.
- *  @return:    the address of the page table entry. 0 indicates failed to find pte
+ *  @pgdir  the page directory
+ *  @vaddr  virtual addess
+ *  @alloc  allocation flag.
+ *  @return the address of the page table entry. 0 indicates failed to find pte
  * */
-static PTE *walk(PD *page_dir, const void *vaddr) {
-    PDE *pde = get_pde(page_dir, vaddr);
+static PTE *walk(PD *pgdir, const void *vaddr) {
+    PDE *pde = get_pde(pgdir, vaddr);
     PTE *pt;
 
     if (*pde & PDE_P)
@@ -127,7 +127,7 @@ static PTE *walk(PD *page_dir, const void *vaddr) {
  *
  *  @return true if pages are mapped successfully. false otherwise.
  * */
-static bool map_pages(PD *page_dir, const VMap *k) {
+static bool map_pages(PD *pgdir, const VMap *k) {
     int           size   = k->pend - k->pstart;
     char         *vstart = (char *)page_aligndown((uintptr_t)k->virt);
     char         *vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
@@ -143,7 +143,7 @@ static bool map_pages(PD *page_dir, const VMap *k) {
         panic("map_pages: not on page boundry");
 
     for (; vstart != vend; vstart+=PAGE_SZ, pstart+=PAGE_SZ) {
-        if ((pte = walk(page_dir, vstart)) == 0)
+        if ((pte = walk(pgdir, vstart)) == 0)
             return false;
 
         if (*pte & PTE_P)
@@ -161,58 +161,58 @@ static bool map_pages(PD *page_dir, const VMap *k) {
  *
  *  @return initialized page directory
  * */
-PD *allocate_kernel_vmem() {
-    PD *page_dir;
+PD *kvm_allocate() {
+    PD *pgdir;
     if ((void *)P2V(PHYSTOP) > (void *)DEV_SPACE)
         panic("PHYSTOP is too high");
 
-    if ((page_dir = (PD*)palloc()) == 0)
+    if ((pgdir = (PD*)palloc()) == 0)
         return 0;
 
-    memset(page_dir, 0, PAGE_SZ);
+    memset(pgdir, 0, PAGE_SZ);
 
     int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
 
     for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
-        if (!map_pages(page_dir, k)) {
-            free_vmem(page_dir);
-            return false;
+        if (!map_pages(pgdir, k)) {
+            vmfree(pgdir);
+            return 0;
         }
     }
-    return page_dir;
+    return pgdir;
 }
 
 
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running
  * */
-void switch_kernel_vmem() { set_cr3(V2P_C(kernel_page_dir)); }
+void kvm_switch() { set_cr3(V2P_C(kernel_pgdir)); }
 
 
 /*! Setup kernel virtual memory */
-void kernel_vmem_init() {
-    vga_printf("[\033[32mboot\033[0m] kernel_vmem_alloc...");
+void kvm_init() {
+    vga_printf("[\033[32mboot\033[0m] kvm_alloc...");
     init_kmap();
-    if ((kernel_page_dir = allocate_kernel_vmem()) == 0) {
-        panic("kernel_vmem_init");
+    if ((kernel_pgdir = kvm_allocate()) == 0) {
+        panic("kvm_init");
     }
-    switch_kernel_vmem();
+    kvm_switch();
     vga_printf("\033[32mok\033[0m\n");
 }
 
 
 /*! Load init code to address 0 of virtual space.
- *  @page_dir process's page table directory
- *  @init     address of the binary
- *  @sz       size of the binary
+ *  @pgdir process's page table directory
+ *  @init  address of the binary
+ *  @sz    size of the binary
  * */
-void init_user_vmem(PD *page_dir, char *init, size_t sz) {
+void uvm_init(PD *pgdir, char *init, size_t sz) {
     char *mem;
     if (sz > PAGE_SZ)
-        panic("\033[32mvmem\033[0m init_user_vmem: more than a page");
+        panic("\033[32mvmem\033[0m uvm_init: more than a page");
 
     if ((mem = palloc()) == 0)
-        panic("\033[32mvmem\033[0m init_user_vmem: not enough memory");
+        panic("\033[32mvmem\033[0m uvm_init: not enough memory");
 
     memset(mem, 0, PAGE_SZ);
 
@@ -222,7 +222,7 @@ void init_user_vmem(PD *page_dir, char *init, size_t sz) {
           .pend   = V2P_C(mem + PAGE_SZ),
           .perm   = PTE_W | PTE_U
         };
-    map_pages(page_dir, &mmap);
+    map_pages(pgdir, &mmap);
     memmove(mem, init, sz);
 }
 
@@ -248,13 +248,13 @@ static void write_tss(Process *p) {
 /*! Switch TSS and page table to process `p`.
  *  We setup a new TSS entry for the gdt. When interrupt occurs,
  * */
-void switch_user_vmem(Process *p) {
+void uvm_switch(Process *p) {
     if (!p)
-        panic("switch_user_vmem: no process");
+        panic("uvm_switch: no process");
     if (!p->kstack)
-        panic("switch_user_vmem: no kernel stack");
+        panic("uvm_switch: no kernel stack");
     if (!p->pgdir)
-        panic("switch_user_vmem: no page table");
+        panic("uvm_switch: no page table");
 
     push_cli();
     write_tss(p); // setup TSS
@@ -266,7 +266,7 @@ void switch_user_vmem(Process *p) {
 /* !Grow process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size or 0 on error.
  * */
-int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
+int uvm_allocate(PD *pgdir, size_t oldsz, size_t newsz) {
     if (newsz > KERN_BASE)
         return 0;
 
@@ -276,8 +276,8 @@ int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
     for (uintptr_t p = page_alignup(oldsz); p < newsz; p += PAGE_SZ) {
         char *mem;
         if ((mem = palloc()) == 0) {
-            perror("allocate_user_vmem: out of memory");
-            deallocate_user_vmem(page_dir, newsz, oldsz);
+            perror("uvm_allocate: out of memory");
+            uvm_deallocate(pgdir, newsz, oldsz);
             return 0;
         }
 
@@ -289,9 +289,9 @@ int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
               .perm   = PTE_W | PTE_U
             };
 
-        if (!map_pages(page_dir, &mmap)) {
-            perror("allocate_user_vmem: out of memory");
-            deallocate_user_vmem(page_dir, newsz, oldsz);
+        if (!map_pages(pgdir, &mmap)) {
+            perror("uvm_allocate: out of memory");
+            uvm_deallocate(pgdir, newsz, oldsz);
             pfree(mem);
             return 0;
         }
@@ -301,31 +301,31 @@ int allocate_user_vmem(PD *page_dir, size_t oldsz, size_t newsz) {
 
 
 /*! Copy the page table of another process.
- *  @page_dir   the page directory of process to copy from.
- *  @sz         number of pages copy from the other process.
- *  @return     the copied page directory. 0 if failed.
+ *  @pgdir   the page directory of process to copy from.
+ *  @sz      number of pages copy from the other process.
+ *  @return  the copied page directory. 0 if failed.
  * */
-PD * copy_user_vmem(PD *page_dir, size_t sz) {
+PD *uvm_copy(PD *pgdir, size_t sz) {
     char *mem;
-    PD *new_pgdir;
+    PD   *new_pgdir;
 
-    if ((new_pgdir = allocate_kernel_vmem()) == 0)
+    if ((new_pgdir = kvm_allocate()) == 0)
         return false;
 
     PTE *pte;
 
     for (size_t i = 0; i < sz; i+=PAGE_SZ) {
-        if ((pte = get_pte(page_dir, (void*)i)) == 0)
-            panic("copy_user_vmem: trying to copy non existing pte");
+        if ((pte = get_pte(pgdir, (void*)i)) == 0)
+            panic("uvm_copy: trying to copy non existed pte");
 
         if (!(*pte & PTE_P))
-            panic("copy_user_vmem: page not present");
+            panic("uvm_copy: page not present");
 
-        physical_addr pa = pte_addr(*pte);
-        unsigned flags   = pte_flags(*pte);
+        physical_addr pa    = pte_addr(*pte);
+        unsigned      flags = pte_flags(*pte);
 
         if ((mem = palloc()) == 0) {
-            free_vmem(new_pgdir);
+            vmfree(new_pgdir);
             return 0;
         }
 
@@ -338,7 +338,7 @@ PD * copy_user_vmem(PD *page_dir, size_t sz) {
               .perm   = flags
             };
         if (!map_pages(new_pgdir, &mmap)) {
-            free_vmem(new_pgdir);
+            vmfree(new_pgdir);
             return 0;
         }
     }
@@ -349,12 +349,12 @@ PD * copy_user_vmem(PD *page_dir, size_t sz) {
 /* !Shrink process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size.
  * */
-int deallocate_user_vmem(PD *page_dir, uintptr_t oldsz, uintptr_t newsz) {
+int uvm_deallocate(PD *pgdir, uintptr_t oldsz, uintptr_t newsz) {
     if (oldsz < newsz)
         return oldsz;
 
     for (uintptr_t p = page_alignup(newsz); p < oldsz; p += PAGE_SZ) {
-        PTE *pte = get_pte(page_dir, (char *)p);
+        PTE *pte = get_pte(pgdir, (char *)p);
 
         if (!pte)
             p = page_addr(page_directory_idx(p) + 1, 0, 0) - PAGE_SZ;
@@ -362,7 +362,7 @@ int deallocate_user_vmem(PD *page_dir, uintptr_t oldsz, uintptr_t newsz) {
         if (*pte & PTE_P) {
             physical_addr page_table_addr = page_table_idx(*pte);
             if (page_table_addr == 0)
-                panic("deallocate_user_vmem: trying to pfree invalid physical addr");
+                panic("uvm_deallocate: trying to pfree invalid physical addr");
             pfree(P2V_C(page_table_addr));
             continue;
         }
@@ -374,16 +374,16 @@ int deallocate_user_vmem(PD *page_dir, uintptr_t oldsz, uintptr_t newsz) {
 /*! Free a page table.
  *  This will free all memory used in the user part.
  * */
-void free_vmem(PD *page_dir) {
-    if (page_dir == 0)
-        panic("free_vmem");
+void vmfree(PD *pgdir) {
+    if (pgdir == 0)
+        panic("vmfree");
 
     // deallocate
-    deallocate_user_vmem(page_dir, KERN_BASE, 0);
+    uvm_deallocate(pgdir, KERN_BASE, 0);
     for (int i = 0; i < NPDES; ++i) {
-        if (page_dir[i] & PDE_P) {
-            pfree((char *)P2V(pte_addr(page_dir[i])));
+        if (pgdir[i] & PDE_P) {
+            pfree((char *)P2V(pte_addr(pgdir[i])));
         }
     }
-    pfree((char *)page_dir);
+    pfree((char *)pgdir);
 }

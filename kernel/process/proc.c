@@ -190,7 +190,7 @@ void deallocate_process(Process *p) {
     lock(&ptable.lk);
     p->size = 0;
     if (p->pgdir) {
-        free_vmem(p->pgdir);
+        vmfree(p->pgdir);
         p->pgdir = 0;
     }
     if (p->kstack)  {
@@ -234,14 +234,14 @@ void init_pid1() {
         panic("init_pid1: failed to allocate process");
     }
 
-    if ((p->pgdir = allocate_kernel_vmem()) == 0)
+    if ((p->pgdir = kvm_allocate()) == 0)
         panic("init_pid1");
 
     extern char __INIT1_BEGIN__[];
     extern char __INIT1_END__[];
     int init1_sz = __INIT1_END__ - __INIT1_BEGIN__;
 
-    init_user_vmem(p->pgdir, __INIT1_BEGIN__, init1_sz);
+    uvm_init(p->pgdir, __INIT1_BEGIN__, init1_sz);
     p->size = PAGE_SZ;
     set_pid1_trapframe(p);
     strncpy(p->name, "init", sizeof(p->name));
@@ -265,15 +265,15 @@ bool grow_process(int n) {
     size_t sz = p->size;
 
     if (n > 0) {
-        if ((sz = allocate_user_vmem(p->pgdir, sz, sz + n)) == 0) {
+        if ((sz = uvm_allocate(p->pgdir, sz, sz + n)) == 0) {
             return false;
         }
     } else {
-        if ((sz = allocate_user_vmem(p->pgdir, sz, sz + n)) == 0)
+        if ((sz = uvm_allocate(p->pgdir, sz, sz + n)) == 0)
             return false;
     }
 
     p->size = sz;
-    switch_user_vmem(p);
+    uvm_switch(p);
     return true;
 }

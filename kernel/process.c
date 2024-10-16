@@ -1,10 +1,16 @@
+#include "fdefs.fwd.h"
+#include "inode.h"
+#include "mem.h"
+#include "mmu.h"
 #include "string.h"
 #include "err.h"
+#include "elf.h"
 #include "process.h"
 #include "process/proc.h"
 #include "process/pdefs.h"
 #include "memory/vmem.h"
 #include "driver/vga.h"
+#include "fs/dir.h"
 #include "fs/file.h"
 
 
@@ -19,7 +25,7 @@ void process_init() {
 }
 
 
-/* Execute a program */
+/*! Execute a program */
 int exec(char *path, char **argv) {
     return -1;
 }
@@ -37,7 +43,7 @@ int fork() {
         return -1;
     }
 
-    if ((child->pgdir = copy_user_vmem(thisp->pgdir, thisp->size)) == 0) {
+    if ((child->pgdir = uvm_copy(thisp->pgdir, thisp->size)) == 0) {
         deallocate_process(child);
         return -1;
     }
@@ -229,10 +235,10 @@ void scheduler() {
             if (p->state != PROC_READY)
                 continue;
             cpu->proc = p;
-            switch_user_vmem(p);
+            uvm_switch(p);
             p->state = PROC_RUNNING;
             swtch(&cpu->scheduler, p->context);
-            switch_kernel_vmem();
+            kvm_switch();
             cpu->proc = 0;
         }
         unlock(&ptable.lk);
