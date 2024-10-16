@@ -94,7 +94,7 @@ bool dir_link(Inode *dir, DirEntry new_entry) {
  * @n     path component index
  * @part  output char pointer, needs to be at least DIRNAMESZ big.
  * */
-bool dir_pathidx(char *path, signed n, char *part) {
+bool dir_pathidx(const char *path, signed n, char *part) {
     char  *savedpath;
     char  p[DIRNAMESZ];
 
@@ -133,7 +133,7 @@ bool dir_pathidx(char *path, signed n, char *part) {
  *           parent
  *           of the path file.
  * */
-Inode *dir_abspath(char *path, bool parent) {
+Inode *dir_abspath(const char *path, bool parent) {
     if (!path)          return 0;
     if (path[0] != '/') return 0; // not abs path
 

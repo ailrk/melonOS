@@ -149,6 +149,6 @@ static void bcache_free(BNode *b) {
 
 /*! Release the BNode.
  * */
-BNode *bcache_release(BNode *b) {
+void bcache_release(BNode *b) {
     bcache_free(b);
 }

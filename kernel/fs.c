@@ -1,6 +1,7 @@
 #include "block.h"
 #include "defs.h"
 #include "err.h"
+#include "proc.h"
 #include "string.h"
 #include "fs/fdefs.fwd.h"
 #include "fs/fdefs.h"
@@ -22,7 +23,7 @@ void fs_init() {
 
 
 /*! Create a file */
-Inode *fs_create(char *path, FileType type, uint16_t major, uint16_t minor) {
+Inode *fs_create(const char *path, FileType type, uint16_t major, uint16_t minor) {
     Inode *dir;
     Inode *ino;
     char   name[DIRNAMESZ];
@@ -75,4 +76,20 @@ Inode *fs_create(char *path, FileType type, uint16_t major, uint16_t minor) {
     }
 
     return ino;
+}
+
+
+/*! Allocate a file descriptor for f for the current process.
+ *  @f      file descriptor
+ *  @return on success return the file descriptor number, return
+ *          -1 on errors.
+ * */
+int fs_fdalloc(File *f) {
+    for (int fd = 0; fd < NOFILE; ++fd) {
+        if (this_proc()->file[fd] == 0) {
+            this_proc()->file[fd] = f;
+            return fd;
+        }
+    }
+    return -1;
 }

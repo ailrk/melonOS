@@ -8,3 +8,8 @@
 #define SYS_WRITE   6
 #define SYS_READ    7
 #define SYS_MKNOD   8
+#define SYS_MKDIR   9
+#define SYS_OPEN    10
+#define SYS_CLOSE   11
+#define SYS_LINK    12
+#define SYS_UNLINK  13
