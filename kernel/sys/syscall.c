@@ -1,5 +1,7 @@
 #include <stdint.h>
+#include "defs.h"
 #include "dir.h"
+#include "fdefs.h"
 #include "inode.h"
 #include "proc.h"
 #include "string.h"
@@ -221,13 +223,56 @@ int sys_close() {
 
     if (!f) return -1;
     file_close(f);
+    return 0;
 }
 
 
 int sys_link() {
     static char *args = "pp";
+    const char  *old  = getptr(1, args);
+    const char  *new  = getptr(2, args);
+
+    if (!old) return -1;
+    if (!new) return -1;
+
+    Inode *ino;
+    if ((ino = dir_abspath(old, false)) == 0) {
+        return -1;
+    }
+
+    if (ino->d.type == F_DIR) {
+        return -1;
+    }
+
+    ino->d.nlink++;
+    inode_flush(ino);
+
+    Inode *dir;
+    if ((dir = dir_abspath(new, true)) == 0) {
+        goto bad;
+    }
+
+    if (dir->dev != ino->dev) {
+        goto bad;
+    }
+
+    DirEntry new_entry;
+    new_entry.inum = ino->inum;
+    strncpy(new_entry.name, new, DIRNAMESZ);
+
+    if (!dir_link(dir, new_entry)) {
+        goto bad;
+    }
+
+    inode_drop(dir);
+    return 0;
+
+bad:
+    ino->d.nlink--;
+    inode_flush(ino);
     return -1;
 }
+
 
 int sys_unlink() {
     static char *args = "p";
