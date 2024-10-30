@@ -59,52 +59,52 @@ typedef uintptr_t PD; // page directory
 
 
 static inline uintptr_t
-vaddr_offset(const void *vaddr) {
+vaddr_offset (const void *vaddr) {
     return (uintptr_t)vaddr & 0xfff;
 }
 
 
 static inline uintptr_t
-page_directory_idx(uintptr_t vaddr) {
+page_directory_idx (uintptr_t vaddr) {
     return ((vaddr) >> PD_IDX_SHIFT) & 0x3FF;
 }
 
 
 static inline uintptr_t
-page_table_idx(uintptr_t vaddr) {
+page_table_idx (uintptr_t vaddr) {
     return ((vaddr) >> PT_IDX_SHIFT) & 0x3FF;
 }
 
 
 static inline uintptr_t
-page_alignup(int sz) {
+page_alignup (int sz) {
     return ((sz)+PAGE_SZ-1) & ~(PAGE_SZ-1);
 }
 
 
 static inline uintptr_t
-page_aligndown(uintptr_t addr) {
+page_aligndown (uintptr_t addr) {
     return (addr) & ~(PAGE_SZ-1);
 }
 
 
 /* Address in page table or page directory entry */
 static inline uintptr_t
-pte_addr(PTE pte) {
+pte_addr (PTE pte) {
     return (uintptr_t)(pte) & ~0xFFF;
 }
 
 
 /* Flag in page table or page directory entry */
 static inline unsigned
-pte_flags(PTE pte) {
+pte_flags (PTE pte) {
     return (unsigned)(pte) &  0xFFF;
 }
 
 
 /*! Construct virtual address from indexes and offsets */
 static inline unsigned
-page_addr(PDE pde, PTE pte, int offset) {
+page_addr (PDE pde, PTE pte, int offset) {
     return (uint32_t)((pde) << PD_IDX_SHIFT | (pte) << PT_IDX_SHIFT | (offset));
 }
 

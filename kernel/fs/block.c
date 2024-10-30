@@ -18,17 +18,17 @@
 SuperBlock super_block;
 
 
-void block_init(devno_t dev) {
-    block_super(dev, &super_block, true);
+void block_init (devno_t dev) {
+    block_super (dev, &super_block, true);
 }
 
 
 /*! Zero a disk block */
-void block_zero(devno_t dev, blockno_t blockno) {
-    BNode *b = bcache_read(dev, blockno, false);
-    memset(b->cache, 0, BSIZE);
-    bcache_write(b, false);
-    bcache_release(b);
+void block_zero (devno_t dev, blockno_t blockno) {
+    BNode *b = bcache_read (dev, blockno, false);
+    memset (b->cache, 0, BSIZE);
+    bcache_write (b, false);
+    bcache_release (b);
 }
 
 
@@ -37,14 +37,14 @@ void block_zero(devno_t dev, blockno_t blockno) {
  *  @sb      Output. If it's 0, don't output anything.
  *  @update  If `update` is true, read the superblock from  the disk
  * */
-void block_super(devno_t dev, SuperBlock *sb, bool update) {
+void block_super (devno_t dev, SuperBlock *sb, bool update) {
     if (update) {
-        BNode *b = bcache_read(dev, SUPERBLKNO, true);
+        BNode *b = bcache_read (dev, SUPERBLKNO, true);
         if (sb)
-            memmove(sb, b->cache, sizeof(SuperBlock));
+            memmove (sb, b->cache, sizeof (SuperBlock));
         if (sb != &super_block)
-            memmove(&super_block, b->cache, sizeof(SuperBlock));
-        bcache_release(b);
+            memmove (&super_block, b->cache, sizeof (SuperBlock));
+        bcache_release (b);
     } else {
         *sb = super_block;
     }
@@ -68,14 +68,14 @@ typedef struct FreemapAddr {
 
 /*! Get freemap bit address for `blockno`.
  * */
-static FreemapAddr freemap_addr(unsigned blockno) {
+static FreemapAddr freemap_addr (unsigned blockno) {
     FreemapAddr addr;
     if (blockno < super_block.datastart) {
-        panic("freemap_addr: blockno smaller than data start");
+        panic ("freemap_addr: blockno smaller than data start");
     }
 
     if (blockno > super_block.nblocks) {
-        panic("freemap_addr: blockno larger then file system size");
+        panic ("freemap_addr: blockno larger then file system size");
     }
 
     unsigned off = blockno - super_block.datastart;
@@ -86,45 +86,45 @@ static FreemapAddr freemap_addr(unsigned blockno) {
 
 
 /*! Check if `blockno` is used */
-static bool freemap_check(devno_t dev, blockno_t blockno) {
-    FreemapAddr addr = freemap_addr(blockno);
-    BNode *b         = bcache_read(dev, addr.bno, false);
+static bool freemap_check (devno_t dev, blockno_t blockno) {
+    FreemapAddr addr = freemap_addr (blockno);
+    BNode *b         = bcache_read (dev, addr.bno, false);
     char *freemap    = b->cache;
     bool ret         = freemap[addr.nbit / 8] & (0x80 >> (addr.nbit % 8));
-    bcache_release(b);
+    bcache_release (b);
     return ret;
 }
 
 
 /*! Set freemap bit */
-static void freemap_set(devno_t dev, blockno_t blockno, bool used) {
+static void freemap_set (devno_t dev, blockno_t blockno, bool used) {
     if (blockno < super_block.datastart) {
-        panic("freemap_set");
+        panic ("freemap_set");
     }
-    FreemapAddr    addr = freemap_addr(blockno);
-    BNode         *b    = bcache_read(dev, addr.bno, false);
+    FreemapAddr    addr = freemap_addr (blockno);
+    BNode         *b    = bcache_read (dev, addr.bno, false);
     unsigned char *byte = &((unsigned char *)b->cache)[addr.nbit / 8];
     if (used) {
-        *byte |= (0x80 >> (addr.nbit % 8));
+        *byte |=  (0x80 >> (addr.nbit % 8));
     } else {
-        *byte &= ~(0x80 >> (addr.nbit % 8));
+        *byte &= ~ (0x80 >> (addr.nbit % 8));
     }
-    bcache_write(b, false);
-    bcache_release(b);
+    bcache_write (b, false);
+    bcache_release (b);
 }
 
 
 /*! Search for the first free block in the freemap */
-static unsigned freemap_search(devno_t dev, blockno_t *out) {
+static unsigned freemap_search (devno_t dev, blockno_t *out) {
     unsigned nblks = super_block.datastart - super_block.bmapstart;
     for (unsigned off = 0; off < nblks; ++off) {
-        BNode *b = bcache_read(dev, off + super_block.bmapstart, false);
-        for (unsigned i = 0; i < sizeof(b->cache); ++i) {
+        BNode *b = bcache_read (dev, off + super_block.bmapstart, false);
+        for (unsigned i = 0; i < sizeof (b->cache); ++i) {
             unsigned char byte = b->cache[i];
 
             if (byte == 0) {
                 *out = super_block.datastart + off * BITS_PER_BLK;
-                bcache_release(b);
+                bcache_release (b);
                 return true;
             }
 
@@ -133,11 +133,11 @@ static unsigned freemap_search(devno_t dev, blockno_t *out) {
                 for (; byte & (1 << 7); byte <<= 1, ++n);
                 blockno_t fbno = super_block.datastart + off * BITS_PER_BLK + n;
                 *out = fbno;
-                bcache_release(b);
+                bcache_release (b);
                 return true;
             }
         }
-        bcache_release(b);
+        bcache_release (b);
     }
     return false;
 }
@@ -148,13 +148,13 @@ static unsigned freemap_search(devno_t dev, blockno_t *out) {
  *
  *  @return  the allocated blockno. 0 if the allocation is failed.
  * */
-blockno_t block_alloc(devno_t dev) {
+blockno_t block_alloc (devno_t dev) {
     blockno_t fbno;
 
-    if (freemap_search(dev, &fbno)) {
+    if (freemap_search (dev, &fbno)) {
         if (!fbno)
-            panic("bad_alloc");
-        freemap_set(dev, fbno, true);
+            panic ("bad_alloc");
+        freemap_set (dev, fbno, true);
         return fbno;
     }
 
@@ -163,10 +163,10 @@ blockno_t block_alloc(devno_t dev) {
 
 
 /*! Free a block */
-void block_free(devno_t dev, blockno_t blockno) {
-    if (!freemap_check(dev, blockno)) {
-        panic("block_free: block is already free");
+void block_free (devno_t dev, blockno_t blockno) {
+    if (!freemap_check (dev, blockno)) {
+        panic ("block_free: block is already free");
         return;
     }
-    freemap_set(dev, blockno, false);
+    freemap_set (dev, blockno, false);
 }

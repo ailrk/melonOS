@@ -5,7 +5,7 @@
 Dev devices[NDEV];
 
 
-void dev_init() {
-    ps2_init();
-    console_init();
+void dev_init () {
+    ps2_init ();
+    console_init ();
 }

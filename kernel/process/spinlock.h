@@ -9,6 +9,6 @@ typedef struct SpinLock {
 } SpinLock;
 
 
-SpinLock new_lock(const char *name);
-void     lock(SpinLock *);
-void     unlock(SpinLock *);
+SpinLock new_lock (const char *name);
+void     lock (SpinLock *);
+void     unlock (SpinLock *);

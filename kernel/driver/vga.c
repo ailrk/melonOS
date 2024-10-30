@@ -21,13 +21,13 @@ Screen screen;
 
 
 static inline uint8_t
-vga_entry_color(VgaColor fg, VgaColor bg) {
+vga_entry_color (VgaColor fg, VgaColor bg) {
     return fg | bg << 4;
 }
 
 
 static inline uint16_t
-vga_entry(unsigned char uc, uint8_t color) {
+vga_entry (unsigned char uc, uint8_t color) {
     return (uint16_t)(uc) | (uint16_t)(color) << 8;
 }
 
@@ -41,17 +41,17 @@ static size_t const VGA_HEIGHT = 25;
 #define TERMBUF_SIZE (VGA_HEIGHT * VGA_WIDTH)
 
 
-static void set_bg_color(VgaColor bg) {
+static void set_bg_color (VgaColor bg) {
     screen.color |= bg << 4;
 }
 
 
-static void set_fg_color(VgaColor fg) {
-    screen.color = vga_entry_color(fg, screen.color >> 4);
+static void set_fg_color (VgaColor fg) {
+    screen.color = vga_entry_color (fg, screen.color >> 4);
 }
 
 
-void vga_clear() {
+void vga_clear () {
     screen.row    = 0;
     screen.column = 0;
     for (size_t y = 0; y < VGA_HEIGHT; ++y)
@@ -60,28 +60,28 @@ void vga_clear() {
 }
 
 
-void newline() {
+void newline () {
     screen.column = 0;
     screen.row += 1;
 }
 
 
-void vga_init() {
+void vga_init () {
     screen.row    = 0;
     screen.column = 0;
-    screen.color  = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+    screen.color  = vga_entry_color (VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     screen.buffer = (uint16_t *)(TERMBUF_START);
-    vga_clear();
-    vga_printf("melonos 0.0.1\n");
+    vga_clear ();
+    vga_printf ("melonos 0.0.1\n");
 }
 
 
-void vga_set_cursor(uint16_t x, uint16_t y) {
+void vga_set_cursor (uint16_t x, uint16_t y) {
     screen.cursor = screen.buffer + (y * VGA_WIDTH + x );
 }
 
 
-void vga_set_color(uint8_t color) { screen.color = color; }
+void vga_set_color (uint8_t color) { screen.color = color; }
 
 
 void put_entry_at(char c) {
@@ -93,15 +93,15 @@ void put_entry_at(char c) {
 
 void vga_putchar(char c) {
     if (screen.row > VGA_HEIGHT) {
-        vga_clear();
+        vga_clear ();
     }
 
     if (c == '\n') {
-        newline();
+        newline ();
         return;
     }
 
-    put_entry_at(c);
+    put_entry_at (c);
     if (++screen.column == VGA_WIDTH) {
         screen.column = 0;
         if (++screen.row == VGA_HEIGHT)
@@ -115,61 +115,61 @@ static void ansi_cntl(const ANSIState *ansi) {
         case ANSI_COLOR:
             switch (ansi->value.color) {
             case ANSIColor_BBLK:
-                set_bg_color(VGA_COLOR_BLACK);
+                set_bg_color (VGA_COLOR_BLACK);
                 break;
             case ANSIColor_BRED:
-                set_bg_color(VGA_COLOR_RED);
+                set_bg_color (VGA_COLOR_RED);
                 break;
             case ANSIColor_BGRN:
-                set_bg_color(VGA_COLOR_GREEN);
+                set_bg_color (VGA_COLOR_GREEN);
                 break;
             case ANSIColor_BYLW:
-                set_bg_color(VGA_COLOR_LIGHT_BROWN);
+                set_bg_color (VGA_COLOR_LIGHT_BROWN);
                 break;
             case ANSIColor_BBLU:
-                set_bg_color(VGA_COLOR_BLUE);
+                set_bg_color (VGA_COLOR_BLUE);
                 break;
             case ANSIColor_BMAG:
-                set_bg_color(VGA_COLOR_LIGHT_MAGENTA);
+                set_bg_color (VGA_COLOR_LIGHT_MAGENTA);
                 break;
             case ANSIColor_BCYA:
-                set_bg_color(VGA_COLOR_CYAN);
+                set_bg_color (VGA_COLOR_CYAN);
                 break;
             case ANSIColor_BWHT:
-                set_bg_color(VGA_COLOR_WHITE);
+                set_bg_color (VGA_COLOR_WHITE);
                 break;
             case ANSIColor_BDEF:
-                set_bg_color(VGA_COLOR_BLACK);
+                set_bg_color (VGA_COLOR_BLACK);
                 break;
             case ANSIColor_FBLK:
-                set_fg_color(VGA_COLOR_BLACK);
+                set_fg_color (VGA_COLOR_BLACK);
                 break;
             case ANSIColor_FRED:
-                set_fg_color(VGA_COLOR_RED);
+                set_fg_color (VGA_COLOR_RED);
                 break;
             case ANSIColor_FGRN:
-                set_fg_color(VGA_COLOR_GREEN);
+                set_fg_color (VGA_COLOR_GREEN);
                 break;
             case ANSIColor_FYLW:
-                set_fg_color(VGA_COLOR_LIGHT_BROWN);
+                set_fg_color (VGA_COLOR_LIGHT_BROWN);
                 break;
             case ANSIColor_FBLU:
-                set_fg_color(VGA_COLOR_BLUE);
+                set_fg_color (VGA_COLOR_BLUE);
                 break;
             case ANSIColor_FMAG:
-                set_fg_color(VGA_COLOR_LIGHT_MAGENTA);
+                set_fg_color (VGA_COLOR_LIGHT_MAGENTA);
                 break;
             case ANSIColor_FCYA:
-                set_fg_color(VGA_COLOR_CYAN);
+                set_fg_color (VGA_COLOR_CYAN);
                 break;
             case ANSIColor_FWHT:
-                set_fg_color(VGA_COLOR_WHITE);
+                set_fg_color (VGA_COLOR_WHITE);
                 break;
             case ANSIColor_FDEF:
-                set_fg_color(VGA_COLOR_WHITE);
+                set_fg_color (VGA_COLOR_WHITE);
                 break;
             case ANSIColor_RES:
-                screen.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+                screen.color = vga_entry_color (VGA_COLOR_WHITE, VGA_COLOR_BLACK);
                 break;
             default: break;
             }
@@ -183,18 +183,18 @@ static void ansi_cntl(const ANSIState *ansi) {
 /*! Write a single char to the screen. If it encounters an escape code, consume
  *  it first then print the next character.
  * */
-char *vga_writec(char *data) {
+char *vga_writec (char *data) {
     ANSIState ansi;
 
     if (*data == '\033') { // ansi
         char *p;
-        if ((p = ansi_parse(&ansi, data)) != 0) {
-            ansi_cntl(&ansi);
+        if ((p = ansi_parse (&ansi, data)) != 0) {
+            ansi_cntl (&ansi);
             data = p;
         }
     }
 
-    vga_putchar(*data++);
+    vga_putchar (*data++);
     return data;
 }
 
@@ -213,6 +213,6 @@ void vga_printf(char *fmt, ...) {
     };
     va_list args;
     va_start (args, fmt);
-    format(io, fmt, args);
+    format (io, fmt, args);
     va_end (args);
 }

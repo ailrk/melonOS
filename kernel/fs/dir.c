@@ -10,13 +10,13 @@
 /*! Initialize the file directory. The kernel will always hold
  *  a reference to the root directly.
  * */
-void dir_init() {
-    inode_getc(ROOTDEV, ROOTINO);
+void dir_init () {
+    inode_getc (ROOTDEV, ROOTINO);
 }
 
 
-int dir_namecmp(const char *a, const char *b) {
-    return strncmp(a, b, DIRNAMESZ);
+int dir_namecmp (const char *a, const char *b) {
+    return strncmp (a, b, DIRNAMESZ);
 }
 
 
@@ -28,21 +28,21 @@ int dir_namecmp(const char *a, const char *b) {
  *  @offset  output pointer, stores the location of the entry in the director
  *  @return  inode corresponds to the directory entry.
  * */
-Inode *dir_lookup(Inode *dir, char *name, offset_t *offset) {
+Inode *dir_lookup (Inode *dir, char *name, offset_t *offset) {
     if (dir->d.type != F_DIR)
-        panic("dir_lookup, not a dir");
+        panic ("dir_lookup, not a dir");
 
     DirEntry entry;
 
-    for (offset_t off = 0; off < dir->d.size; off += sizeof(DirEntry)) {
-        if (inode_read(dir, (char *)&entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
-            panic("dir_lookup: invalid dir");
+    for (offset_t off = 0; off < dir->d.size; off += sizeof (DirEntry)) {
+        if (inode_read (dir, (char *)&entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+            panic ("dir_lookup: invalid dir");
 
         if (entry.inum == 0) continue;
 
-        if (dir_namecmp(entry.name, name) == 0) {
+        if (dir_namecmp (entry.name, name) == 0) {
             if (offset) *offset = off;
-            return inode_getc(dir->dev, entry.inum);
+            return inode_getc (dir->dev, entry.inum);
         }
     }
 
@@ -51,33 +51,33 @@ Inode *dir_lookup(Inode *dir, char *name, offset_t *offset) {
 
 
 /*! Add a new directory entry to the directory */
-bool dir_link(Inode *dir, DirEntry new_entry) {
+bool dir_link (Inode *dir, DirEntry new_entry) {
     if (dir->d.type != F_DIR)
-        panic("dir_link: not a dir");
+        panic ("dir_link: not a dir");
 
     Inode   *ino;
     DirEntry entry;
 
-    if ((ino = dir_lookup(dir, new_entry.name, 0)) != 0) {  // exists
+    if ((ino = dir_lookup (dir, new_entry.name, 0)) != 0) {  // exists
         return false;
     }
 
     offset_t off;
-    for (off = 0; off < dir->d.size; off += sizeof(DirEntry)) {
-        if (inode_read(dir, (char *)&entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
-            panic("dir_link: invalid dir");
+    for (off = 0; off < dir->d.size; off += sizeof (DirEntry)) {
+        if (inode_read (dir, (char *)&entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+            panic ("dir_link: invalid dir");
 
         if (entry.inum == 0) { // empty dir entry.
-            if (inode_write(dir, (char *)&new_entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
-                panic("dir_link: write error");
+            if (inode_write (dir, (char *)&new_entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+                panic ("dir_link: write error");
             return true;
         }
     }
 
     // no enough space, allocate new blocks
-    inode_offmap(dir, off + sizeof(DirEntry));
-    if (inode_write(dir, (char *)&new_entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
-        panic("dir_link: write error");
+    inode_offmap (dir, off + sizeof(DirEntry));
+    if (inode_write (dir, (char *)&new_entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+        panic ("dir_link: write error");
 
     return true;
 }
@@ -94,11 +94,11 @@ bool dir_link(Inode *dir, DirEntry new_entry) {
  * @n     path component index
  * @part  output char pointer, needs to be at least DIRNAMESZ big.
  * */
-bool dir_pathidx(const char *path, signed n, char *part) {
+bool dir_pathidx (const char *path, signed n, char *part) {
     char  *savedpath;
     char  p[DIRNAMESZ];
 
-    memmove(p, path, DIRNAMESZ);
+    memmove (p, path, DIRNAMESZ);
 
     bool neg = false;
     if (n < 0) {
@@ -112,9 +112,9 @@ bool dir_pathidx(const char *path, signed n, char *part) {
                tok != 0;
                tok  = strtok_r(0, "/", &savedpath), ++i) {
         if (i == n) {
-            strncpy(part, tok, DIRNAMESZ);
+            strncpy (part, tok, DIRNAMESZ);
             if (neg) {
-                strrev(part);
+                strrev (part);
             }
             return true;
         }
@@ -133,50 +133,50 @@ bool dir_pathidx(const char *path, signed n, char *part) {
  *           parent
  *           of the path file.
  * */
-Inode *dir_abspath(const char *path, bool parent) {
+Inode *dir_abspath (const char *path, bool parent) {
     if (!path)          return 0;
     if (path[0] != '/') return 0; // not abs path
 
     char pathbuf[PATH_MAX];
-    strncpy(pathbuf, path, strlen(path));
+    strncpy (pathbuf, path, strlen(path));
 
-    Inode *dir = inode_getc(ROOTDEV, ROOTINO);
+    Inode *dir = inode_getc (ROOTDEV, ROOTINO);
     char  *savedpath;
-    inode_load(dir);
+    inode_load (dir);
 
-    for (char *tok  = strtok_r(pathbuf, "/", &savedpath);
+    for (char *tok  = strtok_r (pathbuf, "/", &savedpath);
                tok != 0;
-               tok  = strtok_r(0, "/", &savedpath)) {
+               tok  = strtok_r (0, "/", &savedpath)) {
 
         offset_t off;
         Inode   *ino;
 
-        if (parent && !strchr(savedpath, '/')) {
-            inode_drop(dir);
+        if (parent && !strchr (savedpath, '/')) {
+            inode_drop (dir);
             return dir;
         }
 
-        if ((ino = dir_lookup(dir, tok, &off)) == 0)  {
-            inode_drop(dir);
+        if ((ino = dir_lookup (dir, tok, &off)) == 0)  {
+            inode_drop (dir);
             return 0;
         }
 
         switch (ino->d.type) {
         case F_DIR:
-            if (!strchr(savedpath, '/')) { // no more path component
-                inode_drop(ino);
+            if (!strchr (savedpath, '/')) { // no more path component
+                inode_drop (ino);
                 return ino;
             }
-            inode_drop(dir);
+            inode_drop (dir);
             dir = ino;
             continue;
         case F_FILE:
-            if (strchr(savedpath, '/'))
-                panic("dis_abspath: file is not the last path");
-            inode_drop(ino);
+            if (strchr (savedpath, '/'))
+                panic ("dis_abspath: file is not the last path");
+            inode_drop (ino);
             return ino;
         default:
-            panic("dis_abspath");
+            panic ("dis_abspath");
         }
     }
 

@@ -40,7 +40,7 @@ typedef struct ELF32Header {
 static const char elf_magic[] = { 0x7F, 0x45, 0x4C, 0x46 };
 
 
-static inline bool is_elf(const ELF32Header *hdr) {
+static inline bool is_elf (const ELF32Header *hdr) {
     return memcmp(&hdr->e_ident[0], elf_magic, 4) == 0;
 }
 

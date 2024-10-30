@@ -3,10 +3,10 @@
 #include "errno.h"
 
 
-int atoi(char *p) {
+int atoi (char *p) {
     int k   = 0;
     int neg = 0;
-    while (isspace(*p)) p++;
+    while (isspace (*p)) p++;
 
     if (*p == '+') p++;
     else if (*p == '-') {
@@ -14,7 +14,7 @@ int atoi(char *p) {
         p++;
     }
 
-    while (isdigit(*p)) {
+    while (isdigit (*p)) {
         k = k * 10 + (*p - '0');
         p++;
     }
@@ -41,7 +41,7 @@ long int strtol (char *str, char **endptr) {
     long int k = 0;
     int neg = 0;
 
-    while (isspace(*p)) p++;
+    while (isspace (*p)) p++;
 
     if (*p == '+') p++;
     else if (*p == '-') {
@@ -51,9 +51,9 @@ long int strtol (char *str, char **endptr) {
 
     if (p[0] == '0' && p[1] == 'x') { // hex
         p += 2;
-        while (isdigit(*p) || *p > 'a' && *p < 'f' || *p > 'A' && *p < 'F') {
+        while (isdigit (*p) || *p > 'a' && *p < 'f' || *p > 'A' && *p < 'F') {
             k = k * 16;
-            if (isdigit(*p))
+            if (isdigit (*p))
                 k += *p - '0';
             else if (*p > 'a' && *p < 'f')
                 k += *p - 'a' + 10;
@@ -66,13 +66,13 @@ long int strtol (char *str, char **endptr) {
 
     } else if (p[0] == '0') { // oct
         p += 1;
-        while(isdigit(*p)) {
+        while(isdigit (*p)) {
             k = k * 8 + (*p - '0');
             p++;
         }
 
-    } else if (isdigit(p[0])) { // dec
-        while(isdigit(*p)) {
+    } else if (isdigit (p[0])) { // dec
+        while(isdigit (*p)) {
             k = k * 10 + (*p - '0');
             p++;
         }
