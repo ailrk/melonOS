@@ -1,3 +1,3 @@
 #pragma once
 
-void syscall();
+void syscall ();

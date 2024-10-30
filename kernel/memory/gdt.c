@@ -13,7 +13,7 @@ extern char data[]; // defined by kernel.ld
 extern CPU  cpu;
 
 
-GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag) {
+GDTEntry create_descriptor (uint32_t base, uint32_t limit, uint16_t flag) {
     GDTEntry descriptor;
 
     // Create the high 32 bit segment
@@ -32,41 +32,41 @@ GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag) {
 }
 
 
-void gdt_init() {
-    vga_printf("[\033[32mboot\033[0m] gdt...");
+void gdt_init () {
+    vga_printf ("[\033[32mboot\033[0m] gdt...");
     cpu.gdtr.limit     = sizeof(GDTEntry) * NSEGS - 1;
     cpu.gdtr.base      = (uint32_t)&cpu.gdt;
 
-    cpu.gdt[SEG_NULL]  = create_descriptor(0, 0, 0);
+    cpu.gdt[SEG_NULL]  = create_descriptor (0, 0, 0);
 
     {
         uint16_t flag = SEG_S(1)       | SEG_P(1)  | SEG_AVL(0) |
                         SEG_L(0)       | SEG_DB(1) | SEG_G(1)   |
                         SEG_DPL(DPL_K) | SEG_CODE_EXRD;
-        cpu.gdt[SEG_KCODE] = create_descriptor(0, 0xffffffff, flag);
+        cpu.gdt[SEG_KCODE] = create_descriptor (0, 0xffffffff, flag);
     }
 
     {
         uint16_t flag = SEG_S(1)       | SEG_P(1)  | SEG_AVL(0) |
                         SEG_L(0)       | SEG_DB(1) | SEG_G(1)   |
                         SEG_DPL(DPL_K) | SEG_DATA_RDWR;
-        cpu.gdt[SEG_KDATA] = create_descriptor(0, 0xffffffff, flag);
+        cpu.gdt[SEG_KDATA] = create_descriptor (0, 0xffffffff, flag);
     }
 
     {
         uint16_t flag = SEG_S(1)        | SEG_P(1)  | SEG_AVL(0) |
                         SEG_L(0)        | SEG_DB(1) | SEG_G(1)   |
                         SEG_DPL(DPL_U)  | SEG_CODE_EXRD;
-        cpu.gdt[SEG_UCODE] = create_descriptor(0, 0xffffffff, flag);
+        cpu.gdt[SEG_UCODE] = create_descriptor (0, 0xffffffff, flag);
     }
 
     {
         uint16_t flag = SEG_S(1)       | SEG_P(1)  | SEG_AVL(0) |
                         SEG_L(0)       | SEG_DB(1) | SEG_G(1)   |
                         SEG_DPL(DPL_U) | SEG_DATA_RDWR;
-        cpu.gdt[SEG_UDATA] = create_descriptor(0, 0xffffffff, flag);
+        cpu.gdt[SEG_UDATA] = create_descriptor (0, 0xffffffff, flag);
     }
 
-    lgdt((void*)&cpu.gdtr);
-    vga_printf("\033[32moki\033[0m\n");
+    lgdt ((void*)&cpu.gdtr);
+    vga_printf ("\033[32moki\033[0m\n");
 }

@@ -8,21 +8,21 @@
 #include "driver/uart.h"
 
 
-static char *uart_putc1(char *c) {
+static char *uart_putc1 (char *c) {
     uart_putc(*c++);
     return c;
 }
 
 
-void debug_printf(char *fmt, ...) {
+void debug_printf (char *fmt, ...) {
     FmtIO io = {
         .putchar = &uart_putc1
     };
 
     va_list args;
-    va_start(args, fmt);
-    format(io, fmt, args);
-    va_end(args);
+    va_start (args, fmt);
+    format (io, fmt, args);
+    va_end (args);
 }
 
 
@@ -44,24 +44,24 @@ void debug_printf(char *fmt, ...) {
  *      debug_memdump("10b %p", (char *)ptr);
  *      debug_memdump("10dg %p", (char *)ptr);
  * */
-void debug_memdump(char *cmd, ...) {
+void debug_memdump (char *cmd, ...) {
     char *addr;
     unsigned n = 1;
     char f     = 'x';
     char sz    = 1;
 
     va_list args;
-    va_start(args, cmd);
+    va_start (args, cmd);
 
     char *endptr;
 
-    n = strtol(cmd, &endptr);
+    n = strtol (cmd, &endptr);
     if (n == 0 && errno == ERANGE) {
-        debug_printf("invalid repeat count\n");
+        debug_printf ("invalid repeat count\n");
     }
 
-    while (*endptr && !isspace(*endptr)) {
-        switch(*endptr) {
+    while (*endptr && !isspace (*endptr)) {
+        switch (*endptr) {
             case 'x':
                 f = 'x';
                 break;
@@ -86,15 +86,15 @@ void debug_memdump(char *cmd, ...) {
         endptr++;
     }
 
-    while (isspace(*endptr)) endptr++;
+    while (isspace (*endptr)) endptr++;
 
     if (*endptr == '%') {
         endptr++;
         if (*endptr == 'p') {
-            addr = va_arg(args, char *);
+            addr = va_arg (args, char *);
         }
     } else {
-        addr = (char *)strtol(endptr, 0);
+        addr = (char *)strtol (endptr, 0);
     }
     va_end(args);
 
@@ -103,26 +103,26 @@ void debug_memdump(char *cmd, ...) {
         char *p = &addr[i * sz];
         switch (sz) {
             case 1:
-                debug_printf("%#02x", *(uint8_t*)(p));
+                debug_printf ("%#02x", *(uint8_t*)(p));
                 sp(20);
                 continue;
             case 2:
-                debug_printf("%#04x", *(uint16_t*)p);
+                debug_printf("%#04x", * (uint16_t*)p);
                 sp(15);
                 continue;
             case 4:
-                debug_printf("%#08x", *(uint32_t*)p);
+                debug_printf ("%#08x", *(uint32_t*)p);
                 sp(10);
                 continue;
             case 8:
-                debug_printf("%#016x", *(uint64_t*)p);
+                debug_printf ("%#016x", *(uint64_t*)p);
                 sp(4);
                 continue;
             default:
-                debug_printf("invalid sz\n");
+                debug_printf ("invalid sz\n");
                 return;
         }
     }
 #undef sp
-    debug_printf("\n");
+    debug_printf ("\n");
 }

@@ -42,28 +42,28 @@
  *            c: char
  *  @return the pointer points to the nth argument
  * */
-void *getarg(size_t nth, char *args) {
-    if (strlen(args) == 0) {
-        panic("getarg");
+void *getarg (size_t nth, char *args) {
+    if (strlen (args) == 0) {
+        panic ("getarg");
     }
 
-    if (nth >= strlen(args))
-        panic("getarg");
+    if (nth >= strlen (args))
+        panic ("getarg");
 
-    Process *thisp = this_proc();
+    Process *thisp = this_proc ();
     void *esp = (void*)thisp->trapframe->esp;
     int offset = 4;
 
-    while(nth) {
+    while (nth) {
         switch (*args++) {
             case 'p':
-                offset += sizeof(uintptr_t);
+                offset += sizeof (uintptr_t);
                 break;
             case 'd':
-                offset += sizeof(int);
+                offset += sizeof (int);
                 break;
             case 'c':
-                offset += sizeof(char);
+                offset += sizeof (char);
                 break;
             default:
                 panic("getarg: unknown arg type");
@@ -75,16 +75,16 @@ void *getarg(size_t nth, char *args) {
 }
 
 
-int getint(size_t nth, char *args) { return *(int *)getarg(nth, args); }
+int getint (size_t nth, char *args) { return *(int *)getarg (nth, args); }
 
 
-void *getptr(size_t nth, char *args) { return *(void **)getarg(nth, args); }
+void *getptr (size_t nth, char *args) { return *(void **)getarg (nth, args); }
 
 
-char getchr(size_t nth, char *args) { return *(char *)getarg(nth, args); }
+char getchr (size_t nth, char *args) { return *(char *)getarg (nth, args); }
 
 
-File *getfile(size_t nth, char *args) {
+File *getfile (size_t nth, char *args) {
     int fd = getint(nth, args);
     File *f;
     if (fd < 0)                           return 0;
@@ -94,116 +94,116 @@ File *getfile(size_t nth, char *args) {
 }
 
 
-int sys_fork() {
-    return fork();
+int sys_fork () {
+    return fork ();
 }
 
 
-int sys_exit() {
-    exit();
+int sys_exit () {
+    exit ();
     return 0;
 }
 
 
-int sys_exec() {
+int sys_exec () {
     return -1;
 }
 
 
-int sys_sbrk() {
+int sys_sbrk () {
     return -1;
 }
 
 
-int sys_getpid() {
+int sys_getpid () {
     return this_proc()->pid;
 }
 
 
-int sys_read() {
+int sys_read () {
     static char *args = "dpd";
-    File        *f    = getfile(1, args);
-    char        *buf  = getptr(2, args);
-    int          sz   = getint(3, args);
+    File        *f    = getfile (1, args);
+    char        *buf  = getptr (2, args);
+    int          sz   = getint (3, args);
 
     if (!f)   return -1;
     if (!buf) return -1;
-    return file_read(f, buf, sz);
+    return file_read (f, buf, sz);
 }
 
 
-int sys_write() {
+int sys_write () {
     static char *args = "dpd";
-    File        *f    = getfile(1, args);
-    const void  *buf  = getptr(2, args);
-    int          sz   = getint(3, args);
+    File        *f    = getfile (1, args);
+    const void  *buf  = getptr (2, args);
+    int          sz   = getint (3, args);
 
     if (!f)   return -1;
     if (!buf) return -1;
-    return file_write(f, buf, sz);
+    return file_write (f, buf, sz);
 }
 
 
-int sys_mknod() {
+int sys_mknod () {
     static char *args  = "pdd";
-    const char  *path  = getptr(1, args);
-    unsigned     major = getint(2, args);
-    unsigned     minor = getint(3, args);
+    const char  *path  = getptr (1, args);
+    unsigned     major = getint (2, args);
+    unsigned     minor = getint (3, args);
     Inode       *ino;
-    if ((ino = fs_create(path, F_DEV, major, minor)) == 0)
+    if ((ino = fs_create (path, F_DEV, major, minor)) == 0)
         return -1;
-    inode_drop(ino);
+    inode_drop (ino);
     return 0;
 }
 
 
-int sys_mkdir() {
+int sys_mkdir () {
     static char *args = "p";
-    const char  *path = getptr(1, args);
+    const char  *path = getptr (1, args);
     Inode       *ino;
-    if ((ino = fs_create(path, F_DIR, 0, 0)) == 0) {
+    if ((ino = fs_create (path, F_DIR, 0, 0)) == 0) {
         return -1;
     }
-    inode_drop(ino);
+    inode_drop (ino);
     return 0;
 }
 
 
-int sys_open() {
+int sys_open () {
     static char *args = "pd";
-    const char  *path  = getptr(1, args);
-    int          mode  = getint(2, args);
+    const char  *path  = getptr (1, args);
+    int          mode  = getint (2, args);
     Inode       *ino;
     int          fd;
     File        *f;
 
     if (mode & O_CREAT) {
-        if ((ino = fs_create(path, F_FILE, 0, 0)) == 0) {
+        if ((ino = fs_create (path, F_FILE, 0, 0)) == 0) {
             return -1;
         }
 
     } else {
-        if ((ino = dir_abspath(path, false)) == 0) {
+        if ((ino = dir_abspath (path, false)) == 0) {
             return -1;
         }
 
         if (!ino->read)
-            inode_load(ino);
+            inode_load (ino);
 
         if (ino->d.type == F_DIR && mode == O_RDONLY) {
-            inode_drop(ino);
+            inode_drop (ino);
             return -1;
         }
     }
 
-    if ((f = file_allocate()) == 0) {
-        inode_drop(ino);
+    if ((f = file_allocate ()) == 0) {
+        inode_drop (ino);
         return -1;
     }
 
-    if ((fd = fs_fdalloc(f)) == 0) {
-        file_close(f);
-        inode_drop(ino);
+    if ((fd = fs_fdalloc(f)) == 0 ) {
+        file_close (f);
+        inode_drop (ino);
         return -1;
     }
 
@@ -217,26 +217,26 @@ int sys_open() {
 }
 
 
-int sys_close() {
+int sys_close () {
     static char *args = "d";
-    File *f = getfile(1, args);
+    File *f = getfile (1, args);
 
     if (!f) return -1;
-    file_close(f);
+    file_close (f);
     return 0;
 }
 
 
-int sys_link() {
+int sys_link () {
     static char *args = "pp";
-    const char  *old  = getptr(1, args);
-    const char  *new  = getptr(2, args);
+    const char  *old  = getptr (1, args);
+    const char  *new  = getptr (2, args);
 
     if (!old) return -1;
     if (!new) return -1;
 
     Inode *ino;
-    if ((ino = dir_abspath(old, false)) == 0) {
+    if ((ino = dir_abspath (old, false)) == 0) {
         return -1;
     }
 
@@ -245,10 +245,10 @@ int sys_link() {
     }
 
     ino->d.nlink++;
-    inode_flush(ino);
+    inode_flush (ino);
 
     Inode *dir;
-    if ((dir = dir_abspath(new, true)) == 0) {
+    if ((dir = dir_abspath (new, true)) == 0) {
         goto bad;
     }
 
@@ -258,23 +258,23 @@ int sys_link() {
 
     DirEntry new_entry;
     new_entry.inum = ino->inum;
-    strncpy(new_entry.name, new, DIRNAMESZ);
+    strncpy (new_entry.name, new, DIRNAMESZ);
 
-    if (!dir_link(dir, new_entry)) {
+    if (!dir_link (dir, new_entry)) {
         goto bad;
     }
 
-    inode_drop(dir);
+    inode_drop (dir);
     return 0;
 
 bad:
     ino->d.nlink--;
-    inode_flush(ino);
+    inode_flush (ino);
     return -1;
 }
 
 
-int sys_unlink() {
+int sys_unlink () {
     static char *args = "p";
     return -1;
 }
@@ -297,27 +297,27 @@ static int (*system_calls[])() = {
 };
 
 
-static bool is_valid_syscall(unsigned n) {
-    return (n > 0 && n < sizeof(system_calls) / sizeof(system_calls[0]) && system_calls[n]);
+static bool is_valid_syscall (unsigned n) {
+    return (n > 0 && n < sizeof (system_calls) / sizeof (system_calls[0]) && system_calls[n]);
 }
 
 
 /* Invoke system call from trap frame. The system call needs to parse their
  * own arguments.
  * */
-void syscall() {
-    Process *p = this_proc();
+void syscall () {
+    Process *p = this_proc ();
     if (p == 0) {
-        panic("syscall: invalid process");
+        panic ("syscall: invalid process");
     }
 
     unsigned n = p->trapframe->eax;
-    if (!is_valid_syscall(n)) {
+    if (!is_valid_syscall (n)) {
         p->trapframe->eax = -1;
-        perror("known system call");
+        perror ("known system call");
         return;
     }
 
-    int r = system_calls[n]();
+    int r = system_calls[n] ();
     p->trapframe->eax = r;
 }

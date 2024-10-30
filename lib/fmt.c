@@ -14,11 +14,11 @@
  *  @size   size of character to write
  *  @return the pointer to the character one after the last character been printed.
  * */
-static char *write_string(char *data, FmtIO io) {
-    char *end = data + strlen(data);
+static char *write_string (char *data, FmtIO io) {
+    char *end = data + strlen (data);
     char *p;
     while (data < end) {
-        p =  io.putchar(data);
+        p =  io.putchar (data);
         data = p;
     }
     return data;
@@ -35,7 +35,7 @@ typedef struct PrintCtl {
 
 
 /*! Print integral number  */
-static int print_uint(unsigned n, PrintCtl ctl) {
+static int print_uint (unsigned n, PrintCtl ctl) {
     static const char digits[] = "0123456789abcdef";
 
     char buf[32];
@@ -49,32 +49,32 @@ static int print_uint(unsigned n, PrintCtl ctl) {
 
 
     buf[i++] = '\0';
-    strrev(buf);
+    strrev (buf);
 
     if (ctl.flush) {
-        write_string(buf, ctl.io);
+        write_string (buf, ctl.io);
     }
 
-    return strlen(buf);
+    return strlen (buf);
 }
 
 
-static int print_int(int n, PrintCtl ctl) {
+static int print_int (int n, PrintCtl ctl) {
     if (ctl.sign) {
         if (n < 0) {
             n = -n;
         }
-        return print_uint(n, ctl);
+        return print_uint (n, ctl);
     }
 
-    return print_uint((unsigned)n, ctl);
+    return print_uint ((unsigned)n, ctl);
 }
 
 
 
-static void pad(int n, char c, FmtIO io) {
+static void pad (int n, char c, FmtIO io) {
     for (int i = 0; i < n; ++i) {
-        io.putchar(&c);
+        io.putchar (&c);
     }
 }
 
@@ -104,7 +104,7 @@ static void pad(int n, char c, FmtIO io) {
  *  @fmt formatted string
  *  @... data to be formatted
  * */
-void format(FmtIO io, char *fmt, va_list args) {
+void format (FmtIO io, char *fmt, va_list args) {
     bool     pad0    = false;
     bool     leftpad = false;
     bool     hex     = false;
@@ -133,7 +133,7 @@ void format(FmtIO io, char *fmt, va_list args) {
             }
 
             // parse width
-            width = strtol(fmt, &fmt);
+            width = strtol (fmt, &fmt);
 
 #define TRY_PAD(_padn, WRITE)                      \
     do {                                           \
@@ -153,42 +153,42 @@ void format(FmtIO io, char *fmt, va_list args) {
 
             // parse format specifier
             if (*fmt == 'd') {
-                int n = va_arg(args, int);
-                int w = print_int(n, PCTL_d(false));
-                TRY_PAD(width - w, print_int(n, PCTL_d(true)));
+                int n = va_arg (args, int);
+                int w = print_int (n, PCTL_d (false));
+                TRY_PAD (width - w, print_int (n, PCTL_d (true)));
                 fmt++;
             } else if (*fmt == 'x') {
-                if (hex) write_string("0x", io);
-                long n = va_arg(args, long);
-                int w = print_int(n, PCTL_x(false));
-                TRY_PAD(width - w, print_int(n, PCTL_x(true)));
+                if (hex) write_string ("0x", io);
+                long n = va_arg (args, long);
+                int w = print_int (n, PCTL_x (false));
+                TRY_PAD (width - w, print_int (n, PCTL_x (true)));
                 fmt++;
             } else if (*fmt == 'X') {
-                if (hex) write_string("0x", io);
-                long n = va_arg(args, long);
-                int w = print_int(n, PCTL_X(false));
-                TRY_PAD(width - w, print_int(n, PCTL_X(true)));
+                if (hex) write_string ("0x", io);
+                long n = va_arg (args, long);
+                int w = print_int (n, PCTL_X(false));
+                TRY_PAD (width - w, print_int (n, PCTL_X (true)));
                 fmt++;
             } else if (*fmt == 'p') {
-                write_string("0x", io);
-                long n = va_arg(args, long);
-                int w = print_int(n, PCTL_X(false));
-                TRY_PAD(width - w, print_int(n, PCTL_X(true)));
+                write_string ("0x", io);
+                long n = va_arg (args, long);
+                int w = print_int (n, PCTL_X (false));
+                TRY_PAD (width - w, print_int (n, PCTL_X (true)));
                 fmt++;
             } else if (*fmt == 'c') {
-                int c = va_arg(args, int);
-                TRY_PAD(width - 1, io.putchar((char *)&c));
+                int c = va_arg (args, int);
+                TRY_PAD (width - 1, io.putchar ((char *)&c));
                 fmt++;
             } else if (*fmt == 's') {
-                char *s = va_arg(args, char *);
-                int w = strlen(s);
-                TRY_PAD(width - w, write_string(s, io));
+                char *s = va_arg (args, char *);
+                int w = strlen (s);
+                TRY_PAD (width - w, write_string (s, io));
                 fmt++;
             }
 
 #undef TRY_PAD
         } else {
-            fmt = io.putchar(fmt);
+            fmt = io.putchar (fmt);
         }
     }
 }

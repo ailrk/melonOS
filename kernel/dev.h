@@ -5,4 +5,4 @@
 #define DEV_PS2MOUSE 3
 
 
-void dev_init();
+void dev_init ();

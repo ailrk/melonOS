@@ -72,12 +72,12 @@ ChannelReg channels[] = {
 };
 
 
-inline static uint16_t regb(Channel ch, uint8_t r) {
+inline static uint16_t regb (Channel ch, uint8_t r) {
     return channels[ch].base + r;
 }
 
 
-inline static uint16_t regc(Channel ch, uint8_t r) {
+inline static uint16_t regc (Channel ch, uint8_t r) {
     return channels[ch].ctrl + r;
 }
 
@@ -89,32 +89,32 @@ inline static uint16_t regc(Channel ch, uint8_t r) {
  *
  *  The disk is ready when BSY = 1 && RDY = 0
  * */
-void ide_wait(Channel ch) {
+void ide_wait (Channel ch) {
     uint8_t mask = ATA_S_RDY | ATA_S_BSY;
     uint8_t ready = ATA_S_RDY;
-    while((inb(regc(ch, CR_ALTSTATUS)) & mask) != ready);
+    while ((inb (regc (ch, CR_ALTSTATUS)) & mask) != ready);
 }
 
 
 
 /* !Check if disk 1 exists
  * */
-bool ide_has_secondary(Channel ch) {
+bool ide_has_secondary (Channel ch) {
     bool flag = false;
-    outb(regb(ch, BR_HDDEVSEL), HDDEVSEL_LBA | HDDEVSEL_DRIVE(ATA_SECONDARY));
+    outb (regb (ch, BR_HDDEVSEL), HDDEVSEL_LBA | HDDEVSEL_DRIVE(ATA_SECONDARY));
     for (int i = 0; i < 1024; ++i) {
-        if (inb(regb(ch, BR_STATUS)) != 0) {
+        if (inb (regb (ch, BR_STATUS)) != 0) {
             flag = true;
         }
     }
-    outb(regb(ch, BR_HDDEVSEL), HDDEVSEL_LBA | HDDEVSEL_DRIVE(ATA_PRIMARY));
+    outb (regb (ch, BR_HDDEVSEL), HDDEVSEL_LBA | HDDEVSEL_DRIVE(ATA_PRIMARY));
     return flag;
 }
 
 
 /*! Check ide errors */
-bool ide_check_error(Channel ch) {
-    return inb(regc(ch, CR_ALTSTATUS)) & (ATA_S_ERR | ATA_S_DFE);
+bool ide_check_error (Channel ch) {
+    return inb (regc (ch, CR_ALTSTATUS)) & (ATA_S_ERR | ATA_S_DFE);
 }
 
 
@@ -126,17 +126,17 @@ bool ide_check_error(Channel ch) {
  *  @lba  LBA address
  *  @secn Sector counts
  * */
-void ide_request(Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn) {
+void ide_request (Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn) {
     if (secn == 0)
         panic("[IDE] ide_request");
     ide_wait(ch);
-    outb(regc(ch, CR_DEVCTL)  , 0); // enable interrupts.
-    outb(regb(ch, BR_SECN0)   , secn);
-    outb(regb(ch, BR_LBA0)    , lba);
-    outb(regb(ch, BR_LBA1)    , lba >> 8);
-    outb(regb(ch, BR_LBA2)    , lba >> 16);
-    outb(regb(ch, BR_HDDEVSEL), (lba >> 24) | HDDEVSEL_LBA | HDDEVSEL_DRIVE(d));
-    outb(regb(ch, BR_COMMAND) , cmd);
+    outb (regc (ch, CR_DEVCTL)  , 0); // enable interrupts.
+    outb (regb (ch, BR_SECN0)   , secn);
+    outb (regb (ch, BR_LBA0)    , lba);
+    outb (regb (ch, BR_LBA1)    , lba >> 8);
+    outb (regb (ch, BR_LBA2)    , lba >> 16);
+    outb (regb (ch, BR_HDDEVSEL), (lba >> 24) | HDDEVSEL_LBA | HDDEVSEL_DRIVE(d));
+    outb (regb (ch, BR_COMMAND) , cmd);
 }
 
 
@@ -147,17 +147,16 @@ void ide_request(Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn) {
  *        than (SECSZ * secn).
  *  @secn read n sectors
  * */
-void ide_read_request(Channel ch, Drive d, unsigned lba, size_t secn) {
-    ide_wait(ch);
+void ide_read_request (Channel ch, Drive d, unsigned lba, size_t secn) {
+    ide_wait (ch);
     ATACmd cmd = secn == 1 ? ATA_CMD_RD1 : ATA_CMD_RDN;
-    ide_request(ch, d, cmd, lba, secn);
+    ide_request (ch, d, cmd, lba, secn);
 }
 
 
-/*! Read immediately without sending a read request.
- * */
-void ide_read(Channel ch, void *dst, size_t secn) {
-    insl(regb(ch, BR_DATA), dst, (SECSZ * secn)/4);
+/*! Read immediately without sending a read request. */
+void ide_read (Channel ch, void *dst, size_t secn) {
+    insl (regb (ch, BR_DATA), dst, (SECSZ * secn)/4);
 }
 
 
@@ -168,10 +167,10 @@ void ide_read(Channel ch, void *dst, size_t secn) {
  *       than (SECSZ * secn).
  * @secn n sectors per write
  * */
-void ide_write_request(Channel ch, Drive d, void *src, unsigned lba, size_t secn) {
-    ide_wait(ch);
+void ide_write_request (Channel ch, Drive d, void *src, unsigned lba, size_t secn) {
+    ide_wait (ch);
     ATACmd cmd = secn == 1 ? ATA_CMD_WT1 : ATA_CMD_WTN;
-    ide_request(ch, d, cmd, lba, secn);
+    ide_request (ch, d, cmd, lba, secn);
     // /4 because insl read words
-    outsl(regb(ch, BR_DATA), src, (SECSZ * secn)/4);
+    outsl (regb (ch, BR_DATA), src, (SECSZ * secn)/4);
 }

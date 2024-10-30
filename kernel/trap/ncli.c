@@ -11,9 +11,9 @@
  * */
 
 
-void push_cli() {
-    uint32_t eflags = readeflags();
-    cli();
+void push_cli () {
+    uint32_t eflags = readeflags ();
+    cli ();
     if (this_cpu()->ncli == 0) {
         this_cpu()->int_on = eflags & FL_IF;
     }
@@ -21,10 +21,10 @@ void push_cli() {
 }
 
 
-void pop_cli() {
+void pop_cli () {
     if (--this_cpu()->ncli <  0) {
-        panic("pop_cli");
+        panic ("pop_cli");
     }
     if (!this_cpu()->ncli && this_cpu()->int_on)
-        sti();
+        sti ();
 }

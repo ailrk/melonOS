@@ -16,15 +16,15 @@ typedef struct FTable {
 FTable ftable;
 
 
-void ftable_init() {
-    ftable.lk = new_lock("ftable.lk");
+void ftable_init () {
+    ftable.lk = new_lock ("ftable.lk");
 }
 
 
 /*! Allocate a file from the ftable
  *  @return Newly allocated file. 0 if failed.
  * */
-File *file_allocate() {
+File *file_allocate () {
     File *f = 0;
     for (int i = 0; i < NFILE; ++i) {
         *f = ftable.t[i];
@@ -38,17 +38,17 @@ File *file_allocate() {
 
 
 /*! Increment the reference count */
-File *file_dup(File *f) {
+File *file_dup (File *f) {
     if (f->nref < 1)
-        panic("dup_file");
+        panic ("dup_file");
     f->nref++;
     return 0;
 }
 
 /*! Close a file  */
-void  file_close(File *f) {
+void  file_close (File *f) {
     if (f->nref < 1)
-        panic("file_close");
+        panic ("file_close");
 
     if (--f->nref > 0)
         return;
@@ -60,7 +60,7 @@ void  file_close(File *f) {
 
     switch (fcpy.type) {
         case FD_INODE:
-            inode_drop(fcpy.ino);
+            inode_drop (fcpy.ino);
             return;
         default:
             return;
@@ -68,7 +68,7 @@ void  file_close(File *f) {
 }
 
 /*! Read file from file descriptor  */
-int file_read(File *f, char *buf, int n) {
+int file_read (File *f, char *buf, int n) {
     int rd;
 
     if (!f->readable) return -1;
@@ -79,7 +79,7 @@ int file_read(File *f, char *buf, int n) {
     case FD_PIPE:
         panic("file_read: pipe not supported");
     case FD_INODE:
-        if ((rd = inode_read(f->ino, buf, f->offset, n)) > 0)
+        if ((rd = inode_read (f->ino, buf, f->offset, n)) > 0)
             f->offset += rd;
         return rd;
     }
@@ -88,18 +88,18 @@ int file_read(File *f, char *buf, int n) {
 
 
 /*! Write to file descriptor  */
-int file_write(File *f, const char *buf, int n) {
+int file_write (File *f, const char *buf, int n) {
     int wt;
 
     if (!f->writable) return -1;
 
     switch (f->type) {
     case FD_NONE:
-        panic("file read");
+        panic ("file read");
     case FD_PIPE:
-        panic("file_read: pipe not supported");
+        panic ("file_read: pipe not supported");
     case FD_INODE:
-        if ((wt = inode_write(f->ino, buf, f->offset, n)))
+        if ((wt = inode_write (f->ino, buf, f->offset, n)))
             f->offset += wt;
         return wt;
     }

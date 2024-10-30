@@ -13,7 +13,7 @@ typedef struct Mutex {
 } Mutex;
 
 
-Mutex new_mutex(const char *name);
-void  lock_mutex(Mutex *);
-void  unlock_mutex(Mutex *);
-bool  holding_mutex(Mutex *);
+Mutex new_mutex (const char *name);
+void  lock_mutex (Mutex *);
+void  unlock_mutex (Mutex *);
+bool  holding_mutex (Mutex *);
