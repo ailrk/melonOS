@@ -88,14 +88,14 @@ page_aligndown (uintptr_t addr) {
 }
 
 
-/* Address in page table or page directory entry */
+/* Address part in page table or page directory entry */
 static inline uintptr_t
 pte_addr (PTE pte) {
     return (uintptr_t)(pte) & ~0xFFF;
 }
 
 
-/* Flag in page table or page directory entry */
+/* Flag part in page table or page directory entry */
 static inline unsigned
 pte_flags (PTE pte) {
     return (unsigned)(pte) &  0xFFF;

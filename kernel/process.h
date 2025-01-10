@@ -3,7 +3,6 @@
 
 
 void     process_init ();
-int      exec (char *path, char **argv);
 int      fork ();
 void     exit ();
 int      wait ();

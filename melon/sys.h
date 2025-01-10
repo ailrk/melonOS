@@ -1,4 +1,5 @@
 #pragma once
+#include "fs/fcntl.h"
 
 /* user system call interfaces */
 

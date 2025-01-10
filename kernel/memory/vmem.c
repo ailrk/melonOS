@@ -144,7 +144,7 @@ static bool map_pages (PD *pgdir, const VMap *k) {
     if ((uintptr_t)vstart % PAGE_SZ > 0 || (uintptr_t)vend % PAGE_SZ > 0)
         panic("map_pages: not on page boundry");
 
-    for (; vstart != vend; vstart+=PAGE_SZ, pstart+=PAGE_SZ) {
+    for (; vstart != vend; vstart += PAGE_SZ, pstart += PAGE_SZ) {
         if ((pte = walk (pgdir, vstart)) == 0)
             return false;
 
@@ -238,7 +238,7 @@ static void write_tss (Process *p) {
     uint32_t base  = (uintptr_t)&this_cpu()->ts;
     uint32_t limit = sizeof (this_cpu()->ts) - 1;
     uint8_t  rpl   = 0; // request privilege level
-    memset((void*)base, 0, limit);
+    memset((void *)base, 0, limit);
     this_cpu()->gdt[SEG_TSS] = create_descriptor (base, limit, flag);
     this_cpu()->ts.ss0       = SEG_KDATA << 3;
     this_cpu()->ts.esp0      = (uintptr_t)p->kstack + KSTACK_SZ;
@@ -271,21 +271,22 @@ void uvm_switch (Process *p) {
  *  @ino      inode with the start of the program.
  *  @offset   inode offset of the start of the program
  *  @size     program size
+ *  @return   0 when succeed, -1 on error
  * */
-int uvm_load(PD *page_dir, char *addr, Inode *ino, unsigned offset, unsigned size) {
+int uvm_load (PD *page_dir, char *addr, Inode *ino, unsigned offset, unsigned size) {
     if ((unsigned)addr % PAGE_SZ != 0)
-        panic("uvm_load: address is not aligned");
+        panic ("uvm_load: address is not aligned");
 
-    PTE* pte;
+    PTE *pte;
     physical_addr pa;
     int n;
     for (unsigned i = 0; i < size; i += PAGE_SZ) {
-        if ((pte = get_pte(page_dir, addr + i)) == 0) {
-            panic("uvm_load: invalid address");
+        if ((pte = get_pte (page_dir, addr + i)) == 0) {
+            panic ("uvm_load: invalid address");
         }
-        pa = pte_addr(*pte);
-        n = min(PAGE_SZ, size - i);
-        if (inode_read(ino, (char *)P2V(pa), offset + i, n) != n) {
+        pa = pte_addr (*pte);
+        n = min (PAGE_SZ, size - i);
+        if (inode_read (ino, (char *)P2V (pa), offset + i, n) != n) {
             return -1;
         }
     }
@@ -293,8 +294,11 @@ int uvm_load(PD *page_dir, char *addr, Inode *ino, unsigned offset, unsigned siz
 }
 
 
-/* !Grow process virtual memory from oldsz to newsz, which need not be page
- * aligned. Returns new size or 0 on error.
+/*! Grow process virtual memory from oldsz to newsz, which need not be page
+ *  aligned. Returns new size or 0 on error.
+ *
+ *  The user space address always start from 0, so the returned size can be used
+ *  as the end address of the virtual memory.
  * */
 int uvm_allocate (PD *pgdir, size_t oldsz, size_t newsz) {
     if (newsz > KERN_BASE)
@@ -344,7 +348,7 @@ PD *uvm_copy (PD *pgdir, size_t sz) {
 
     PTE *pte;
 
-    for (size_t i = 0; i < sz; i+=PAGE_SZ) {
+    for (size_t i = 0; i < sz; i += PAGE_SZ) {
         if ((pte = get_pte (pgdir, (void*)i)) == 0)
             panic("uvm_copy: trying to copy non existed pte");
 
@@ -398,6 +402,64 @@ int uvm_deallocate (PD *pgdir, uintptr_t oldsz, uintptr_t newsz) {
         }
     }
     return newsz;
+}
+
+
+void set_pte_flag(PD *pgdir, char *vaddr, unsigned flag) {
+    if (flag != PTE_P || flag != PTE_W || flag != PTE_U || flag != PTE_D)
+        panic("set_pte_flag: unknown flag");
+
+    PTE *pte;
+    if ((pte = get_pte(pgdir, vaddr)) == 0) {
+        panic("set_pte_flag");
+    }
+    *pte |= flag;
+}
+
+
+void clear_pte_flag(PD *pgdir, char *vaddr, unsigned flag) {
+    if (flag != PTE_P || flag != PTE_W || flag != PTE_U || flag != PTE_D)
+        panic("clear_pte_flag: unknown flag");
+    PTE *pte;
+    if ((pte = get_pte(pgdir, vaddr)) == 0) {
+        panic("clear_pte_flag");
+    }
+    *pte &= ~flag;
+}
+
+
+/*! Map user addrses to kernel address */
+static char *uva2ka(PD *pgdir, char *vaddr) {
+    PTE *pte = get_pte(pgdir, vaddr);
+    if ((*pte & PTE_P) == 0)
+        return 0;
+    if ((*pte & PTE_U) == 0)
+        return 0;
+    return (char *)P2V(pte_addr(*pte));
+}
+
+
+/*! Copy size amount of bytes from address p to user addr in pgdir.
+ *  This can be used to copy memory to a different page table.
+ *  The page being copied into must have PTE_P and PTE_U set, otherwise
+ *  the copy is aborted immediately.
+ *  If succeed return 0, otherwise return -1;
+ * */
+int uvm_memcpy(PD *pgdir, unsigned vaddr, void *p, unsigned size) {
+    char *buf = (char *)p;
+    while (size > 0) {
+        unsigned va0 = page_aligndown(vaddr);
+        char *pa0 = uva2ka(pgdir, (char *)va0);
+        if (pa0 == 0)
+            return -1;
+        unsigned n = PAGE_SZ - (vaddr - va0);
+        if (n > size) n = size;
+        memmove(pa0 + (vaddr - va0), buf, n);
+        size -= n;
+        buf += n;
+        vaddr = va0 + PAGE_SZ;
+    }
+    return 0;
 }
 
 

@@ -43,12 +43,13 @@ $(MELONOS): $(BOOT) $(KERNEL) $(MELONFS)
 $(MELONFS): $(MKFS)
 	./$(MKFS) $(MELONFS)
 
+
 .PHONY: clean qemu-debug copy echo
 clean:
 	find $(K_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(B_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(L_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	find $(K_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
+	find $(M_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
 	rm -rf *.o *.pp.* $(MELONOS) $(MELONFS) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 
 echo:
@@ -117,6 +118,7 @@ include boot/Makefile
 include kernel/Makefile
 include lib/Makefile
 include mkfs/Makefile
+include melon/Makefile
 
 
 -include .local.mk

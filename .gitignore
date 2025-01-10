@@ -64,3 +64,4 @@ libmelon.a
 # Generated files should be obtained from the Makefile
 vectors.s
 .venv
+*_

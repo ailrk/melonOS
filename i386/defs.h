@@ -9,6 +9,12 @@
 /* Kernel stack size */
 #define KSTACK_SZ   4096
 
+/* Maximum number of arguments */
+#define MAXARGS     32
+
+
+/* User stack size */
+#define USERSTACKPG 1
 
 /* Disk */
 #define SECSZ       512

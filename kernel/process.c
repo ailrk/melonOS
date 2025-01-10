@@ -1,16 +1,12 @@
+#include "defs.h"
 #include "fdefs.fwd.h"
-#include "inode.h"
-#include "mem.h"
-#include "mmu.h"
 #include "string.h"
 #include "err.h"
-#include "elf.h"
 #include "process.h"
 #include "process/proc.h"
 #include "process/pdefs.h"
 #include "memory/vmem.h"
 #include "driver/vga.h"
-#include "fs/dir.h"
 #include "fs/file.h"
 
 
@@ -22,64 +18,6 @@ extern Process *proc_init1;
 void process_init () {
     ptable_init();
     init_pid1();
-}
-
-
-/*! Execute a program */
-int exec (char *path, char **argv) {
-    Inode *ino;
-
-    // load file ino
-    if ((ino = dir_abspath (path, false)) == 0) {
-        perror ("exec: invalid path\n");
-        return -1;
-    }
-
-    PD          *pgdir = 0;
-    ELF32Header  elfhdr;
-
-    // load elf
-    if (inode_read (ino, (char *)&elfhdr, 0, sizeof (ELF32Header)) != sizeof (ELF32Header))
-        goto bad;
-
-    if (!is_elf (&elfhdr))
-        goto bad;
-
-    if ((pgdir = kvm_allocate ()) == 0)
-        goto bad;
-
-    // load program
-    ELF32ProgramHeader elfph;
-    unsigned           offset = elfhdr.e_phoff;
-    size_t             size   = 0;
-    for (int i = 0; i < elfhdr.e_phnum; ++i, offset += sizeof (elfph)) {
-        if (inode_read (ino, (char *)&elfph, offset, sizeof (elfph)) != sizeof (elfph))
-            goto bad;
-
-        if (elfph.p_type != PT_LOAD)
-            continue;
-
-        if (elfph.p_memsz < elfph.p_filesz)
-            goto bad;
-
-        if (elfph.p_vaddr + elfph.p_memsz < elfph.p_vaddr)
-            goto bad;
-
-        if (elfph.p_vaddr % PAGE_SZ != 0)
-            goto bad;
-
-    }
-
-    return 0;
-
-bad:
-    if (pgdir) {
-        vmfree (pgdir);
-    }
-    if (ino) {
-        inode_drop (ino);
-    }
-    return -1;
 }
 
 

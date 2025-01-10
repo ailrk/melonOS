@@ -10,32 +10,10 @@
 /* Make melonfs file image */
 
 
-int fd;
+int fd, ffd;
 char buf[BSIZE];
-
-void wsec (off_t sec, char *buf) {
-    if (lseek (fd, sec * BSIZE, 0) != sec * BSIZE) {
-        perror ("lseek");
-        exit (1);
-    }
-    if (write (fd, buf, BSIZE) != BSIZE) {
-        perror ("write");
-        exit (1);
-    }
-}
-
-
-void rsec (off_t sec, char *buf) {
-    if (lseek (fd, sec * BSIZE, 0) != sec * BSIZE) {
-        perror ("lseek");
-        exit (1);
-    }
-
-    if (read (fd, buf, BSIZE) != BSIZE) {
-        perror ("read");
-        exit (1);
-    }
-}
+void wsec (off_t sec, char *buf);
+void rsec (off_t sec, char *buf);
 
 
 int main (int argc, char *argv[]) {
@@ -77,5 +55,59 @@ int main (int argc, char *argv[]) {
         wsec (i, buf);
     }
 
+    // write user program to disk
+    for (int i = 2; i < argc; ++i) {
+        char *path = argv[i];
+
+        if ((ffd = open (path, O_RDONLY)) < 0) {
+            perror (argv[i]);
+            exit (1);
+        }
+
+        char buf[65];
+        memset(buf, 0, sizeof(buf));
+
+        char *p = path + strlen(path) + 1;
+        while (*p != '/' && p != path) p--;
+        p += 1;
+        if (strlen(p) >= 64) {
+            fprintf(stderr, "%s\n", p);
+            fprintf(stderr, "program name is too long. needs to be less than 64 bytes");
+        }
+
+        if (p[strlen(p) - 1] != '_') {
+            fprintf(stderr, "%s\n", p);
+            fprintf(stderr, "program name must end with _");
+        }
+
+        strncpy(buf, p, strlen(p) - 1); // skip following '_'
+    }
+
     return 0;
 }
+
+
+void wsec (off_t sec, char *buf) {
+    if (lseek (fd, sec * BSIZE, 0) != sec * BSIZE) {
+        perror ("lseek");
+        exit (1);
+    }
+    if (write (fd, buf, BSIZE) != BSIZE) {
+        perror ("write");
+        exit (1);
+    }
+}
+
+
+void rsec (off_t sec, char *buf) {
+    if (lseek (fd, sec * BSIZE, 0) != sec * BSIZE) {
+        perror ("lseek");
+        exit (1);
+    }
+
+    if (read (fd, buf, BSIZE) != BSIZE) {
+        perror ("read");
+        exit (1);
+    }
+}
+

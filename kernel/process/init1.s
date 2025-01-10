@@ -5,12 +5,10 @@ section .init1
 
 global init1
 init1:
-    mov eax, SYS_GETPID
-    int I_SYSCALL
-
     ;; int exec (char *path, char **argv)
-    push init
     push argv
+    push path
+    push 0  ; where caller ip would be
     mov eax, SYS_EXEC
     int I_SYSCALL
 
@@ -18,8 +16,8 @@ loop: jmp loop
 
 
 ;; init
-init:
-    db "init", 0
+path:
+    db "/init", 0
 
 ;; char *argv[] = { init, 0 };
 argv:

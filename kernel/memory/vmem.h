@@ -24,4 +24,7 @@ int  uvm_deallocate (PD *page_dir, size_t oldsz, size_t newsz);
 void uvm_switch (Process *p);
 int  uvm_load(PD *page_dir, char *addr, Inode *ino, unsigned offset, unsigned size);
 PD  *uvm_copy (PD *page_dir, size_t sz);
+void set_pte_flag(PD *pgdir, char *vaddr, unsigned flag);
+void clear_pte_flag(PD *pgdir, char *vaddr, unsigned flag);
+int  uvm_memcpy(PD *pgdir, unsigned vaddr, void *p, unsigned size);
 void vmfree (PD *);

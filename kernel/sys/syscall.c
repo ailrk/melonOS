@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "defs.h"
 #include "dir.h"
 #include "fdefs.h"
@@ -11,14 +10,14 @@
 #include "file.h"
 #include "pdefs.h"
 #include "process.h"
+#include "exec.h"
 #include "fs/fcntl.h"
 #include "sys/syscall.h"
 #include "sys/syscalls.h"
 
-/* Copying system call arguments from user stack to
- *
- * After `int I_SYSCALL`, the user stack on system call looks
+/* After `int I_SYSCALL`, the user stack on system call looks
  * like this:
+ *
  *      +--------+
  *      |  arg3  |
  *      +--------+
@@ -28,64 +27,47 @@
  *      +--------+
  *      |  eip   |
  *      +--------+ <- esp
- * During the system call, the `esp` is saved in the trapframe
- * and TSS switch the stack. We need to manually fetch arguments
- * from the user stack on each sytemcall.
+ *
+ * During the system call, the `esp` is saved in the trapframe,
+ * the process switch from lower privilege level to high privilege
+ * level, so the TSS descriptor we defined earlier will be used to
+ * switch the user stack into kernel stack: `ss0` and `esp0` stored in
+ * TSS will be used to replace the the current user's `ss` and `esp0`,
+ * and user's `ss` and `esp` are stored in the kernel stack.
+ * The user stack is still accessible when we are in ring 0. The kernel esp
+ * is stored in the trapframe. We need to manually fetch arguments from user
+ * stack for each system call.
  * */
 
 
 /*! Get arguments from user stack.
- *  @nth    the nth argument, starts from 1.
+ *  @nth    the nth argument, starts from 0.
  *  @args   type of arguments
  *            p: pointer
  *            d: int
  *            c: char
  *  @return the pointer points to the nth argument
  * */
-void *getarg (size_t nth, char *args) {
-    if (strlen (args) == 0) {
-        panic ("getarg");
-    }
-
-    if (nth >= strlen (args))
-        panic ("getarg");
-
+void *getarg (size_t nth) {
     Process *thisp = this_proc ();
-    void *esp = (void*)thisp->trapframe->esp;
-    int offset = 4;
+    void *esp = (void *)thisp->trapframe->esp;
+    int offset = sizeof (size_t);
 
-    while (nth) {
-        switch (*args++) {
-            case 'p':
-                offset += sizeof (uintptr_t);
-                break;
-            case 'd':
-                offset += sizeof (int);
-                break;
-            case 'c':
-                offset += sizeof (char);
-                break;
-            default:
-                panic("getarg: unknown arg type");
-        }
-        nth--;
-    }
-
-    return esp + offset;
+    return esp + offset + (sizeof(size_t) * nth);
 }
 
 
-int getint (size_t nth, char *args) { return *(int *)getarg (nth, args); }
+int getint (size_t nth) { return *(int *)getarg (nth); }
 
 
-void *getptr (size_t nth, char *args) { return *(void **)getarg (nth, args); }
+void *getptr (size_t nth) { return *(void **)getarg (nth); }
 
 
-char getchr (size_t nth, char *args) { return *(char *)getarg (nth, args); }
+char getchr (size_t nth) { return *(char *)getarg (nth); }
 
 
-File *getfile (size_t nth, char *args) {
-    int fd = getint(nth, args);
+File *getfile (size_t nth) {
+    int fd = getint(nth);
     File *f;
     if (fd < 0)                           return 0;
     if (fd >= NOFILE)                     return 0;
@@ -106,9 +88,8 @@ int sys_exit () {
 
 
 int sys_exec () {
-    static char *args = "dpd";
-    char *path = (char *)getptr(1, args);
-    char **argv = (char **)getptr(2, args);
+    char *path = (char *)getptr(0);
+    char **argv = (char **)getptr(1);
     if (!path) return -1;
     if (!argv) return -1;
 
@@ -127,10 +108,9 @@ int sys_getpid () {
 
 
 int sys_read () {
-    static char *args = "dpd";
-    File        *f    = getfile (1, args);
-    char        *buf  = getptr (2, args);
-    int          sz   = getint (3, args);
+    File        *f    = getfile (0);
+    char        *buf  = getptr (1);
+    int          sz   = getint (2);
 
     if (!f)   return -1;
     if (!buf) return -1;
@@ -139,10 +119,9 @@ int sys_read () {
 
 
 int sys_write () {
-    static char *args = "dpd";
-    File        *f    = getfile (1, args);
-    const void  *buf  = getptr (2, args);
-    int          sz   = getint (3, args);
+    File        *f    = getfile (0);
+    const void  *buf  = getptr (1);
+    int          sz   = getint (2);
 
     if (!f)   return -1;
     if (!buf) return -1;
@@ -151,10 +130,9 @@ int sys_write () {
 
 
 int sys_mknod () {
-    static char *args  = "pdd";
-    const char  *path  = getptr (1, args);
-    unsigned     major = getint (2, args);
-    unsigned     minor = getint (3, args);
+    const char  *path  = getptr (0);
+    unsigned     major = getint (1);
+    unsigned     minor = getint (2);
     Inode       *ino;
     if ((ino = fs_create (path, F_DEV, major, minor)) == 0)
         return -1;
@@ -164,8 +142,7 @@ int sys_mknod () {
 
 
 int sys_mkdir () {
-    static char *args = "p";
-    const char  *path = getptr (1, args);
+    const char  *path = getptr (0);
     Inode       *ino;
     if ((ino = fs_create (path, F_DIR, 0, 0)) == 0) {
         return -1;
@@ -176,9 +153,8 @@ int sys_mkdir () {
 
 
 int sys_open () {
-    static char *args = "pd";
-    const char  *path  = getptr (1, args);
-    int          mode  = getint (2, args);
+    const char  *path = getptr (0);
+    int          mode = getint (1);
     Inode       *ino;
     int          fd;
     File        *f;
@@ -224,8 +200,7 @@ int sys_open () {
 
 
 int sys_close () {
-    static char *args = "d";
-    File *f = getfile (1, args);
+    File *f = getfile (0);
 
     if (!f) return -1;
     file_close (f);
@@ -234,9 +209,8 @@ int sys_close () {
 
 
 int sys_link () {
-    static char *args = "pp";
-    const char  *old  = getptr (1, args);
-    const char  *new  = getptr (2, args);
+    const char  *old  = getptr (0);
+    const char  *new  = getptr (1);
 
     if (!old) return -1;
     if (!new) return -1;
@@ -281,14 +255,12 @@ bad:
 
 
 int sys_unlink () {
-    static char *args = "p";
     return -1;
 }
 
 
 int sys_dup () {
-    static char *args = "d";
-    File *f = getfile (1, args);
+    File *f = getfile (0);
 
     if (!f) return -1;
 
