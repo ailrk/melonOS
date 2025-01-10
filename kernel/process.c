@@ -65,8 +65,9 @@ int exec (char *path, char **argv) {
         if (elfph.p_vaddr + elfph.p_memsz < elfph.p_vaddr)
             goto bad;
 
-        if (elfph.p_vaddr % PAGE_SZ)
+        if (elfph.p_vaddr % PAGE_SZ != 0)
             goto bad;
+
     }
 
     return 0;

@@ -106,7 +106,13 @@ int sys_exit () {
 
 
 int sys_exec () {
-    return -1;
+    static char *args = "dpd";
+    char *path = (char *)getptr(1, args);
+    char **argv = (char **)getptr(2, args);
+    if (!path) return -1;
+    if (!argv) return -1;
+
+    return exec(path, argv);
 }
 
 
@@ -201,7 +207,7 @@ int sys_open () {
         return -1;
     }
 
-    if ((fd = fs_fdalloc(f)) == 0 ) {
+    if ((fd = fs_fdalloc(f)) == -1) {
         file_close (f);
         inode_drop (ino);
         return -1;
@@ -280,6 +286,22 @@ int sys_unlink () {
 }
 
 
+int sys_dup () {
+    static char *args = "d";
+    File *f = getfile (1, args);
+
+    if (!f) return -1;
+
+    int fd;
+
+    if ((fd = fs_fdalloc(f)) == -1) {
+        return -1;
+    }
+    file_dup(f);
+    return fd;
+}
+
+
 static int (*system_calls[])() = {
     [SYS_FORK]   = sys_fork,
     [SYS_EXIT]   = sys_exit,
@@ -294,6 +316,7 @@ static int (*system_calls[])() = {
     [SYS_CLOSE]  = sys_close,
     [SYS_LINK]   = sys_link,
     [SYS_UNLINK] = sys_unlink,
+    [SYS_DUP]    = sys_dup,
 };
 
 

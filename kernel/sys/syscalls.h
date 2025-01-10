@@ -13,3 +13,4 @@
 #define SYS_CLOSE   11
 #define SYS_LINK    12
 #define SYS_UNLINK  13
+#define SYS_DUP     14

@@ -7,7 +7,21 @@ global init1
 init1:
     mov eax, SYS_GETPID
     int I_SYSCALL
+
+    ;; int exec (char *path, char **argv)
+    push init
+    push argv
+    mov eax, SYS_EXEC
+    int I_SYSCALL
+
 loop: jmp loop
 
-msg:
-    db "init1", 0
+
+;; init
+init:
+    db "init", 0
+
+;; char *argv[] = { init, 0 };
+argv:
+    db "init", 0
+    db 0

@@ -4,9 +4,11 @@
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
+#include "inode.h"
 #include "mem.h"
 #include "mmu.h"
 #include "pdefs.h"
+#include "stdlib.h"
 #include "string.h"
 #include "trap/ncli.h"
 #include "driver/vga.h"
@@ -260,6 +262,34 @@ void uvm_switch (Process *p) {
     write_tss (p); // setup TSS
     set_cr3 (V2P_C (this_proc()->pgdir));
     pop_cli ();
+}
+
+
+/*! Load a program segment into page directory.
+ *  @page_dir page directory
+ *  @addr     the address of the program. Must be page aligned
+ *  @ino      inode with the start of the program.
+ *  @offset   inode offset of the start of the program
+ *  @size     program size
+ * */
+int uvm_load(PD *page_dir, char *addr, Inode *ino, unsigned offset, unsigned size) {
+    if ((unsigned)addr % PAGE_SZ != 0)
+        panic("uvm_load: address is not aligned");
+
+    PTE* pte;
+    physical_addr pa;
+    int n;
+    for (unsigned i = 0; i < size; i += PAGE_SZ) {
+        if ((pte = get_pte(page_dir, addr + i)) == 0) {
+            panic("uvm_load: invalid address");
+        }
+        pa = pte_addr(*pte);
+        n = min(PAGE_SZ, size - i);
+        if (inode_read(ino, (char *)P2V(pa), offset + i, n) != n) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 
