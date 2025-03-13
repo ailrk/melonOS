@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include <stddef.h>
 #include "defs.h"
 #include "fdefs.fwd.h"
 #include "process/mutex.h"
@@ -41,6 +42,18 @@ typedef struct Inode {
     bool      read; // has been read from disk?
     DInode    d;    // copy of disk inode.
 } Inode;
+
+
+/* Number of inodes per block */
+static const size_t inode_per_block = BSIZE / sizeof (DInode);
+
+
+/*! Get the block that the inode stored at. An inode is always completely stored within
+ *  a block, you will not have an inode stored across 2 blocks.
+ * */
+inline static blockno_t get_inode_block(inodeno_t inum, SuperBlock *sb) {
+    return inum / inode_per_block + sb->inodestart;
+}
 
 
 /* Buffer cache node */

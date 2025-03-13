@@ -25,7 +25,6 @@ MKFS = mkfs.melonfs
 LIBUTILS = libutils.a
 LIBMELON = libmelon.a
 
-
 QEMU = qemu-system-i386
 
 .PHONY: boot kernel all
@@ -35,13 +34,18 @@ all: $(MELONOS)
 boot: $(BOOT)
 kernel: $(KERNEL)
 
+# order of the import matters here.
+include melon/Makefile
+userprogs: $(USERPROGS)
+
+
 $(MELONOS): $(BOOT) $(KERNEL) $(MELONFS)
 	dd if=/dev/zero of=$(MELONOS) count=10000
 	dd if=$(BOOT) of=$(MELONOS) conv=notrunc
 	dd if=$(KERNEL) of=$(MELONOS) seek=20 conv=notrunc
 
-$(MELONFS): $(MKFS)
-	./$(MKFS) $(MELONFS)
+$(MELONFS): $(MKFS) $(USERPROGS)
+	./$(MKFS) $(MELONFS) $(USERPROGS)
 
 
 .PHONY: clean qemu-debug copy echo
@@ -65,6 +69,7 @@ echo:
 	@echo 'B_ASMFILES $(B_ASMFILES)'
 	@echo 'CFLAGS $(CFLAGS)'
 	@echo 'CWARNS $(CWARNS)'
+	@echo 'USERPROGS $(USERPROGS)'
 
 QEMUDRVS = \
 	-drive format=raw,file=$(MELONOS),index=0,media=disk \
@@ -118,7 +123,6 @@ include boot/Makefile
 include kernel/Makefile
 include lib/Makefile
 include mkfs/Makefile
-include melon/Makefile
 
 
 -include .local.mk

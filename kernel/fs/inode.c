@@ -15,7 +15,7 @@
 
 typedef struct ICache {
     SpinLock lk;
-    Inode    inodes[NINODE];
+    Inode    inodes[NINODES];
 } ICache;
 
 
@@ -24,14 +24,8 @@ extern SuperBlock super_block;
 extern Dev        devices[NDEV];
 
 
-static const size_t inode_per_block = BSIZE / sizeof (DInode);
-
-
-/*! Get the block that the inode stored at. An inode is always completely stored within
- *  a block, you will not have an inode stored across 2 blocks.
- * */
-inline static blockno_t get_inode_block (inodeno_t inum) {
-    return inum / inode_per_block + super_block.inodestart;
+inline static blockno_t inode_block(inodeno_t inum) {
+    return get_inode_block(inum, &super_block);
 }
 
 
@@ -43,7 +37,7 @@ void inode_init () {
 
 
 static bool dinode_read (Inode *ino, BNode *b) {
-    if (b->blockno != get_inode_block (ino->inum)) return false;
+    if (b->blockno != inode_block (ino->inum)) return false;
     unsigned nth = ino->inum % inode_per_block;
     memmove (&ino->d, &b->cache[nth * sizeof(DInode)], sizeof(DInode));
     return true;
@@ -51,7 +45,7 @@ static bool dinode_read (Inode *ino, BNode *b) {
 
 
 static bool dinode_write (Inode *ino, BNode *b) {
-    if (b->blockno != get_inode_block (ino->inum)) return false;
+    if (b->blockno != inode_block (ino->inum)) return false;
     unsigned nth = ino->inum % inode_per_block;
     memmove (&b->cache[nth * sizeof(DInode)], &ino->d, sizeof(DInode));
     return true;
@@ -61,7 +55,7 @@ static bool dinode_write (Inode *ino, BNode *b) {
 /*! Allocate an inode on disk and create an inode cache in icache. */
 Inode *inode_allocate (devno_t dev, FileType type) {
     for (inodeno_t inum = ROOTINO + 1; inum < super_block.ninodes; ++inum) {
-        BNode     *b    = bcache_read (dev, get_inode_block (inum), false);
+        BNode     *b    = bcache_read (dev, inode_block (inum), false);
         Inode     *ino  = inode_getc (dev, inum);
         if (!dinode_read (ino, b))
             return 0;
@@ -115,7 +109,7 @@ bool inode_load (Inode *ino) {
     if (ino->nref == 0) return false;
     if (ino->read)      return true;
 
-    blockno_t blockno = get_inode_block (ino->inum);
+    blockno_t blockno = inode_block (ino->inum);
     BNode    *b       = bcache_read (ino->dev, blockno, false);
 
     dinode_read (ino, b);
@@ -129,7 +123,7 @@ bool inode_load (Inode *ino) {
 
 /*! Flush in memory inode cache to disk. Needs to be called everytime inode field is updated. */
 void inode_flush (Inode *ino) {
-    BNode   *b   = bcache_read (ino->dev, get_inode_block(ino->inum), false);
+    BNode   *b   = bcache_read (ino->dev, inode_block(ino->inum), false);
     dinode_write (ino, b);
     bcache_write (b, false);
     bcache_release (b);

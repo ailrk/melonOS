@@ -24,17 +24,17 @@
 /* File system parameters */
 #define SUPERBLKNO  0
 #define BSIZE       (SECSZ)        // block size
-#define MAXBLKS     1000           // max file system size
+#define NBLKS       1000           // max file system size
 #define NDEV        32             // max number of devices
 #define NFILE       128            // max number of open files
-#define NINODE      128            // max number of inodes
+#define NINODES     128            // max number of inodes
 #define NOPBLKS     512            // max number of blocks writes
 #define NBUF        (NOPBLKS * 5)  // max buffer size
 #define NLOG        (NOPBLKS * 5)  // max log size
 #define DIRNAMESZ   24             // directory name size
 #define PATH_MAX    1024           // maximum path size
 #define ROOTDEV     1              // device number of file system root
-#define ROOTINO     0              // i-number for root directory
+#define ROOTINO     1              // i-number for root directory
 
 
 /* Inode pointer structures
