@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include "mutex.h"
+#include "log.h"
 #include "stdlib.h"
 #include "string.h"
 #include "bcache.h"
@@ -7,7 +8,6 @@
 #include "defs.h"
 #include "err.h"
 #include "inode.h"
-#include "driver/vga.h"
 #include "process/spinlock.h"
 #include "fs/fdefs.fwd.h"
 #include "fs/fdefs.h"
@@ -30,9 +30,9 @@ inline static blockno_t inode_block(inodeno_t inum) {
 
 
 void inode_init () {
-    vga_printf ("[\033[32mboot\033[0m] inode...");
+    log ("[\033[32mboot\033[0m] inode...");
     icache.lk = new_lock ("icache.lk");
-    vga_printf ("\033[32mok\033[0m\n");
+    log ("\033[32mok\033[0m\n");
 }
 
 

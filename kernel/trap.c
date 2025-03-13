@@ -11,8 +11,6 @@
 #include "trap/idt.h"
 #include "trap/traps.h"
 
-#define DEBUG 1
-
 
 extern void *vectors[];
 unsigned ticks;
@@ -20,25 +18,25 @@ unsigned ticks;
 
 #if DEBUG
 static void dump_trapframe (const TrapFrame *tf) {
-    debug_printf ("trapframe> \n");
-    debug_printf (" edi:    %#x\n", tf->edi);
-    debug_printf (" esi:    %#x\n", tf->esi);
-    debug_printf (" ebp:    %#x\n", tf->ebp);
-    debug_printf (" ebx:    %#x\n", tf->ebx);
-    debug_printf (" edx:    %#x\n", tf->edx);
-    debug_printf (" ecx:    %#x\n", tf->ecx);
-    debug_printf (" eax:    %#x\n", tf->eax);
-    debug_printf (" gs:     %#x\n", tf->gs);
-    debug_printf (" fs:     %#x\n", tf->fs);
-    debug_printf (" es:     %#x\n", tf->es);
-    debug_printf (" ds:     %#x\n", tf->ds);
-    debug_printf (" trapno: %#x\n", tf->trapno);
-    debug_printf (" err:    %#x\n", tf->err);
-    debug_printf (" eip:    %#x\n", tf->eip);
-    debug_printf (" cs:     %#x\n", tf->cs);
-    debug_printf (" elfags: %#x\n", tf->eflags);
-    debug_printf (" esp:    %#x\n", tf->esp);
-    debug_printf (" ss:     %#x\n", tf->ss);
+    debug("trapframe> \n");
+    debug(" edi:    %#x\n", tf->edi);
+    debug(" esi:    %#x\n", tf->esi);
+    debug(" ebp:    %#x\n", tf->ebp);
+    debug(" ebx:    %#x\n", tf->ebx);
+    debug(" edx:    %#x\n", tf->edx);
+    debug(" ecx:    %#x\n", tf->ecx);
+    debug(" eax:    %#x\n", tf->eax);
+    debug(" gs:     %#x\n", tf->gs);
+    debug(" fs:     %#x\n", tf->fs);
+    debug(" es:     %#x\n", tf->es);
+    debug(" ds:     %#x\n", tf->ds);
+    debug(" trapno: %#x\n", tf->trapno);
+    debug(" err:    %#x\n", tf->err);
+    debug(" eip:    %#x\n", tf->eip);
+    debug(" cs:     %#x\n", tf->cs);
+    debug(" elfags: %#x\n", tf->eflags);
+    debug(" esp:    %#x\n", tf->esp);
+    debug(" ss:     %#x\n", tf->ss);
 }
 #endif
 
@@ -88,7 +86,9 @@ void handle_I_IRQ_TIMER () {
 
 
 void handle_I_IRQ_KBD () {
-    debug_printf ("irq kbd\n");
+    #ifdef DEBUG
+    debug("irq kbd\n");
+    #endif
     kbd_handler ();
     console_handler (kbd_getc);
     pic_eoi ();
@@ -96,31 +96,41 @@ void handle_I_IRQ_KBD () {
 
 
 void handle_I_IRQ_COM2 () {
-    debug_printf ("irq com2\n");
+    #ifdef DEBUG
+    debug("irq com2\n");
+    #endif
     pic_eoi ();
 }
 
 
 void handle_I_IRQ_COM1 () {
-    debug_printf ("irq com1\n");
+    #ifdef DEBUG
+    debug("irq com1\n");
+    #endif
     pic_eoi ();
 }
 
 
 void handle_I_IRQ_LPT1 () {
-    debug_printf ("irq lpt1\n");
+    #ifdef DEBUG
+    debug("irq lpt1\n");
+    #endif
     pic_eoi ();
 }
 
 
 void handle_I_IRQ_CMOS () {
-    debug_printf ("irq cmos timer\n");
+    #ifdef DEBUG
+    debug("irq cmos timer\n");
+    #endif
     pic_eoi ();
 }
 
 
 void handle_I_IRQ_MOUSE () {
-    debug_printf ("irq mouse\n");
+    #ifdef DEBUG
+    debug("irq mouse\n");
+    #endif
     pic_eoi ();
 }
 
@@ -132,13 +142,17 @@ void handle_I_IRQ_IDE () {
 
 
 void handle_I_IRQ_ERR () {
-    debug_printf ("irq err\n");
+    #ifdef DEBUG
+    debug("irq err\n");
+    #endif
     pic_eoi ();
 }
 
 
 void handle_I_IRQ_SPURIOUS (const TrapFrame *tf) {
-    debug_printf ("[cpu]: spurious interrupt at %#x:%#x\n", tf->cs, tf->eip);
+    #ifdef DEBUG
+    debug("cpu: spurious interrupt at %#x:%#x\n", tf->cs, tf->eip);
+    #endif
     pic_eoi ();
 }
 

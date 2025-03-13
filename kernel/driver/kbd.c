@@ -3,7 +3,6 @@
 #include "kbd.h"
 #include "ps2.h"
 
-#define DEBUG 1
 
 
 /* Set 1 make code */

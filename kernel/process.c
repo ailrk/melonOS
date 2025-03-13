@@ -2,11 +2,11 @@
 #include "fdefs.fwd.h"
 #include "string.h"
 #include "err.h"
+#include "log.h"
 #include "process.h"
 #include "process/proc.h"
 #include "process/pdefs.h"
 #include "memory/vmem.h"
-#include "driver/vga.h"
 #include "fs/file.h"
 
 
@@ -215,7 +215,7 @@ void yield () {
  *  back to the scheduler.
  * */
 void scheduler () {
-    vga_printf ("[\033[32mboot\033[0m] scheduler...\n");
+    log ("[\033[32mboot\033[0m] scheduler...\n");
     CPU *cpu = this_cpu ();
     cpu->proc = 0;
     for (;;) {

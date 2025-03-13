@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "err.h"
 #include "defs.h"
 #include "inode.h"
@@ -161,6 +162,8 @@ Inode *dir_abspath (const char *path, bool parent) {
             return 0;
         }
 
+        inode_load(ino);
+
         switch (ino->d.type) {
         case F_DIR:
             if (!strchr (savedpath, '/')) { // no more path component
@@ -172,11 +175,11 @@ Inode *dir_abspath (const char *path, bool parent) {
             continue;
         case F_FILE:
             if (strchr (savedpath, '/'))
-                panic ("dis_abspath: file is not the last path");
+                panic ("dir_abspath: file is not the last path");
             inode_drop (ino);
             return ino;
         default:
-            panic ("dis_abspath");
+            panic ("dir_abspath");
         }
     }
 

@@ -2,9 +2,8 @@
 #include "ps2.h"
 #include "i386.h"
 #include "err.h"
-#include "driver/vga.h"
+#include "log.h"
 
-#define DEBUG 0
 
 
 /*! wait for the input buffer to be ready */
@@ -134,13 +133,6 @@ static uint8_t scancode (uint8_t scancode) {
 
 
 
-#if DEBUG
-static void debug() {
-    vga_printf("[\033[33mkbd\033[0m] status %#x, data %#x\n", inb(KBP_STAT), inb(KBP_DATA));
-}
-#endif
-
-
 /* controller configuration byte */
 #define CCB_P1_INT  0 // port 1 interrupt 1=enable
 #define CCB_P2_INT  1 // port 2 interrupt 1=enable
@@ -151,7 +143,7 @@ static void debug() {
 
 
 void ps2_init () {
-    vga_printf ("[\033[32mboot\033[0m] ps2...");
+    log ("[\033[32mboot\033[0m] ps2...");
 
     echo_test ();
 
@@ -178,5 +170,5 @@ void ps2_init () {
 
     // enable port 1 interrupts
     write_ccb (read_ccb () | (1 << CCB_P1_INT) | (1 << CCB_P1_TRA));
-    vga_printf ("\033[32mok\033[0m\n");
+    log ("\033[32mok\033[0m\n");
 }

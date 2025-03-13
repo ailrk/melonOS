@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "debug.h"
+#include "log.h"
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
@@ -11,13 +13,13 @@
 #include "stdlib.h"
 #include "string.h"
 #include "trap/ncli.h"
-#include "driver/vga.h"
 #include "memory/vmem.h"
 #include "memory/gdt.h"
 #include "memory/palloc.h"
 #include "process/proc.h"
 
-#define DEBUG 0
+
+#define DEBUG_MAP_PAGES 0
 
 
 extern char data[];           // defined by kernel.ld
@@ -136,9 +138,9 @@ static bool map_pages (PD *pgdir, const VMap *k) {
     physical_addr pstart = k->pstart;
     PTE *pte;
 
-#if DEBUG
-    vga_printf("\nmap_pages> <VMap %#x, (%#x, %#x), %#x>", k->virt, k->pstart, k->pend, k->perm);
-    vga_printf("\n           <vstart %#x, vend %#x>\n", vstart, vend);
+#if DEBUG && DEBUG_MAP_PAGES
+    debug_printf("map_pages> <VMap %#x, (%#x, %#x), %#x>, <vstart %#x, vend %#x>\n",
+                 k->virt, k->pstart, k->pend, k->perm, vstart, vend);
 #endif
 
     if ((uintptr_t)vstart % PAGE_SZ > 0 || (uintptr_t)vend % PAGE_SZ > 0)
@@ -193,13 +195,13 @@ void kvm_switch() { set_cr3 (V2P_C (kernel_pgdir)); }
 
 /*! Setup kernel virtual memory */
 void kvm_init () {
-    vga_printf ("[\033[32mboot\033[0m] kvm_alloc...");
+    log ("[\033[32mboot\033[0m] kvm_alloc...");
     init_kmap ();
     if ((kernel_pgdir = kvm_allocate ()) == 0) {
         panic ("kvm_init");
     }
     kvm_switch ();
-    vga_printf ("\033[32mok\033[0m\n");
+    log ("\033[32mok\033[0m\n");
 }
 
 
@@ -301,6 +303,9 @@ int uvm_load (PD *page_dir, char *addr, Inode *ino, unsigned offset, unsigned si
  *  as the end address of the virtual memory.
  * */
 int uvm_allocate (PD *pgdir, size_t oldsz, size_t newsz) {
+#ifdef DEBUG
+    debug("uvm_allocate: oldsz: %d, newsz %#08x\n", oldsz, newsz);
+#endif
     if (newsz > KERN_BASE)
         return 0;
 
@@ -310,7 +315,10 @@ int uvm_allocate (PD *pgdir, size_t oldsz, size_t newsz) {
     for (uintptr_t p = page_alignup (oldsz); p < newsz; p += PAGE_SZ) {
         char *mem;
         if ((mem = palloc ()) == 0) {
-            perror ("uvm_allocate: out of memory");
+            perror ("uvm_allocate: out of memory (1)\n");
+#ifdef DEBUG
+            debug("uvm_allocate: mem: %#08x, p: %#08x\n", mem, p);
+#endif
             uvm_deallocate (pgdir, newsz, oldsz);
             return 0;
         }
@@ -324,7 +332,7 @@ int uvm_allocate (PD *pgdir, size_t oldsz, size_t newsz) {
             };
 
         if (!map_pages (pgdir, &mmap)) {
-            perror ("uvm_allocate: out of memory");
+            perror ("uvm_allocate: out of memory (2)\n");
             uvm_deallocate (pgdir, newsz, oldsz);
             pfree (mem);
             return 0;

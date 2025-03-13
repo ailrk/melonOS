@@ -208,11 +208,17 @@ char *vga_writec (char *data) {
  *  @... data to be formatted
  * */
 void vga_printf(char *fmt, ...) {
+    va_list args;
+    va_start (args, fmt);
+    vga_vprintf (fmt, args);
+    va_end (args);
+}
+
+
+void vga_vprintf(char *fmt, va_list args) {
     FmtIO io = {
         .putchar = &vga_writec,
     };
-    va_list args;
-    va_start (args, fmt);
+
     format (io, fmt, args);
-    va_end (args);
 }

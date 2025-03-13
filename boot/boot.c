@@ -6,7 +6,6 @@
 #include "mmu.h"
 #include "string.h"
 
-#define DEBUG       0
 static uint32_t elf_offset = SECSZ * BOOTLDSECN;
 
 

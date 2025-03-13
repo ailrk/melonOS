@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "i386.h"
+#include "log.h"
 #include "trap/idt.h"
 #include "driver/vga.h"
 
@@ -33,9 +34,9 @@ void regist_idt_handler (uint8_t vector, void *isr, uint8_t flags) {
 
 
 void idt_init () {
-    vga_printf ("[\033[32mboot\033[0m] idt...");
+    log ("[\033[32mboot\033[0m] idt...");
     idtr.base  = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     lidt ((void *)&idtr);
-    vga_printf ("\033[32mok\033[0m\n");
+    log ("\033[32mok\033[0m\n");
 }

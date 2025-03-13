@@ -5,7 +5,16 @@ AS = nasm -f elf32
 AR = ar rcs
 CPP = cpp
 HOSTCC = gcc
-CFLAGS = -ffreestanding -g -nostdlib
+
+
+DEBUG = 1
+
+CFLAGS = -ffreestanding -nostdlib
+ifeq ($(DEBUG), 1)
+    CFLAGS+= -g -DDEBUG
+endif
+
+
 CWARNS = -Wall -Wextra -fno-exceptions
 
 B_DIR = boot

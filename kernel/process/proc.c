@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "debug.h"
+#include "log.h"
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
@@ -9,12 +10,9 @@
 #include "string.h"
 #include "trap/ncli.h"
 #include "process/spinlock.h"
-#include "driver/vga.h"
 #include "process/proc.h"
 #include "memory/palloc.h"
 #include "memory/vmem.h"
-
-#define DEBUG 1
 
 
 PTable   ptable;
@@ -33,11 +31,11 @@ void ptable_init () {
 #if DEBUG
 void dump_context (const Context *c) {
     if (!c) {
-        debug_printf ("[CTX| no context yet]");
+        debug("[CTX| no context yet]");
         return;
     }
-    debug_printf ("[CTX|%#x, %#x, %#x, %#x, %#x]",
-                  c->edi, c->esi, c->ebx, c->ebp, c->eip);
+    debug("[CTX|%#x, %#x, %#x, %#x, %#x]",
+          c->edi, c->esi, c->ebx, c->ebp, c->eip);
 }
 
 
@@ -70,9 +68,9 @@ void dump_process (const Process *p) {
             break;
     }
 
-    debug_printf ("[PROC|%d,%s,%s,", p->pid, p->name, state);
+    debug("[PROC|%d,%s,%s,", p->pid, p->name, state);
     dump_context (p->context);
-    debug_printf ("]");
+    debug("]");
     dump_context (p->context);
 
 }
@@ -143,7 +141,6 @@ static Process *get_unused_process () {
 static bool setup_process_stack (Process *p) {
     // allocate and build the kernel stack
     if ((p->kstack = palloc ()) == 0) {
-        vga_printf ("found %#x", p);
         p->state = PROC_UNUSED;
         return false;
     }
@@ -228,7 +225,7 @@ static void set_pid1_trapframe (Process *p) {
 
 /*! Initialize the first user space process. */
 void init_pid1 () {
-    vga_printf ("[\033[32mboot\033[0m] init1...");
+    log ("[\033[32mboot\033[0m] init1...");
     Process *p;
     if ((p = allocate_process ()) == 0) {
         panic ("init_pid1: failed to allocate process");
@@ -251,7 +248,7 @@ void init_pid1 () {
     proc_init1 = p;
     unlock (&ptable.lk);
 
-    vga_printf ("\033[32mok\033[0m\n");
+    log ("\033[32mok\033[0m\n");
 }
 
 

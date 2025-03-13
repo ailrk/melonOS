@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "defs.h"
 #include "fdefs.fwd.h"
 #include "inode.h"
@@ -24,9 +25,9 @@
  *    |   data       |              |   ...        |
  *    +--------------+              |   &arg N     | argv[0]
  *    |   text       |              +--------------+
- *    +--------------+ 0            |   argv       | points to argv[0]
- *                                  +--------------+
- *                                  |   argc       |
+ *    +--------------+              |   argv       | points to argv[0]
+ *    |   ...        |              +--------------+
+ *    +--------------+ 0            |   argc       |
  *                                  +--------------+
  *                                  |   0xffffffff | fake ip for return
  *                                  +--------------+
@@ -35,6 +36,9 @@
  *
  * where `data` and `text` section are loaded from the elf, `guard page`, `stack`, and `heap` are
  * allocated by `exec`.
+ *
+ * Note: text section doesn't start from va 0. Typically in unix like system elf virtual address will leave some
+ * space before text. e.g 32 bit starts at 0x08004000, 64 bit starts at 0x40000000.
  */
 
 /*! Execute a program */
@@ -44,7 +48,7 @@ int exec (char *path, char **argv) {
     ELF32Header        elfhdr;
     ELF32ProgramHeader ph;
     unsigned           offset;
-    size_t             size;
+    size_t             size = 0;
     unsigned           sp;
     unsigned           argc;
     Process           *p;

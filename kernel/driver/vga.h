@@ -1,4 +1,5 @@
 #pragma once
+#include <stdarg.h>
 #include <stdint.h>
 
 #define CMD_PGUP    (1 << 0)
@@ -36,3 +37,4 @@ void  vga_put_entry_at (char c);
 void  vga_putchar (char c);
 char *vga_writec (char *data);
 void  vga_printf (char *fmt, ...);
+void  vga_vprintf (char *fmt, va_list args);

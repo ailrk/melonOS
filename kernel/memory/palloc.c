@@ -1,8 +1,9 @@
 #include <stdint.h>
+#include "debug.h"
+#include "log.h"
 #include "palloc.h"
 #include "mem.h"
 #include "err.h"
-#include "driver/vga.h"
 
 extern char end[];
 
@@ -27,9 +28,9 @@ void pfree_range (void *vstart, void *vend) {
 
 /*! free the memory from vstart to vend */
 void palloc_init (void *vstart, void *vend) {
-    vga_printf ("[\033[32mboot\033[0m] palloc_init...");
+    log ("[\033[32mboot\033[0m] palloc_init...");
     pfree_range (vstart, vend);
-    vga_printf ("\033[32mok\033[0m\n");
+    log ("\033[32mok\033[0m\n");
 }
 
 
@@ -55,14 +56,23 @@ char *palloc () {
  * */
 void pfree (char *v) {
     if (V2P_C (v) >= PHYSTOP) {
+        #ifdef DEBUG
+        debug("pfree: %#08x\n", v);
+        #endif
         panic ("pfree, physical address exceeds PHYSTOP");
     }
 
     if (v < end) {
+        #ifdef DEBUG
+        debug("pfree: va: %#08x, end: %#08x\n", v, end);
+        #endif
         panic ("pfree, invalid virtual address");
     }
 
     if ((uint32_t)v % PAGE_SZ) {
+        #ifdef DEBUG
+        debug("pfree: %#08x\n", v);
+        #endif
         panic ("pfree, address not on page boundry");
     }
 

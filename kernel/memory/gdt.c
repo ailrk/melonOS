@@ -1,7 +1,7 @@
 #include "i386.h"
 #include "mmu.h"
+#include "log.h"
 #include "memory/gdt.h"
-#include "driver/vga.h"
 #include "process/pdefs.h"
 
 /* GDT is not useful if you have paging, but x86 protected mode requires you
@@ -33,7 +33,7 @@ GDTEntry create_descriptor (uint32_t base, uint32_t limit, uint16_t flag) {
 
 
 void gdt_init () {
-    vga_printf ("[\033[32mboot\033[0m] gdt...");
+    log ("[\033[32mboot\033[0m] gdt...");
     cpu.gdtr.limit     = sizeof(GDTEntry) * NSEGS - 1;
     cpu.gdtr.base      = (uint32_t)&cpu.gdt;
 
@@ -68,5 +68,5 @@ void gdt_init () {
     }
 
     lgdt ((void*)&cpu.gdtr);
-    vga_printf ("\033[32moki\033[0m\n");
+    log ("\033[32mok\033[0m\n");
 }

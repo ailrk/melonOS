@@ -14,15 +14,29 @@ static char *uart_putc1 (char *c) {
 }
 
 
+void debug (char *fmt, ...) {
+    debug_printf("[\033[36mDEBUG\033[0m] ");
+    va_list args;
+    va_start (args, fmt);
+    debug_printf(fmt, args);
+    va_end (args);
+}
+
+
 void debug_printf (char *fmt, ...) {
+    va_list args;
+    va_start (args, fmt);
+    debug_vprintf (fmt, args);
+    va_end (args);
+}
+
+
+void debug_vprintf(char *fmt, va_list args) {
     FmtIO io = {
         .putchar = &uart_putc1
     };
 
-    va_list args;
-    va_start (args, fmt);
     format (io, fmt, args);
-    va_end (args);
 }
 
 
