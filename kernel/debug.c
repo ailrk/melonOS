@@ -15,10 +15,10 @@ static char *uart_putc1 (char *c) {
 
 
 void debug (char *fmt, ...) {
-    debug_printf("[\033[36mDEBUG\033[0m] ");
     va_list args;
     va_start (args, fmt);
-    debug_printf(fmt, args);
+    debug_printf("[\033[36mDEBUG\033[0m] ");
+    debug_vprintf(fmt, args);
     va_end (args);
 }
 

@@ -20,6 +20,8 @@
 
 
 #define DEBUG_MAP_PAGES 0
+#define DEBUG_KVM 1
+#define DEBUG_UVM 1
 
 
 extern char data[];           // defined by kernel.ld
@@ -68,6 +70,13 @@ static void init_kmap () {
           .pend   = 0, // wraps over
           .perm   = PTE_W
         };
+
+#ifdef DEBUG
+    for (int i = 0; i < sizeof(kmap) / sizeof(kmap[0]); ++i) {
+        debug("init_kmap: kmap[%x] va: %#x, pstart: %#x, pend: %#x, perm: %#x\n",
+                i, kmap[i].virt, kmap[i].pstart, kmap[i].pend, kmap[i].perm);
+    }
+#endif
 }
 
 
@@ -139,7 +148,7 @@ static bool map_pages (PD *pgdir, const VMap *k) {
     PTE *pte;
 
 #if DEBUG && DEBUG_MAP_PAGES
-    debug_printf("map_pages> <VMap %#x, (%#x, %#x), %#x>, <vstart %#x, vend %#x>\n",
+    debug("map_pages> <VMap %#x, (%#x, %#x), %#x>, <vstart %#x, vend %#x>\n",
                  k->virt, k->pstart, k->pend, k->perm, vstart, vend);
 #endif
 
@@ -183,6 +192,12 @@ PD *kvm_allocate () {
             return 0;
         }
     }
+
+
+#if DEBUG && DEBUG_KVM
+    debug("kvm_allocate: pgdir: %#x\n", pgdir);
+#endif
+
     return pgdir;
 }
 
@@ -190,18 +205,24 @@ PD *kvm_allocate () {
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running
  * */
-void kvm_switch() { set_cr3 (V2P_C (kernel_pgdir)); }
+void kvm_switch() {
+#if DEBUG && DEBUG_KVM
+    debug("kvm_switch\n");
+#endif
+
+    set_cr3 (V2P_C (kernel_pgdir));
+}
 
 
 /*! Setup kernel virtual memory */
 void kvm_init () {
-    log ("[\033[32mboot\033[0m] kvm_alloc...");
+    log (LOG_BOOT " kvm_alloc...\n");
     init_kmap ();
     if ((kernel_pgdir = kvm_allocate ()) == 0) {
         panic ("kvm_init");
     }
     kvm_switch ();
-    log ("\033[32mok\033[0m\n");
+    log (LOG_BOOT " kvm_alloc " LOG_OK "\n");
 }
 
 
@@ -211,12 +232,16 @@ void kvm_init () {
  *  @sz    size of the binary
  * */
 void uvm_init (PD *pgdir, char *init, size_t sz) {
+#if DEBUG && DEBUG_UVM
+    debug("uvm_init, pgdir: %#x, sz: %d\n", pgdir, sz);
+#endif
+
     char *mem;
     if (sz > PAGE_SZ)
-        panic ("\033[32mvmem\033[0m uvm_init: more than a page");
+        panic ("uvm_init: more than a page");
 
     if ((mem = palloc ()) == 0)
-        panic ("\033[32mvmem\033[0m uvm_init: not enough memory");
+        panic ("uvm_init: not enough memory");
 
     memset (mem, 0, PAGE_SZ);
 
@@ -250,7 +275,7 @@ static void write_tss (Process *p) {
 
 
 /*! Switch TSS and page table to process `p`.
- *  We setup a new TSS entry for the gdt. When interrupt occurs,
+ *  We setup a new TSS entry for the gdt.
  * */
 void uvm_switch (Process *p) {
     if (!p)
@@ -303,8 +328,8 @@ int uvm_load (PD *page_dir, char *addr, Inode *ino, unsigned offset, unsigned si
  *  as the end address of the virtual memory.
  * */
 int uvm_allocate (PD *pgdir, size_t oldsz, size_t newsz) {
-#ifdef DEBUG
-    debug("uvm_allocate: oldsz: %d, newsz %#08x\n", oldsz, newsz);
+#if DEBUG && DEBUG_UVM
+    debug("uvm_allocate: pgdir: %#x oldsz: %#x, newsz %#x\n", pgdir, oldsz, newsz);
 #endif
     if (newsz > KERN_BASE)
         return 0;
@@ -314,11 +339,9 @@ int uvm_allocate (PD *pgdir, size_t oldsz, size_t newsz) {
 
     for (uintptr_t p = page_alignup (oldsz); p < newsz; p += PAGE_SZ) {
         char *mem;
+
         if ((mem = palloc ()) == 0) {
             perror ("uvm_allocate: out of memory (1)\n");
-#ifdef DEBUG
-            debug("uvm_allocate: mem: %#08x, p: %#08x\n", mem, p);
-#endif
             uvm_deallocate (pgdir, newsz, oldsz);
             return 0;
         }

@@ -215,7 +215,7 @@ void yield () {
  *  back to the scheduler.
  * */
 void scheduler () {
-    log ("[\033[32mboot\033[0m] scheduler...\n");
+    log (LOG_BOOT " scheduler...\n");
     CPU *cpu = this_cpu ();
     cpu->proc = 0;
     for (;;) {

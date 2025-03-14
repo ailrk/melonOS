@@ -6,17 +6,29 @@ AR = ar rcs
 CPP = cpp
 HOSTCC = gcc
 
-
+#############################
+# Parameters
+#############################
+# DEBUG flag
 DEBUG = 1
 
+NOGRAPHICS = 1
+
+#############################
+# Variables
+#############################
+
+# CFLAGS
 CFLAGS = -ffreestanding -nostdlib
 ifeq ($(DEBUG), 1)
-    CFLAGS+= -g -DDEBUG
+    CFLAGS += -g -DDEBUG
 endif
 
 
 CWARNS = -Wall -Wextra -fno-exceptions
 
+
+# Directories
 B_DIR = boot
 K_DIR = kernel
 L_DIR = lib
@@ -80,37 +92,53 @@ echo:
 	@echo 'CWARNS $(CWARNS)'
 	@echo 'USERPROGS $(USERPROGS)'
 
-QEMUDRVS = \
+
+#############################
+# QEMU settings
+#############################
+
+# QEMU drives. To simply the development we put the kernel and the
+# filesystem in two different drives
+QEMU_DRVS = \
 	-drive format=raw,file=$(MELONOS),index=0,media=disk \
 	-drive format=raw,file=$(MELONFS),index=1,media=disk
+
+# The file for uart debug output
+QEMU_SERIALFILE = .uart.log
+
+# The file for qemu logs
+QEMU_LOGFILE = .qemu.log
+
+# QEMU graphics options. Turned off by default.
+QEMU_GRAPHICS =
+
+ifeq ($(NOGRAPHICS), 1)
+	QEMU_GRAPHICS += -nographic
+endif
 
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
 
+
 qemu:
 	$(QEMU) \
-		$(QEMUDRVS) \
+		$(QEMU_DRVS) \
 		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
-		-no-reboot -D .qemu.log \
-		-serial file:.uart.log \
-		-monitor stdio
+		-no-reboot -D $(QEMU_LOGFILE) \
+		-serial file:$(QEMU_SERIALFILE) \
+		-monitor stdio \
+		$(QEMU_GRAPHICS)
 
-qemu-debug-nox:
-	$(QEMU) \
-		$(QEMUDRVS) \
-		-s -S \
-		-no-reboot -D .qemu.log \
-		-serial file:.uart.log \
-		-nographic \
-		-monitor stdio
 
 qemu-debug:
 	$(QEMU) \
-		$(QEMUDRVS) \
+		$(QEMU_DRVS) \
 		-s -S \
-		-no-reboot \
-		-serial file:.uart.log \
-		-monitor stdio
+		-no-reboot -D $(QEMU_LOGFILE) \
+		-serial file:$(QEMU_SERIALFILE) \
+		-monitor stdio \
+		$(QEMU_GRAPHICS)
+
 
 elf-headers:
 	readelf -headers $(KERNEL)
@@ -132,6 +160,5 @@ include boot/Makefile
 include kernel/Makefile
 include lib/Makefile
 include mkfs/Makefile
-
 
 -include .local.mk

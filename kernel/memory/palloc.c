@@ -28,9 +28,10 @@ void pfree_range (void *vstart, void *vend) {
 
 /*! free the memory from vstart to vend */
 void palloc_init (void *vstart, void *vend) {
-    log ("[\033[32mboot\033[0m] palloc_init...");
+    log (LOG_BOOT " palloc_init %#x:%#x...\n", vstart, vend);
+    debug("1\n");
     pfree_range (vstart, vend);
-    log ("\033[32mok\033[0m\n");
+    log (LOG_BOOT " palloc_init " LOG_OK  "\n");
 }
 
 
@@ -49,6 +50,24 @@ char *palloc () {
 }
 
 
+#if DEBUG
+void pmem_report() {
+    int n = 0;
+    if (!kernel_mem.freelist)
+        goto end;
+
+    Run *p = kernel_mem.freelist;
+    while (p) {
+        n++;
+        p = p->next;
+    }
+
+end:
+    debug("pmem: %d pages free \n", n);
+}
+#endif
+
+
 /*! free a page of physical memory pointed by v
  *  v needs to align at page boundry otherwise we panic.
  *
@@ -57,21 +76,21 @@ char *palloc () {
 void pfree (char *v) {
     if (V2P_C (v) >= PHYSTOP) {
         #ifdef DEBUG
-        debug("pfree: %#08x\n", v);
+        debug("pfree: %#x\n", v);
         #endif
         panic ("pfree, physical address exceeds PHYSTOP");
     }
 
     if (v < end) {
         #ifdef DEBUG
-        debug("pfree: va: %#08x, end: %#08x\n", v, end);
+        debug("pfree: va: %#x, end: %#x\n", v, end);
         #endif
         panic ("pfree, invalid virtual address");
     }
 
     if ((uint32_t)v % PAGE_SZ) {
         #ifdef DEBUG
-        debug("pfree: %#08x\n", v);
+        debug("pfree: %#x\n", v);
         #endif
         panic ("pfree, address not on page boundry");
     }

@@ -12,9 +12,8 @@ char kstack[KSTACK_SZ]; // kernel stack. userd in entry.s
 
 void kmain (void) {
     vga_init     ();
-    mem_init1    ();
+    mem_init     ();
     uart_init    ();
-    mem_init2    ();
     trap_init    ();
     dev_init     ();
     fs_init      ();
