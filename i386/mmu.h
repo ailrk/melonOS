@@ -34,6 +34,9 @@ typedef uintptr_t PTE;
 typedef uintptr_t PD; // page directory
 
 
+typedef struct PageDir { PD *t; } PageDir;
+
+
 /* PTE flags */
 #define PTE_P 0x01   // 1 = present in physical memory
 #define PTE_W 0x02   // 1 = read/write, 0 = read only

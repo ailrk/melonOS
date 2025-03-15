@@ -5,6 +5,7 @@
 #include "err.h"
 #include "i386.h"
 #include "mem.h"
+#include "mmu.h"
 #include "pdefs.h"
 #include "trap.h"
 #include "string.h"
@@ -186,9 +187,9 @@ Process *allocate_process () {
 void deallocate_process (Process *p) {
     lock (&ptable.lk);
     p->size = 0;
-    if (p->pgdir) {
+    if (p->pgdir.t) {
         vmfree (p->pgdir);
-        p->pgdir = 0;
+        p->pgdir.t = 0;
     }
     if (p->kstack)  {
         pfree (p->kstack);
@@ -231,7 +232,7 @@ void init_pid1 () {
         panic ("init_pid1: failed to allocate process");
     }
 
-    if ((p->pgdir = kvm_allocate ()) == 0)
+    if (!kvm_allocate (&p->pgdir ))
         panic ("init_pid1");
 
     extern char __INIT1_BEGIN__[];

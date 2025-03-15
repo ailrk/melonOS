@@ -33,7 +33,7 @@ int fork () {
         return -1;
     }
 
-    if ((child->pgdir = uvm_copy (thisp->pgdir, thisp->size)) == 0) {
+    if (!uvm_copy (thisp->pgdir, &child->pgdir, thisp->size)) {
         deallocate_process (child);
         return -1;
     }

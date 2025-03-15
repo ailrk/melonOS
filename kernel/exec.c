@@ -4,6 +4,7 @@
 #include "inode.h"
 #include "mem.h"
 #include "mmu.h"
+#include "pgtbl.h"
 #include "string.h"
 #include "err.h"
 #include "elf.h"
@@ -44,7 +45,7 @@
 /*! Execute a program */
 int exec (char *path, char **argv) {
     Inode             *ino;
-    PD                *pgtbl = 0;
+    PageDir            pgtbl;
     ELF32Header        elfhdr;
     ELF32ProgramHeader ph;
     unsigned           offset;
@@ -52,7 +53,7 @@ int exec (char *path, char **argv) {
     unsigned           sp;
     unsigned           argc;
     Process           *p;
-    PD                *old_pgtbl;
+    PageDir            old_pgtbl;
 
     // load program
     if ((ino = dir_abspath (path, false)) == 0) {
@@ -66,7 +67,7 @@ int exec (char *path, char **argv) {
     if (!is_elf (&elfhdr))
         goto bad;
 
-    if ((pgtbl = kvm_allocate ()) == 0)
+    if (!kvm_allocate (&pgtbl))
         goto bad;
 
     offset = elfhdr.e_phoff;
@@ -151,7 +152,7 @@ int exec (char *path, char **argv) {
     return 0;
 
 bad:
-    if (pgtbl) {
+    if (pgtbl.t) {
         vmfree (pgtbl);
     }
     if (ino) {
