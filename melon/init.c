@@ -7,8 +7,5 @@ int main() {
         open("console", O_RDWR);
     }
 
-    dup(0);
-    dup(0);
-
     write(1, "hello\n", 6);
 }

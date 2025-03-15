@@ -29,7 +29,6 @@ void pfree_range (void *vstart, void *vend) {
 /*! free the memory from vstart to vend */
 void palloc_init (void *vstart, void *vend) {
     log (LOG_BOOT " palloc_init %#x:%#x...\n", vstart, vend);
-    debug("1\n");
     pfree_range (vstart, vend);
     log (LOG_BOOT " palloc_init " LOG_OK  "\n");
 }

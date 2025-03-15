@@ -2,6 +2,8 @@
 #include "dir.h"
 #include "fdefs.h"
 #include "inode.h"
+#include "debug.h"
+#include "proc.h"
 #include "proc.h"
 #include "string.h"
 #include "err.h"
@@ -309,10 +311,13 @@ void syscall () {
     unsigned n = p->trapframe->eax;
     if (!is_valid_syscall (n)) {
         p->trapframe->eax = -1;
-        perror ("known system call");
+        perror ("unknown system call");
         return;
     }
 
+#ifdef DEBUG
+    debug("syscall %d\n", n);
+#endif
     int r = system_calls[n] ();
     p->trapframe->eax = r;
 }

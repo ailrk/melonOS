@@ -113,12 +113,14 @@ int exec (char *path, char **argv) {
         goto bad;
     }
 
+    // set guard page permission
     clear_pte_flag(pgtbl, (char *)(size - 2 * PAGE_SZ), PTE_U);
 
     sp = size;
 
     // push arguments
     unsigned buffer[3 + MAXARGS + 1];
+    memset(buffer, 0, sizeof(buffer));
     for (argc = 0; argv[argc]; ++argc) {
         if (argc > MAXARGS)
             goto bad;

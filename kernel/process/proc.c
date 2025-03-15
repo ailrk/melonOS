@@ -238,7 +238,7 @@ void init_pid1 () {
     extern char __INIT1_END__[];
     int init1_sz = __INIT1_END__ - __INIT1_BEGIN__;
 
-    uvm_init (p->pgdir, __INIT1_BEGIN__, init1_sz);
+    uvm_init1 (p->pgdir, __INIT1_BEGIN__, init1_sz);
     p->size = PAGE_SZ;
     set_pid1_trapframe (p);
     strncpy (p->name, "init", sizeof (p->name));

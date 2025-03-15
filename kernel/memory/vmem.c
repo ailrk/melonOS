@@ -80,7 +80,8 @@ static void init_kmap () {
 }
 
 
-/*! Some untilities for handling page table access */
+/*! Some untilities for handling page table access
+ * */
 static PDE *get_pde (PD *pgdir, const void *vaddr) {
     return &pgdir[page_directory_idx((uintptr_t)vaddr)];
 }
@@ -98,7 +99,7 @@ static PTE *get_pt1 (PDE *pde) {
 
 
 static PTE *get_pte (PD *pgdir, const void *vaddr) {
-    PTE *pt = get_pt (pgdir, vaddr);
+    PTE *pt = get_pt(pgdir, vaddr);
     return &pt[page_table_idx((uintptr_t)vaddr)];
 }
 
@@ -109,12 +110,11 @@ static PTE *get_pte1 (PDE *pde, const void *vaddr) {
 }
 
 
-/*! Walk the page directory, return the PTE corresponding to the virtual address.
+/*! Walk the page directory to find the PTE corresponding to the virtual address.
  *  walk will allocate the page table if it doesn't exists.
  *
  *  @pgdir  the page directory
  *  @vaddr  virtual addess
- *  @alloc  allocation flag.
  *  @return the address of the page table entry. 0 indicates failed to find pte
  * */
 static PTE *walk (PD *pgdir, const void *vaddr) {
@@ -145,7 +145,7 @@ static bool map_pages (PD *pgdir, const VMap *k) {
     char         *vstart = (char *)page_aligndown((uintptr_t)k->virt);
     char         *vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
     physical_addr pstart = k->pstart;
-    PTE *pte;
+    PTE          *pte;
 
 #if DEBUG && DEBUG_MAP_PAGES
     debug("map_pages> <VMap %#x, (%#x, %#x), %#x>, <vstart %#x, vend %#x>\n",
@@ -165,6 +165,39 @@ static bool map_pages (PD *pgdir, const VMap *k) {
         *pte = pstart | PTE_P | k->perm;
     }
     return true;
+}
+
+
+/*! Unmap npages from the virtual address mapping k. If free is true then free
+ *  the allocation as well. The mapping must exists.
+ * */
+static void unmap_pages(PD *pgdir, uintptr_t vstart, size_t n, bool free) {
+    uintptr_t vend = vstart + n * PAGE_SZ;
+    PTE      *pte;
+
+    if (vstart % PAGE_SZ != 0) {
+        panic("unmap_pages: virtual address is not aligned\n");
+    }
+
+    for (uintptr_t a = vstart; a < vend; a += PAGE_SZ) {
+        if((pte = get_pte(pgdir, (void *)a)) == 0) {
+            panic("unmap_pages: get_pte\n");
+        }
+
+        if (!(*pte & PTE_P)) {
+#if DEBUG
+            debug("unmap_pages *pte: %#x, a: %#x\n", *pte, a);
+#endif
+            panic("unmap_pages: not mapped\n");
+        }
+
+        if (free) {
+            uintptr_t addr = pte_addr(*pte);
+            pfree(P2V_C(addr));
+        }
+
+        *pte = 0;
+    }
 }
 
 
@@ -192,7 +225,6 @@ PD *kvm_allocate () {
             return 0;
         }
     }
-
 
 #if DEBUG && DEBUG_KVM
     debug("kvm_allocate: pgdir: %#x\n", pgdir);
@@ -226,12 +258,12 @@ void kvm_init () {
 }
 
 
-/*! Load init code to address 0 of virtual space.
+/*! Load init1.s code to address 0 of virtual space.
  *  @pgdir process's page table directory
  *  @init  address of the binary
  *  @sz    size of the binary
  * */
-void uvm_init (PD *pgdir, char *init, size_t sz) {
+void uvm_init1 (PD *pgdir, char *init, size_t sz) {
 #if DEBUG && DEBUG_UVM
     debug("uvm_init, pgdir: %#x, sz: %d\n", pgdir, sz);
 #endif
@@ -418,26 +450,24 @@ int uvm_deallocate (PD *pgdir, uintptr_t oldsz, uintptr_t newsz) {
     if (oldsz < newsz)
         return oldsz;
 
-    for (uintptr_t p = page_alignup (newsz); p < oldsz; p += PAGE_SZ) {
-        PTE *pte = get_pte (pgdir, (char *)p);
+    uintptr_t newsz_a = page_alignup(newsz);
+    uintptr_t oldsz_a = page_alignup(oldsz);
 
-        if (!pte)
-            p = page_addr (page_directory_idx (p) + 1, 0, 0) - PAGE_SZ;
+#if DEBUG
+    debug("uvm_deallocate pgdir %#x, oldsz %#x(%#x), newsz %#x(%#x)\n", pgdir, oldsz, oldsz_a, newsz, newsz_a);
+#endif
 
-        if (*pte & PTE_P) {
-            physical_addr page_table_addr = page_table_idx (*pte);
-            if (page_table_addr == 0)
-                panic ("uvm_deallocate: trying to pfree invalid physical addr");
-            pfree (P2V_C (page_table_addr));
-            continue;
-        }
+    if (newsz_a < oldsz_a) {
+        size_t n = (oldsz_a - newsz_a) / PAGE_SZ;
+        unmap_pages(pgdir, newsz_a, n, true);
     }
+
     return newsz;
 }
 
 
 void set_pte_flag(PD *pgdir, char *vaddr, unsigned flag) {
-    if (flag != PTE_P || flag != PTE_W || flag != PTE_U || flag != PTE_D)
+    if (flag != PTE_P && flag != PTE_W && flag != PTE_U && flag != PTE_D)
         panic("set_pte_flag: unknown flag");
 
     PTE *pte;
@@ -449,8 +479,9 @@ void set_pte_flag(PD *pgdir, char *vaddr, unsigned flag) {
 
 
 void clear_pte_flag(PD *pgdir, char *vaddr, unsigned flag) {
-    if (flag != PTE_P || flag != PTE_W || flag != PTE_U || flag != PTE_D)
+    if (flag != PTE_P && flag != PTE_W && flag != PTE_U && flag != PTE_D) {
         panic("clear_pte_flag: unknown flag");
+    }
     PTE *pte;
     if ((pte = get_pte(pgdir, vaddr)) == 0) {
         panic("clear_pte_flag");
@@ -495,18 +526,24 @@ int uvm_memcpy(PD *pgdir, unsigned vaddr, void *p, unsigned size) {
 
 
 /*! Free a page table.
- *  This will free all memory used in the user part.
+ *  This will also free all physical memory used in the user part. (va 0-KERN_BASE)
  * */
 void vmfree (PD *pgdir) {
+    debug("vmfree %#x\n", pgdir);
     if (pgdir == 0)
         panic ("vmfree");
 
     // deallocate
     uvm_deallocate (pgdir, KERN_BASE, 0);
+    debug("vmfree 1 \n");
+
     for (int i = 0; i < NPDES; ++i) {
         if (pgdir[i] & PDE_P) {
             pfree ((char *)P2V(pte_addr (pgdir[i])));
         }
     }
+    debug("vmfree 2 \n");
+
     pfree((char *)pgdir);
+    debug("vmfree end\n");
 }

@@ -19,7 +19,9 @@ loop: jmp loop
 path:
     db "/init", 0
 
+arg1:
+    db "init", 0
+
 ;; char *argv[] = { init, 0 };
 argv:
-    db "init", 0
-    db 0
+    dq arg1, 0

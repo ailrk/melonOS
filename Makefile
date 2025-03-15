@@ -127,6 +127,7 @@ qemu:
 		-no-reboot -D $(QEMU_LOGFILE) \
 		-serial file:$(QEMU_SERIALFILE) \
 		-monitor stdio \
+		-m 512M \
 		$(QEMU_GRAPHICS)
 
 
@@ -137,6 +138,7 @@ qemu-debug:
 		-no-reboot -D $(QEMU_LOGFILE) \
 		-serial file:$(QEMU_SERIALFILE) \
 		-monitor stdio \
+		-m 512M \
 		$(QEMU_GRAPHICS)
 
 
