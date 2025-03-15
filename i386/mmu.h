@@ -31,10 +31,13 @@
 
 typedef uintptr_t PDE;
 typedef uintptr_t PTE;
-typedef uintptr_t PD; // page directory
 
 
-typedef struct PageDir { PD *t; } PageDir;
+/* Struct wrapper for (PDE *) and (PTE *).
+ * This is helpful to distinguish a page table itself or a pointer to a page table entry.
+ * */
+typedef struct PageDir { PDE *t; } PageDir;
+typedef struct PageTable { PTE *t; } PageTable;
 
 
 /* PTE flags */

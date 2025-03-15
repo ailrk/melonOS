@@ -92,7 +92,7 @@ bool kvm_allocate (PageDir *pgdir) {
     if ((void *)P2V (PHYSTOP) > (void *)DEV_SPACE)
         panic ("PHYSTOP is too high");
 
-    if ((pgdir->t = (PD*)palloc ()) == 0)
+    if ((pgdir->t = (PDE *)palloc ()) == 0)
         return false;
 
     memset (pgdir->t, 0, PAGE_SZ);
@@ -117,7 +117,7 @@ bool kvm_allocate (PageDir *pgdir) {
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running
  * */
-void kvm_switch() {
+void kvm_switch () {
 #if DEBUG && DEBUG_KVM
     debug("kvm_switch\n");
 #endif
@@ -205,14 +205,14 @@ void uvm_switch (Process *p) {
 
 
 /*! Load a program segment into page directory.
- *  @page_dir page directory
+ *  @pgdir page directory
  *  @addr     the address of the program. Must be page aligned
  *  @ino      inode with the start of the program.
  *  @offset   inode offset of the start of the program
  *  @size     program size
  *  @return   0 when succeed, -1 on error
  * */
-int uvm_load (PageDir page_dir, char *addr, Inode *ino, unsigned offset, unsigned size) {
+int uvm_load (PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned size) {
     if ((unsigned)addr % PAGE_SZ != 0)
         panic ("uvm_load: address is not aligned");
 
@@ -220,7 +220,7 @@ int uvm_load (PageDir page_dir, char *addr, Inode *ino, unsigned offset, unsigne
     physical_addr pa;
     int n;
     for (unsigned i = 0; i < size; i += PAGE_SZ) {
-        if ((pte = get_pte (page_dir, addr + i)) == 0) {
+        if ((pte = get_pte (pgdir, addr + i)) == 0) {
             panic ("uvm_load: invalid address");
         }
         pa = pte_addr (*pte);
@@ -241,7 +241,7 @@ int uvm_load (PageDir page_dir, char *addr, Inode *ino, unsigned offset, unsigne
  * */
 int uvm_allocate (PageDir pgdir, size_t oldsz, size_t newsz) {
 #if DEBUG && DEBUG_UVM
-    debug("uvm_allocate: pgdir: %#x oldsz: %#x, newsz %#x\n", pgdir, oldsz, newsz);
+    debug("uvm_allocate: pgdir: %#x oldsz: %#x, newsz %#x\n", pgdir.t, oldsz, newsz);
 #endif
     if (newsz > KERN_BASE)
         return 0;
@@ -335,7 +335,7 @@ int uvm_deallocate (PageDir pgdir, uintptr_t oldsz, uintptr_t newsz) {
     uintptr_t oldsz_a = page_alignup(oldsz);
 
 #if DEBUG
-    debug("uvm_deallocate pgdir %#x, oldsz %#x(%#x), newsz %#x(%#x)\n", pgdir, oldsz, oldsz_a, newsz, newsz_a);
+    debug("uvm_deallocate pgdir %#x, oldsz %#x(%#x), newsz %#x(%#x)\n", pgdir.t, oldsz, oldsz_a, newsz, newsz_a);
 #endif
 
     if (newsz_a < oldsz_a) {
@@ -386,21 +386,18 @@ int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *p, unsigned size) {
  *  This will also free all physical memory used in the user part. (va 0-KERN_BASE)
  * */
 void vmfree (PageDir pgdir) {
-    debug("vmfree %#x\n", pgdir);
+    debug("vmfree %#x\n", pgdir.t);
     if (pgdir.t == 0)
         panic ("vmfree");
 
     // deallocate
     uvm_deallocate (pgdir, KERN_BASE, 0);
-    debug("vmfree 1 \n");
 
     for (int i = 0; i < NPDES; ++i) {
         if (pgdir.t[i] & PDE_P) {
             pfree ((char *)P2V(pte_addr (pgdir.t[i])));
         }
     }
-    debug("vmfree 2 \n");
 
     pfree((char *)pgdir.t);
-    debug("vmfree end\n");
 }

@@ -1,36 +1,43 @@
 #include "err.h"
 #include "debug.h"
+#include "mmu.h"
 #include "string.h"
 #include "palloc.h"
 #include "memory/pgtbl.h"
 
 /*! Some untilities for handling page table access
+ *
+ *  Virtual (va) to physical (pa) address translation process:
+ *  1. Take PDE of va from page directory
+ *  2. Use PDE of va to get PT from page directory
  * */
+
+
 PDE *get_pde (PageDir pgdir, const void *vaddr) {
     return &pgdir.t[page_directory_idx((uintptr_t)vaddr)];
 }
 
 
-PTE *get_pt (PageDir pgdir, const void *vaddr) {
+PageTable get_pt (PageDir pgdir, const void *vaddr) {
     PDE *pde = get_pde (pgdir, vaddr);
-    return (PTE *)P2V (pte_addr (*pde));
+    return (PageTable){ .t = (PTE *)P2V (pte_addr (*pde)) };
 }
 
 
-PTE *get_pt1 (PDE *pde) {
-    return (PTE *)P2V (pte_addr (*pde));
+PageTable get_pt1 (PDE *pde) {
+    return (PageTable) { .t = (PTE *)P2V (pte_addr (*pde)) };
 }
 
 
 PTE *get_pte (PageDir pgdir, const void *vaddr) {
-    PTE *pt = get_pt(pgdir, vaddr);
-    return &pt[page_table_idx((uintptr_t)vaddr)];
+    PageTable pt = get_pt(pgdir, vaddr);
+    return &pt.t[page_table_idx((uintptr_t)vaddr)];
 }
 
 
 PTE *get_pte1 (PDE *pde, const void *vaddr) {
-    PTE *pt = get_pt1 (pde);
-    return &pt[page_table_idx((uintptr_t)vaddr)];
+    PageTable pt = get_pt1 (pde);
+    return &pt.t[page_table_idx((uintptr_t)vaddr)];
 }
 
 
@@ -42,18 +49,18 @@ PTE *get_pte1 (PDE *pde, const void *vaddr) {
  *  @return the address of the page table entry. 0 indicates failed to find pte
  * */
 PTE *walk (PageDir pgdir, const void *vaddr) {
-    PDE *pde = get_pde (pgdir, vaddr);
-    PTE *pt;
+    PDE      *pde = get_pde (pgdir, vaddr);
+    PageTable pt;
 
     if (*pde & PDE_P)
         return get_pte1 (pde, vaddr);
 
-    if ((pt = (PTE *)palloc ()) == 0)
+    if ((pt.t = (PTE *)palloc ()) == 0)
         return 0;
 
-    memset (pt, 0, PAGE_SZ);
+    memset (pt.t, 0, PAGE_SZ);
 
-    *pde = V2P_C((uintptr_t)pt | PDE_P | PDE_W | PDE_U);
+    *pde = V2P_C((uintptr_t)pt.t | PDE_P | PDE_W | PDE_U);
     return get_pte1 (pde, vaddr);
 }
 
@@ -85,7 +92,7 @@ bool map_pages (PageDir pgdir, const VMap *k) {
             return false;
 
         if (*pte & PTE_P)
-            panic ("remap");
+            panic ("map_pages: remap");
 
         *pte = pstart | PTE_P | k->perm;
     }
