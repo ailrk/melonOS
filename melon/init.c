@@ -1,6 +1,5 @@
 #include "sys.h"
 
-
 int main() {
     if (open("console", O_RDWR) < 0) {
         mknod("console", 1, 1);

@@ -12,7 +12,7 @@ HOSTCC = gcc
 # DEBUG flag
 DEBUG = 1
 
-NOGRAPHICS = 1
+NOGRAPHICS = 0
 
 #############################
 # Variables
@@ -98,7 +98,7 @@ echo:
 #############################
 
 # QEMU drives. To simply the development we put the kernel and the
-# filesystem in two different drives
+# filesystem in two different drives.
 QEMU_DRVS = \
 	-drive format=raw,file=$(MELONOS),index=0,media=disk \
 	-drive format=raw,file=$(MELONFS),index=1,media=disk

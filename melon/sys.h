@@ -3,7 +3,6 @@
 
 /* user system call interfaces */
 
-
 int   fork();
 int   exit() __attribute__((noreturn));
 int   wait();
