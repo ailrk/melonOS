@@ -12,14 +12,14 @@ HOSTCC = gcc
 # DEBUG flag
 DEBUG = 1
 
-NOGRAPHICS = 0
+NOGRAPHICS = 1
 
 #############################
 # Variables
 #############################
 
 # CFLAGS
-CFLAGS = -ffreestanding -nostdlib
+CFLAGS = -ffreestanding -nostdlib -fno-omit-frame-pointer
 ifeq ($(DEBUG), 1)
     CFLAGS += -g -DDEBUG
 endif
@@ -54,6 +54,15 @@ default: all
 all: $(MELONOS)
 boot: $(BOOT)
 kernel: $(KERNEL)
+
+echo-kernel-elf:
+	@echo "$(KERNEL)"
+
+echo-bootloader:
+	@echo "$(BOOTLOADER)"
+
+echo-img:
+	@echo "$(MELONOS)"
 
 # order of the import matters here.
 include melon/Makefile
@@ -140,6 +149,7 @@ qemu-debug:
 		-monitor stdio \
 		-m 512M \
 		$(QEMU_GRAPHICS)
+
 
 
 elf-headers:

@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+import re
+import sys
+import subprocess
+
+addr_re = re.compile(r"\[<([0-9a-fA-Fx]+)>\]")
+addr_cache = {}
+
+def run(cmd):
+    return subprocess.check_output(cmd, stderr=subprocess.DEVNULL, text=True).strip()
+
+def get_kernel_elf():
+    try:
+        return run(["make", "echo-kernel-elf"])
+    except subprocess.CalledProcessError:
+        sys.exit("error: failed to run 'make echo-kernel-elf'")
+
+def resolve_addr(elf, addr):
+    if addr not in addr_cache:
+        try:
+            addr_cache[addr] = run(["addr2line", "-e", elf, addr])
+        except subprocess.CalledProcessError:
+            addr_cache[addr] = "??"
+    return addr_cache[addr]
+
+def process_line(line, elf):
+    return addr_re.sub(lambda m: f"[<{m.group(1)}> → {resolve_addr(elf, m.group(1))}]", line)
+
+def main():
+    elf = get_kernel_elf()
+    for line in sys.stdin:
+        print(process_line(line, elf), end="")
+
+if __name__ == "__main__":
+    main()
+
