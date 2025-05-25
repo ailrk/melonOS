@@ -294,6 +294,24 @@ static int (*system_calls[])() = {
 };
 
 
+static const char *syscall_name[] = {
+    [SYS_FORK]   = "SYS_FORK",
+    [SYS_EXIT]   = "SYS_EXIT",
+    [SYS_EXEC]   = "SYS_EXEC",
+    [SYS_GETPID] = "SYS_GETPID",
+    [SYS_SBRK]   = "SYS_SBRK",
+    [SYS_WRITE]  = "SYS_WRITE",
+    [SYS_READ]   = "SYS_READ",
+    [SYS_MKNOD]  = "SYS_MKNOD",
+    [SYS_MKDIR]  = "SYS_MKDIR",
+    [SYS_OPEN]   = "SYS_OPEN",
+    [SYS_CLOSE]  = "SYS_CLOSE",
+    [SYS_LINK]   = "SYS_LINK",
+    [SYS_UNLINK] = "SYS_UNLINK",
+    [SYS_DUP]    = "SYS_DUP"
+};
+
+
 static bool is_valid_syscall (unsigned n) {
     return (n > 0 && n < sizeof (system_calls) / sizeof (system_calls[0]) && system_calls[n]);
 }
@@ -316,7 +334,7 @@ void syscall () {
     }
 
 #ifdef DEBUG
-    debug("syscall %d\n", n);
+    debug("syscall %d, %s\n", n, syscall_name[n]);
 #endif
     int r = system_calls[n] ();
     p->trapframe->eax = r;

@@ -3,6 +3,11 @@ import re
 import sys
 import subprocess
 
+"""
+Filter address pattern like [<80106b3d>] to [<80106b3d> → file.c:20]. This can be applied on
+uart output to translate stack trace pointer to readable address.
+"""
+
 addr_re = re.compile(r"\[<([0-9a-fA-Fx]+)>\]")
 addr_cache = {}
 
