@@ -53,7 +53,7 @@
 #define MAXVA     0xFFFFFFFF
 
 /* Top physical memory */
-#define PHYSTOP   0x20000000
+#define PHYSTOP   0xFD0000000
 
 /* peripheral device at high address */
 #define DEV_SPACE 0xFE000000

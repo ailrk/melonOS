@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "err.h"
 #include "mmu.h"
+#include "proc.h"
 #include "process.h"
 #include "sys/syscall.h"
 #include "driver/kbd.h"
@@ -79,7 +80,7 @@ void handle_syscall(TrapFrame *tf) {
 }
 
 
-void handle_I_IRQ_TIMER() {
+void handle_I_IRQ_TIMER(const TrapFrame *tf) {
     ticks++;
     pic_eoi();
 }
@@ -164,7 +165,7 @@ void trap(TrapFrame *tf) {
             handle_syscall(tf);
             break;
         case MAP_IRQ(I_IRQ_TIMER):
-            handle_I_IRQ_TIMER();
+            handle_I_IRQ_TIMER(tf);
             break;
         case MAP_IRQ (I_IRQ_KBD):
             handle_I_IRQ_KBD();

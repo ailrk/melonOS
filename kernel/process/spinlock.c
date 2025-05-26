@@ -4,6 +4,8 @@
 #include "ncli.h"
 #include "process/proc.h"
 
+/* Simple busy waiting spinlock */
+
 
 SpinLock new_lock (const char *name) {
     return (SpinLock) {
@@ -44,7 +46,8 @@ void unlock (SpinLock *lk) {
 
     lk->cpu = 0;
     __sync_synchronize ();
-    __asm__ volatile ("movl $0, %0" : "+m" (lk->locked) : );
-
+      // The xchg is atomic.
+    while(xchg(&lk->locked, 0) == 0)
+        ;
     pop_cli ();
 }

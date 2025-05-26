@@ -99,6 +99,8 @@ Process *this_proc () {
 
 /*! Return a forked child process to the user space */
 void forkret () {
+    // it's locked from scheduler.
+    unlock(&ptable.lk);
 }
 
 

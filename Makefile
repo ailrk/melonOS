@@ -12,7 +12,7 @@ HOSTCC = gcc
 # DEBUG flag
 DEBUG = 1
 
-NOGRAPHICS = 0
+NOGRAPHICS = 1
 
 #############################
 # Variables

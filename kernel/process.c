@@ -1,8 +1,10 @@
+#include "debug.h"
 #include "defs.h"
 #include "fdefs.fwd.h"
 #include "string.h"
 #include "err.h"
 #include "log.h"
+#include "spinlock.h"
 #include "process.h"
 #include "process/proc.h"
 #include "process/pdefs.h"
@@ -43,7 +45,7 @@ int fork() {
     *child->trapframe     = *thisp->trapframe;
     child->trapframe->eax = 0;
 
-    for (int i = 0; i < NFILE; ++i) {
+    for (int i = 0; i < NOFILE; ++i) {
         File *f = thisp->file[i];
         if (f) {
             child->file[i] = file_dup(f);
@@ -129,6 +131,9 @@ int wait () {
 /* Give away the control back to the scheduler */
 void sched() {
     Process *p = this_proc();
+
+    if (!holding(&ptable.lk))
+        panic("sched: ptable.lk");
 
     if (this_cpu()->ncli != 1)
         panic("sched: locks");
