@@ -89,7 +89,7 @@ int exec (char *path, char **argv) {
             goto bad;
         }
 
-        if ((size = uvm_allocate (pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) {
+        if ((size = uvm_allocate (pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) { // note. text is loaded from 0x1000
             goto bad;
         }
 
