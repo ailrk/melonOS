@@ -22,12 +22,12 @@ void ftable_init () {
 
 
 /*! Allocate a file from the ftable
- *  @return Newly allocated file. 0 if failed.
+ *  @return newly allocated file. 0 if failed.
  * */
 File *file_allocate () {
-    File *f = 0;
+    File *f;
     for (int i = 0; i < NFILE; ++i) {
-        *f = ftable.t[i];
+        f = &ftable.t[i];
         if (f->nref == 0) {
             f->nref = 1;
             return f;

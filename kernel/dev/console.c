@@ -25,7 +25,9 @@ int console_read (Inode *ino, char *addr, int n) {
 
 int console_write (Inode *ino, char *addr, int n) {
     while (n) {
-        vga_writec (addr++);
+        vga_writec (addr);
+        debug_putc(addr);
+        addr++;
         n--;
     }
 }

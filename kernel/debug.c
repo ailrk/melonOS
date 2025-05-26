@@ -8,7 +8,7 @@
 #include "driver/uart.h"
 
 
-static char *uart_putc1 (char *c) {
+char *debug_putc (char *c) {
     uart_putc(*c++);
     return c;
 }
@@ -33,7 +33,7 @@ void debug_printf (char *fmt, ...) {
 
 void debug_vprintf(char *fmt, va_list args) {
     FmtIO io = {
-        .putchar = &uart_putc1
+        .putchar = &debug_putc
     };
 
     format (io, fmt, args);

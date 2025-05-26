@@ -139,7 +139,8 @@ Inode *dir_abspath (const char *path, bool parent) {
     if (path[0] != '/') return 0; // not abs path
 
     char pathbuf[PATH_MAX];
-    strncpy (pathbuf, path, strlen(path));
+    strncpy (pathbuf, path, PATH_MAX - 1);
+    pathbuf[PATH_MAX - 1] = '\0';
 
     Inode *dir = inode_getc (ROOTDEV, ROOTINO);
     char  *savedpath;
@@ -152,7 +153,7 @@ Inode *dir_abspath (const char *path, bool parent) {
         offset_t off;
         Inode   *ino;
 
-        if (parent && !strchr (savedpath, '/')) {
+        if (parent && !strchr(savedpath, '/')) {
             inode_drop (dir);
             return dir;
         }
@@ -172,7 +173,7 @@ Inode *dir_abspath (const char *path, bool parent) {
             }
             inode_drop (dir);
             dir = ino;
-            continue;
+        case F_DEV:
         case F_FILE:
             if (strchr (savedpath, '/'))
                 panic ("dir_abspath: file is not the last path");

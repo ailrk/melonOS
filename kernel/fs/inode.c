@@ -288,7 +288,6 @@ int inode_write (Inode *ino, const char *buf, offset_t offset, unsigned sz) {
         if (ino->d.major < 0 || ino->d.major > NDEV) return -1;
         if (!devices[ino->d.major].write)            return -1;
         return devices[ino->d.major].write (ino, buf, sz);
-
     case F_DIR:
     case F_FILE:
         if (ino->d.size < offset)         return -1;
