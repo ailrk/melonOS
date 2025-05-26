@@ -114,8 +114,10 @@ int exec (char *path, char **argv) {
         goto bad;
     }
 
+    // debug_printf("%d", *get_pte(pgtbl, (char *)(size - 2 * PAGE_SZ)));
     // set guard page permission
     clear_pte_flag(pgtbl, (char *)(size - 2 * PAGE_SZ), PTE_U);
+    // debug_printf("%d", *get_pte(pgtbl, (char *)(size - 2 * PAGE_SZ)));
 
     sp = size;
 

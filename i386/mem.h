@@ -14,19 +14,20 @@
  *           |  device memory   |                 |  device memory   |
  *           |                  | kmap[3]         |                  |
  * DEV_SPACE +------------------+-----> DEV_SPACE +------------------+
- *           |                  |                 |                  |
- *           |   unused         |                 |  unused          |
- *           |                  |                 |                  |
- *           |                  |                 |                  |
+ *
+ *               UNUSED                              UNUSED
+ *               you can tweak the PHYSTOP and KERN_BASE to change the
+ *               amount of memory you can use.
+ *
  *           +------------------+----->   PHYSTOP +------------------+
  *           |  free memory     |                 |                  |
  *           |  (palloc)        |                 |                  |
- *       end +------------------+                 |                  |
+ *       end +------------------+        data end +------------------+ (from linker)
  *           |  kernel  data    |                 |                  |
  *           |                  |  kmap[2]        |                  |
- *      data +------------------+------>     data +                  |
+ *      data +------------------+------>     data +------------------+ (from linker)
  *           |kernel text&rodata|  kmap[1]        |                  |
- * + EXTMEM  +------------------+----->    EXTMEM +------------------+
+ * KERN_LINK +------------------+----->    EXTMEM +------------------+
  *   (text)  |                  |                 |                  |
  *           |  IO space        |           640k  +------------------+
  *           |                  |  kmap[0]        |                  |

@@ -57,7 +57,7 @@ static void init_kmap () {
         };
 
     kmap[2] = (VMap)
-        // kernel data & memory
+        // kernel data & free memory
         { .virt   = (void *)(data),
           .pstart = V2P_C(data),
           .pend   = PHYSTOP,
@@ -81,9 +81,8 @@ static void init_kmap () {
 }
 
 
-
 /*! Setup the kernel part of the page table. we allocate
- *  a single page to hold the PD. Then we map pages base
+ *  a single page to hold the PageDir. Then we map pages base
  *  on the `kmap` to setup the kernel virtual memory.
  *
  *  @return initialized page directory
@@ -126,7 +125,7 @@ void kvm_switch () {
 }
 
 
-/*! Setup kernel virtual memory */
+/*! Setup global kernel virtual memory */
 void kvm_init () {
     log (LOG_BOOT " kvm_alloc...\n");
     init_kmap ();
@@ -168,7 +167,15 @@ void uvm_init1 (PageDir pgdir, char *init, size_t sz) {
 }
 
 
-/* Write TSS segment for user space task switching */
+/* Write TSS segment for user space task switching
+ * Kernel stack and user stack are separated, you don't want a user program
+ * to modify kernel state.
+ *
+ * Although TSS has a lot of fields and it's designed to perform hardware
+ * context switching, modern os normally only use it for ring level stack switching.
+ * e.g to find the right stack when move from ring3 to ring0. The address of
+ * the stack is stored at ss0 and esp0 field of TSS.
+ * */
 static void write_tss (Process *p) {
     push_cli ();
     uint16_t flag  = SEG_S(0)       | SEG_P(1)  | SEG_AVL(0) |
@@ -176,18 +183,18 @@ static void write_tss (Process *p) {
                      SEG_DPL(DPL_K) | SEG_TSS_32_AVL;
     uint32_t base  = (uintptr_t)&this_cpu()->ts;
     uint32_t limit = sizeof (this_cpu()->ts) - 1;
-    uint8_t  rpl   = 0; // request privilege level
+    uint8_t  rpl   = 0; // request privilege level. We are asking to move to ring 0
     memset((void *)base, 0, limit);
-    this_cpu()->gdt[SEG_TSS] = create_descriptor (base, limit, flag);
-    this_cpu()->ts.ss0       = SEG_KDATA << 3;
-    this_cpu()->ts.esp0      = (uintptr_t)p->kstack + KSTACK_SZ;
-    ltr (SEG_TSS << 3 | rpl);
+    this_cpu()->gdt[SEG_TSS] = create_descriptor(base, limit, flag); // new gdt entry points to the tss
+    this_cpu()->ts.ss0       = SEG_KDATA << 3; // out gdt spans the whole memory, ss is only for priv
+    this_cpu()->ts.esp0      = (uintptr_t)p->kstack + KSTACK_SZ; // ss0:esp0
+    ltr (SEG_TSS << 3 | rpl); // load task register
     pop_cli ();
 }
 
 
-/*! Switch TSS and page table to process `p`.
- *  We setup a new TSS entry for the gdt.
+/*! User space vm switching. Besides switching the page table, we also
+ *  need to switch to the kernel stack.
  * */
 void uvm_switch (Process *p) {
     if (!p)
@@ -278,6 +285,7 @@ int uvm_allocate (PageDir pgdir, size_t oldsz, size_t newsz) {
 
 
 /*! Copy the page table of another process.
+ *  TODO copy on write
  *  @pgdir   the page directory of process to copy from.
  *  @sz      number of pages copy from the other process.
  *  @return  the copied page directory. 0 if failed.
@@ -384,18 +392,19 @@ int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *p, unsigned size) {
 
 /*! Free a page table.
  *  This will also free all physical memory used in the user part. (va 0-KERN_BASE)
+ *  as well as the kernel page directory (which is 1 page)
  * */
 void vmfree (PageDir pgdir) {
     debug("vmfree %#x\n", pgdir.t);
     if (pgdir.t == 0)
         panic ("vmfree");
 
-    // deallocate
+    // Deallocate the entire user memory range.
     uvm_deallocate (pgdir, KERN_BASE, 0);
 
     for (int i = 0; i < NPDES; ++i) {
         if (pgdir.t[i] & PDE_P) {
-            pfree ((char *)P2V(pte_addr (pgdir.t[i])));
+            pfree((char *)P2V(pte_addr(pgdir.t[i])));
         }
     }
 

@@ -1,9 +1,12 @@
 #include "err.h"
 #include "debug.h"
+#include "mem.h"
 #include "mmu.h"
 #include "string.h"
 #include "palloc.h"
 #include "memory/pgtbl.h"
+
+extern char end[];
 
 /*! Some untilities for handling page table access
  *
@@ -100,9 +103,9 @@ bool map_pages (PageDir pgdir, const VMap *k) {
 }
 
 
-
 /*! Unmap npages from the virtual address mapping k. If free is true then free
  *  the allocation as well. The mapping must exists.
+ *  If ptr_add(*pte) is in invalid address range, we simply ignore it.
  * */
 void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
     uintptr_t vend = vstart + n * PAGE_SZ;
@@ -118,10 +121,20 @@ void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
         }
 
         if (!(*pte & PTE_P)) {
-#if DEBUG
+#if DEBUG && DEBUG_UNMAPPED
             debug("unmap_pages *pte: %#x, a: %#x\n", *pte, a);
-#endif
             panic("unmap_pages: not mapped\n");
+#endif
+            goto clear; // ignore unmapped page
+        }
+
+        uintptr_t addr = pte_addr(*pte);
+        if (addr >= PHYSTOP || (char *)P2V_C(addr) < end) {
+#if DEBUG && DEBUG_UNMAPPED
+            debug("unmap_pages *pte: %#x, a: %#x\n", *pte, a);
+            panic("unmap_pages: outside of PHYSTOP \n");
+#endif
+            goto clear;
         }
 
         if (free) {
@@ -129,7 +142,7 @@ void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
             pfree(P2V_C(addr));
         }
 
-        *pte = 0;
+        clear: *pte = 0;
     }
 }
 

@@ -23,4 +23,8 @@ void mem_init () {
     kvm_init ();
     gdt_init ();
     palloc_init (ptend, phystop);
+
+#ifdef DEBUG
+    pmem_report();
+#endif
 }
