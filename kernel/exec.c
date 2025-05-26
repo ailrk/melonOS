@@ -56,18 +56,18 @@ int exec (char *path, char **argv) {
     PageDir            old_pgtbl;
 
     // load program
-    if ((ino = dir_abspath (path, false)) == 0) {
+    if ((ino = dir_abspath(path, false)) == 0) {
         perror ("exec: invalid path\n");
         return -1;
     }
 
-    if (inode_read (ino, (char *)&elfhdr, 0, sizeof (ELF32Header)) != sizeof (ELF32Header))
+    if (inode_read(ino, (char *)&elfhdr, 0, sizeof(ELF32Header)) != sizeof(ELF32Header))
         goto bad;
 
-    if (!is_elf (&elfhdr))
+    if (!is_elf(&elfhdr))
         goto bad;
 
-    if (!kvm_allocate (&pgtbl))
+    if (!kvm_allocate(&pgtbl))
         goto bad;
 
     offset = elfhdr.e_phoff;

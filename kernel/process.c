@@ -15,7 +15,7 @@ extern PTable   ptable;
 extern Process *proc_init1;
 
 
-void process_init () {
+void process_init() {
     ptable_init();
     init_pid1();
 }
@@ -25,11 +25,11 @@ void process_init () {
  *  @return  return 0 on child process, pid of the child process on parent. -1
  *           if failed.
  * */
-int fork () {
+int fork() {
     Process *child;
-    Process *thisp = this_proc ();
+    Process *thisp = this_proc();
 
-    if ((child = allocate_process ()) == 0) {
+    if ((child = allocate_process()) == 0) {
         return -1;
     }
 
@@ -65,14 +65,14 @@ int fork () {
  *  in `PROC_ZOMBIE` state until its parent calls wait, which clean up
  *  the zombie process.
  * */
-void exit () {
-    Process *thisp = this_proc ();
+void exit() {
+    Process *thisp = this_proc();
     if (thisp == proc_init1)
-        panic ("init 1 is exiting");
+        panic("init 1 is exiting");
 
     lock (&ptable.lk);
 
-    wakeup_unlocked (thisp->parent);
+    wakeup_unlocked(thisp->parent);
 
     // pass its children to init
     for (Process *p = ptable.t; p < &ptable.t[NPROC]; ++p) {
@@ -85,8 +85,8 @@ void exit () {
     }
 
     thisp->state = PROC_ZOMBIE;
-    sched ();
-    panic ("zombie exit");
+    sched();
+    panic("zombie exit");
 }
 
 
@@ -111,36 +111,36 @@ int wait () {
         }
 
         if (!haskids) {
-            unlock (&ptable.lk);
+            unlock(&ptable.lk);
             return -1;
         }
 
         if (thisp->killed) {
-            unlock (&ptable.lk);
+            unlock(&ptable.lk);
             return -1;
         }
 
         // wait for child to exist
-        sleep (thisp, &ptable.lk);
+        sleep(thisp, &ptable.lk);
     }
 }
 
 
 /* Give away the control back to the scheduler */
-void sched () {
-    Process *p = this_proc ();
+void sched() {
+    Process *p = this_proc();
 
     if (this_cpu()->ncli != 1)
         panic("sched: locks");
 
     if (p->state == PROC_RUNNING)
-        panic ("sched: running");
+        panic("sched: running");
 
     if (readeflags() & FL_IF)
-        panic ("sched: interruptible");
+        panic("sched: interruptible");
 
     int int_on = this_cpu()->int_on;
-    swtch (&p->context, this_cpu()->scheduler);
+    swtch(&p->context, this_cpu()->scheduler);
     this_cpu()->int_on = int_on;
 }
 
@@ -151,35 +151,35 @@ void sched () {
  *         it's the address of the lock.
  *  @lk    the lock the process
   * */
-void sleep (void *chan, SpinLock *lk) {
+void sleep(void *chan, SpinLock *lk) {
     Process *p = this_proc ();
     if (p == 0)
-        panic ("sleep");
+        panic("sleep");
 
     if (lk == 0)
-        panic ("sleep: lk");
+        panic("sleep: lk");
 
     if (lk != &ptable.lk) {
-        lock (&ptable.lk); // ptable lock to protect proc state
-        unlock (lk);
+        lock(&ptable.lk); // ptable lock to protect proc state
+        unlock(lk);
     }
 
     p->chan  = chan;
     p->state = PROC_SLEEPING;
 
-    sched ();
+    sched();
 
     p->chan = 0;
 
     if (lk != &ptable.lk) {
-        unlock (&ptable.lk);
-        lock (lk);
+        unlock(&ptable.lk);
+        lock(lk);
     }
 }
 
 
 /*! Walke up all sleeping processes sleep on `chan` */
-void wakeup_unlocked (void *chan) {
+void wakeup_unlocked(void *chan) {
     Process *p;
 
     for (int i = 0; i < NPROC; ++i) {
@@ -194,18 +194,18 @@ void wakeup_unlocked (void *chan) {
 /*! Walke up all sleeping processes sleeps on `chan`. Protected
  *  by ptable lock.
  * */
-void wakeup (void *chan) {
-    lock (&ptable.lk);
-    wakeup_unlocked (chan);
-    unlock (&ptable.lk);
+void wakeup(void *chan) {
+    lock(&ptable.lk);
+    wakeup_unlocked(chan);
+    unlock(&ptable.lk);
 }
 
 
-void yield () {
+void yield() {
     lock (&ptable.lk);
     this_proc()->state = PROC_READY;
-    sched ();
-    unlock (&ptable.lk);
+    sched();
+    unlock(&ptable.lk);
 }
 
 
@@ -214,23 +214,23 @@ void yield () {
  *  process, switch to run the process, wait until the process switch
  *  back to the scheduler.
  * */
-void scheduler () {
+void scheduler() {
     log (LOG_BOOT " scheduler...\n");
     CPU *cpu = this_cpu ();
     cpu->proc = 0;
     for (;;) {
-        sti (); // force enable interrupt
-        lock (&ptable.lk);
+        sti(); // force enable interrupt
+        lock(&ptable.lk);
         for (Process *p = ptable.t; p < ptable.t + NPROC; ++p) {
             if (p->state != PROC_READY)
                 continue;
             cpu->proc = p;
-            uvm_switch (p);
+            uvm_switch(p);
             p->state = PROC_RUNNING;
             swtch (&cpu->scheduler, p->context);
-            kvm_switch ();
+            kvm_switch();
             cpu->proc = 0;
         }
-        unlock (&ptable.lk);
+        unlock(&ptable.lk);
     }
 }

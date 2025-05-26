@@ -14,15 +14,15 @@ static void *phystop = P2V_C (PHYSTOP);                // physical top
 
 /*! Allocate space for page table and switch to the new virutal memory
  * */
-void mem_init () {
+void mem_init() {
 #ifdef DEBUG
     debug("mem_init: %x:%x, size: %d\n", ptstart, phystop, ptend - phystop);
 #endif
 
     palloc_init (ptstart, ptend);
-    kvm_init ();
-    gdt_init ();
-    palloc_init (ptend, phystop);
+    kvm_init();
+    gdt_init();
+    palloc_init(ptend, phystop);
 
 #ifdef DEBUG
     pmem_report();

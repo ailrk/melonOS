@@ -39,5 +39,5 @@ typedef struct TrapFrame {
 } __attribute__((packed)) TrapFrame;
 
 
-void trap_init ();
-void trap (TrapFrame *);
+void trap_init();
+void trap(TrapFrame *);

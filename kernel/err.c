@@ -12,7 +12,7 @@
  * */
 void print_stack_trace() {
     uintptr_t *ebp;
-    __asm__ volatile ("mov %%ebp, %0" : "=r"(ebp));
+    __asm__ volatile("mov %%ebp, %0" : "=r"(ebp));
 
     vga_printf("Stack trace:\n");
     debug_printf("Stack trace:\n");
@@ -31,13 +31,13 @@ void panic (const char *msg) {
     vga_printf ("[\033[31mPANIC\033[0m] %s\n", msg);
     debug_printf ("[\033[31mPANIC\033[0m] %s\n", msg);
     print_stack_trace();
-    cli ();
+    cli();
     for (;;);
-    __builtin_unreachable ();
+    __builtin_unreachable();
 }
 
 
 void perror (const char *msg) {
-    vga_printf ("[\033[31mERROR\033[0m] %s\n", msg);
-    debug_printf ("[\033[31mERROR\033[0m] %s\n", msg);
+    vga_printf("[\033[31mERROR\033[0m] %s\n", msg);
+    debug_printf("[\033[31mERROR\033[0m] %s\n", msg);
 }

@@ -1,3 +1,3 @@
 #pragma once
 
-int exec (char *path, char **argv);
+int exec(char *path, char **argv);

@@ -51,9 +51,9 @@
  *  @return the pointer points to the nth argument
  * */
 void *getarg (size_t nth) {
-    Process *thisp = this_proc ();
+    Process *thisp = this_proc();
     void *esp = (void *)thisp->trapframe->esp;
-    int offset = sizeof (size_t);
+    int offset = sizeof(size_t);
 
     return esp + offset + (sizeof(size_t) * nth);
 }
@@ -78,18 +78,18 @@ File *getfile (size_t nth) {
 }
 
 
-int sys_fork () {
-    return fork ();
+int sys_fork() {
+    return fork();
 }
 
 
-int sys_exit () {
-    exit ();
+int sys_exit() {
+    exit();
     return 0;
 }
 
 
-int sys_exec () {
+int sys_exec() {
     char *path = (char *)getptr(0);
     char **argv = (char **)getptr(1);
     if (!path) return -1;
@@ -99,20 +99,20 @@ int sys_exec () {
 }
 
 
-int sys_sbrk () {
+int sys_sbrk() {
     return -1;
 }
 
 
-int sys_getpid () {
+int sys_getpid() {
     return this_proc()->pid;
 }
 
 
-int sys_read () {
-    File        *f    = getfile (0);
-    char        *buf  = getptr (1);
-    int          sz   = getint (2);
+int sys_read() {
+    File        *f    = getfile(0);
+    char        *buf  = getptr(1);
+    int          sz   = getint(2);
 
     if (!f)   return -1;
     if (!buf) return -1;
@@ -120,8 +120,8 @@ int sys_read () {
 }
 
 
-int sys_write () {
-    File        *f    = getfile (0);
+int sys_write() {
+    File        *f    = getfile(0);
     const void  *buf  = getptr (1);
     int          sz   = getint (2);
 
@@ -131,7 +131,7 @@ int sys_write () {
 }
 
 
-int sys_mknod () {
+int sys_mknod() {
     const char  *path  = getptr (0);
     unsigned     major = getint (1);
     unsigned     minor = getint (2);
@@ -143,7 +143,7 @@ int sys_mknod () {
 }
 
 
-int sys_mkdir () {
+int sys_mkdir() {
     const char  *path = getptr (0);
     Inode       *ino;
     if ((ino = fs_create (path, F_DIR, 0, 0)) == 0) {
@@ -154,40 +154,40 @@ int sys_mkdir () {
 }
 
 
-int sys_open () {
-    const char  *path = getptr (0);
-    int          mode = getint (1);
+int sys_open() {
+    const char  *path = getptr(0);
+    int          mode = getint(1);
     Inode       *ino;
     int          fd;
     File        *f;
 
     if (mode & O_CREAT) {
-        if ((ino = fs_create (path, F_FILE, 0, 0)) == 0) {
+        if ((ino = fs_create(path, F_FILE, 0, 0)) == 0) {
             return -1;
         }
 
     } else {
-        if ((ino = dir_abspath (path, false)) == 0) {
+        if ((ino = dir_abspath(path, false)) == 0) {
             return -1;
         }
 
         if (!ino->read)
-            inode_load (ino);
+            inode_load(ino);
 
         if (ino->d.type == F_DIR && mode == O_RDONLY) {
-            inode_drop (ino);
+            inode_drop(ino);
             return -1;
         }
     }
 
-    if ((f = file_allocate ()) == 0) {
-        inode_drop (ino);
+    if ((f = file_allocate()) == 0) {
+        inode_drop(ino);
         return -1;
     }
 
     if ((fd = fs_fdalloc(f)) == -1) {
-        file_close (f);
-        inode_drop (ino);
+        file_close(f);
+        inode_drop(ino);
         return -1;
     }
 
@@ -312,30 +312,30 @@ static const char *syscall_name[] = {
 };
 
 
-static bool is_valid_syscall (unsigned n) {
-    return (n > 0 && n < sizeof (system_calls) / sizeof (system_calls[0]) && system_calls[n]);
+static bool is_valid_syscall(unsigned n) {
+    return (n > 0 && n < sizeof(system_calls) / sizeof(system_calls[0]) && system_calls[n]);
 }
 
 
 /* Invoke system call from trap frame. The system call needs to parse their
  * own arguments.
  * */
-void syscall () {
-    Process *p = this_proc ();
+void syscall() {
+    Process *p = this_proc();
     if (p == 0) {
         panic ("syscall: invalid process");
     }
 
     unsigned n = p->trapframe->eax;
-    if (!is_valid_syscall (n)) {
+    if (!is_valid_syscall(n)) {
         p->trapframe->eax = -1;
-        perror ("unknown system call");
+        perror("unknown system call");
         return;
     }
 
 #ifdef DEBUG
     debug("syscall %d, %s\n", n, syscall_name[n]);
 #endif
-    int r = system_calls[n] ();
+    int r = system_calls[n]();
     p->trapframe->eax = r;
 }
