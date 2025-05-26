@@ -162,7 +162,7 @@ hex:
 	hexdump -C $(MELONOS)
 
 watch:
-	tail -f -n 1 .uart.log
+	tail -f -n 1 .uart.log | tools/addr2line-filter
 
 cc:
 	bear -- make $(MELONOS)
