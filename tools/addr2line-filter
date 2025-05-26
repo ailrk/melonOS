@@ -2,6 +2,7 @@
 import re
 import sys
 import subprocess
+from pathlib import Path
 
 """
 Filter address pattern like [<80106b3d>] to [<80106b3d> → file.c:20]. This can be applied on
@@ -13,12 +14,6 @@ addr_cache = {}
 
 def run(cmd):
     return subprocess.check_output(cmd, stderr=subprocess.DEVNULL, text=True).strip()
-
-def get_kernel_elf():
-    try:
-        return run(["make", "echo-kernel-elf"])
-    except subprocess.CalledProcessError:
-        sys.exit("error: failed to run 'make echo-kernel-elf'")
 
 def resolve_addr(elf, addr):
     if addr not in addr_cache:
@@ -32,9 +27,16 @@ def process_line(line, elf):
     return addr_re.sub(lambda m: f"[<{m.group(1)}> → {resolve_addr(elf, m.group(1))}]", line)
 
 def main():
-    elf = get_kernel_elf()
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <kernel-elf-path>", file=sys.stderr)
+        sys.exit(1)
+
+    elf = Path(sys.argv[1])
+    if not elf.exists():
+        sys.exit(f"error: ELF file '{elf}' does not exist")
+
     for line in sys.stdin:
-        print(process_line(line, elf), end="")
+        print(process_line(line, str(elf)), end="")
 
 if __name__ == "__main__":
     main()
