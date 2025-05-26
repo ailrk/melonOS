@@ -72,8 +72,8 @@ int exec (char *path, char **argv) {
 
     offset = elfhdr.e_phoff;
 
-    for (int i = 0; i < elfhdr.e_phnum; ++i, offset += sizeof (ph)) {
-        if (inode_read (ino, (char *)&ph, offset, sizeof (ph)) != sizeof (ph)) {
+    for (int i = 0; i < elfhdr.e_phnum; ++i, offset += sizeof(ph)) {
+        if (inode_read (ino, (char *)&ph, offset, sizeof(ph)) != sizeof (ph)) {
             goto bad;
         }
 
@@ -89,7 +89,7 @@ int exec (char *path, char **argv) {
             goto bad;
         }
 
-        if ((size = uvm_allocate (pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) { // note. text is loaded from 0x1000
+        if ((size = uvm_allocate(pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) { // note. text is loaded from 0x1000
             goto bad;
         }
 
@@ -97,7 +97,7 @@ int exec (char *path, char **argv) {
             goto bad;
         }
 
-        if (uvm_load (pgtbl, (char *)ph.p_vaddr, ino, ph.p_offset, ph.p_filesz) == -1) {
+        if (uvm_load(pgtbl, (char *)ph.p_vaddr, ino, ph.p_offset, ph.p_filesz) == -1) {
             goto bad;
         }
     }
@@ -155,10 +155,10 @@ int exec (char *path, char **argv) {
 
 bad:
     if (pgtbl.t) {
-        vmfree (pgtbl);
+        vmfree(pgtbl);
     }
     if (ino) {
-        inode_drop (ino);
+        inode_drop(ino);
     }
     return -1;
 }

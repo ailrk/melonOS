@@ -9,7 +9,7 @@
 extern Dev devices[NDEV];
 
 
-void console_handler (console_getc_t getc) {
+void console_handler(console_getc_t getc) {
     char c;
     if ((c = getc ()) != -1) {
         vga_printf ("%c", c);
@@ -18,12 +18,12 @@ void console_handler (console_getc_t getc) {
 }
 
 
-int console_read (Inode *ino, char *addr, int n) {
+int console_read(Inode *ino, char *addr, int n) {
     return -1;
 }
 
 
-int console_write (Inode *ino, char *addr, int n) {
+int console_write(Inode *ino, char *addr, int n) {
     while (n) {
         vga_writec (addr);
         debug_putc(addr);
@@ -33,7 +33,7 @@ int console_write (Inode *ino, char *addr, int n) {
 }
 
 
-void console_init () {
+void console_init() {
     devices[DEV_CONSOLE].read = console_read;
     devices[DEV_CONSOLE].write = console_write;
     pic_irq_unmask(I_IRQ_KBD);

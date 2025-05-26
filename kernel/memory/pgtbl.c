@@ -16,30 +16,30 @@ extern char end[];
  * */
 
 
-PDE *get_pde (PageDir pgdir, const void *vaddr) {
+PDE *get_pde(PageDir pgdir, const void *vaddr) {
     return &pgdir.t[page_directory_idx((uintptr_t)vaddr)];
 }
 
 
-PageTable get_pt (PageDir pgdir, const void *vaddr) {
+PageTable get_pt(PageDir pgdir, const void *vaddr) {
     PDE *pde = get_pde (pgdir, vaddr);
-    return (PageTable){ .t = (PTE *)P2V (pte_addr (*pde)) };
+    return (PageTable){ .t = (PTE *)P2V(pte_addr (*pde)) };
 }
 
 
-PageTable get_pt1 (PDE *pde) {
-    return (PageTable) { .t = (PTE *)P2V (pte_addr (*pde)) };
+PageTable get_pt1(PDE *pde) {
+    return (PageTable){ .t = (PTE *)P2V(pte_addr (*pde)) };
 }
 
 
-PTE *get_pte (PageDir pgdir, const void *vaddr) {
+PTE *get_pte(PageDir pgdir, const void *vaddr) {
     PageTable pt = get_pt(pgdir, vaddr);
     return &pt.t[page_table_idx((uintptr_t)vaddr)];
 }
 
 
-PTE *get_pte1 (PDE *pde, const void *vaddr) {
-    PageTable pt = get_pt1 (pde);
+PTE *get_pte1(PDE *pde, const void *vaddr) {
+    PageTable pt = get_pt1(pde);
     return &pt.t[page_table_idx((uintptr_t)vaddr)];
 }
 
@@ -51,20 +51,20 @@ PTE *get_pte1 (PDE *pde, const void *vaddr) {
  *  @vaddr  virtual addess
  *  @return the address of the page table entry. 0 indicates failed to find pte
  * */
-PTE *walk (PageDir pgdir, const void *vaddr) {
-    PDE      *pde = get_pde (pgdir, vaddr);
+PTE *walk(PageDir pgdir, const void *vaddr) {
+    PDE      *pde = get_pde(pgdir, vaddr);
     PageTable pt;
 
     if (*pde & PDE_P)
-        return get_pte1 (pde, vaddr);
+        return get_pte1(pde, vaddr);
 
-    if ((pt.t = (PTE *)palloc ()) == 0)
+    if ((pt.t = (PTE *)palloc()) == 0)
         return 0;
 
-    memset (pt.t, 0, PAGE_SZ);
+    memset(pt.t, 0, PAGE_SZ);
 
     *pde = V2P_C((uintptr_t)pt.t | PDE_P | PDE_W | PDE_U);
-    return get_pte1 (pde, vaddr);
+    return get_pte1(pde, vaddr);
 }
 
 
@@ -75,7 +75,7 @@ PTE *walk (PageDir pgdir, const void *vaddr) {
  *
  *  @return true if pages are mapped successfully. false otherwise.
  * */
-bool map_pages (PageDir pgdir, const VMap *k) {
+bool map_pages(PageDir pgdir, const VMap *k) {
     int           size   = k->pend - k->pstart;
     char         *vstart = (char *)page_aligndown((uintptr_t)k->virt);
     char         *vend   = (char *)page_aligndown((uintptr_t)k->virt + size);

@@ -27,9 +27,9 @@ void print_stack_trace() {
 
 
 __attribute__((noreturn))
-void panic (const char *msg) {
-    vga_printf ("[\033[31mPANIC\033[0m] %s\n", msg);
-    debug_printf ("[\033[31mPANIC\033[0m] %s\n", msg);
+void panic(const char *msg) {
+    vga_printf("[\033[31mPANIC\033[0m] %s\n", msg);
+    debug_printf("[\033[31mPANIC\033[0m] %s\n", msg);
     print_stack_trace();
     cli();
     for (;;);

@@ -183,9 +183,9 @@ ScancodeBuffer sc_buffer = {
     .tail = 0
 };
 
-bool sc_buffer_empty () { return sc_buffer.head == sc_buffer.tail; }
+bool sc_buffer_empty() { return sc_buffer.head == sc_buffer.tail; }
 
-bool sc_buffer_put (Scancode value) {
+bool sc_buffer_put(Scancode value) {
     uint8_t tail = (sc_buffer.tail + 1) % SCBUFFER_SZ;
     if (tail == sc_buffer.head) return false;
     sc_buffer.tail = tail;
@@ -193,8 +193,8 @@ bool sc_buffer_put (Scancode value) {
     return true;
 }
 
-bool sc_buffer_get (Scancode *value) {
-    if (sc_buffer_empty ()) {
+bool sc_buffer_get(Scancode *value) {
+    if (sc_buffer_empty()) {
         return false;
     }
     *value = sc_buffer.data[sc_buffer.head % SCBUFFER_SZ];
@@ -203,7 +203,7 @@ bool sc_buffer_get (Scancode *value) {
 }
 
 
-static bool is_break_code (Scancode scancode) {
+static bool is_break_code(Scancode scancode) {
     return scancode & 0x80;
 }
 
@@ -211,7 +211,7 @@ static bool is_break_code (Scancode scancode) {
  *  @scancode  SET 1 scancode recived from the keyboard.
  *  @return    true if any modifier is updated, false otherwise.
  * */
-static bool update_modifier (Scancode scancode) {
+static bool update_modifier(Scancode scancode) {
     switch (scancode) {
         case SC_M_LSHIFT:
         case SC_M_RSHIFT:
@@ -250,11 +250,11 @@ static bool update_modifier (Scancode scancode) {
 
 /*! Translate scan code into character */
 char translate (uint16_t scancode) {
-    if (update_modifier (scancode)) {
+    if (update_modifier(scancode)) {
         return -1;
     }
 
-    if (is_break_code (scancode))
+    if (is_break_code(scancode))
         return -1;
 
     if (modifier & SHIFT) return shiftmap[scancode];
@@ -263,16 +263,16 @@ char translate (uint16_t scancode) {
 }
 
 
-void kbd_handler () {
+void kbd_handler() {
     uint8_t data = ps2in (KBP_DATA);
-    sc_buffer_put (data);
+    sc_buffer_put(data);
 }
 
 
-char kbd_getc () {
+char kbd_getc() {
     uint16_t value;
-    if (sc_buffer_get (&value)) {
-        return translate (value);
+    if (sc_buffer_get(&value)) {
+        return translate(value);
     }
     return -1;
 }

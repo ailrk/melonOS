@@ -20,6 +20,6 @@ typedef struct IDTRecord {
 } __attribute__((packed)) IDTRecord;
 
 
-void *get_handler_from_idt (uint8_t vector);
-void  regist_idt_handler (uint8_t vector, void *isr, uint8_t flags);
-void  idt_init ();
+void *get_handler_from_idt(uint8_t vector);
+void  regist_idt_handler(uint8_t vector, void *isr, uint8_t flags);
+void  idt_init();

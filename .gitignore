@@ -65,3 +65,6 @@ libmelon.a
 vectors.s
 .venv
 *_
+
+profile
+profile-*-link

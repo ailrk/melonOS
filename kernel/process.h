@@ -2,7 +2,6 @@
 #include "process/spinlock.h"
 
 
-void     process_init();
 int      fork();
 void     exit();
 int      wait();

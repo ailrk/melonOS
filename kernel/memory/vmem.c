@@ -39,7 +39,7 @@ VMap        kmap[4];
  *      data..KERN_BASE+PHYSTOP     => V2P(data)..PHYSTOP
  *      DEV_SPACE..0                => DEV_SPACE..0
  * */
-static void init_kmap () {
+static void init_kmap() {
     // IO space
     kmap[0] = (VMap)
         { .virt   = (void *)KERN_BASE,
@@ -87,7 +87,7 @@ static void init_kmap () {
  *
  *  @return initialized page directory
  * */
-bool kvm_allocate (PageDir *pgdir) {
+bool kvm_allocate(PageDir *pgdir) {
     if ((void *)P2V (PHYSTOP) > (void *)DEV_SPACE)
         panic ("PHYSTOP is too high");
 
@@ -96,11 +96,11 @@ bool kvm_allocate (PageDir *pgdir) {
 
     memset (pgdir->t, 0, PAGE_SZ);
 
-    int kmap_sz = sizeof (kmap) / sizeof (kmap[0]) ;
+    int kmap_sz = sizeof(kmap) / sizeof(kmap[0]) ;
 
     for (VMap *k = kmap; k < &kmap[kmap_sz]; k++) {
-        if (!map_pages (*pgdir, k)) {
-            vmfree (*pgdir);
+        if (!map_pages(*pgdir, k)) {
+            vmfree(*pgdir);
             return false;
         }
     }
@@ -116,23 +116,23 @@ bool kvm_allocate (PageDir *pgdir) {
 /*! Switch page table register cr3 to kernel only page table. This page table is used
  *  when there is no process running
  * */
-void kvm_switch () {
+void kvm_switch() {
 #if DEBUG && DEBUG_KVM
     debug("kvm_switch\n");
 #endif
 
-    set_cr3 (V2P_C (kernel_pgdir.t));
+    set_cr3(V2P_C (kernel_pgdir.t));
 }
 
 
 /*! Setup global kernel virtual memory */
-void kvm_init () {
+void kvm_init() {
     log (LOG_BOOT " kvm_alloc...\n");
-    init_kmap ();
-    if (!kvm_allocate (&kernel_pgdir)) {
-        panic ("kvm_init");
+    init_kmap();
+    if (!kvm_allocate(&kernel_pgdir)) {
+        panic("kvm_init");
     }
-    kvm_switch ();
+    kvm_switch();
     log (LOG_BOOT " kvm_alloc " LOG_OK "\n");
 }
 
@@ -142,28 +142,28 @@ void kvm_init () {
  *  @init  address of the binary
  *  @sz    size of the binary
  * */
-void uvm_init1 (PageDir pgdir, char *init, size_t sz) {
+void uvm_init1(PageDir pgdir, char *init, size_t sz) {
 #if DEBUG && DEBUG_UVM
     debug("uvm_init, pgdir: %#x, sz: %d\n", pgdir, sz);
 #endif
 
     char *mem;
     if (sz > PAGE_SZ)
-        panic ("uvm_init: more than a page");
+        panic("uvm_init: more than a page");
 
-    if ((mem = palloc ()) == 0)
-        panic ("uvm_init: not enough memory");
+    if ((mem = palloc()) == 0)
+        panic("uvm_init: not enough memory");
 
-    memset (mem, 0, PAGE_SZ);
+    memset(mem, 0, PAGE_SZ);
 
     VMap mmap =
         { .virt   = 0,
-          .pstart = V2P_C (mem),
-          .pend   = V2P_C (mem + PAGE_SZ),
+          .pstart = V2P_C(mem),
+          .pend   = V2P_C(mem + PAGE_SZ),
           .perm   = PTE_W | PTE_U
         };
-    map_pages (pgdir, &mmap);
-    memmove (mem, init, sz);
+    map_pages(pgdir, &mmap);
+    memmove(mem, init, sz);
 }
 
 
@@ -176,8 +176,8 @@ void uvm_init1 (PageDir pgdir, char *init, size_t sz) {
  * e.g to find the right stack when move from ring3 to ring0. The address of
  * the stack is stored at ss0 and esp0 field of TSS.
  * */
-static void write_tss (Process *p) {
-    push_cli ();
+static void write_tss(Process *p) {
+    push_cli();
     uint16_t flag  = SEG_S(0)       | SEG_P(1)  | SEG_AVL(0) |
                      SEG_L(0)       | SEG_DB(1) | SEG_G(0)   |
                      SEG_DPL(DPL_K) | SEG_TSS_32_AVL;
@@ -189,14 +189,14 @@ static void write_tss (Process *p) {
     this_cpu()->ts.ss0       = SEG_KDATA << 3; // out gdt spans the whole memory, ss is only for priv
     this_cpu()->ts.esp0      = (uintptr_t)p->kstack + KSTACK_SZ; // ss0:esp0
     ltr (SEG_TSS << 3 | rpl); // load task register
-    pop_cli ();
+    pop_cli();
 }
 
 
 /*! User space vm switching. Besides switching the page table, we also
  *  need to switch to the kernel stack.
  * */
-void uvm_switch (Process *p) {
+void uvm_switch(Process *p) {
     if (!p)
         panic ("uvm_switch: no process");
     if (!p->kstack)
@@ -204,10 +204,10 @@ void uvm_switch (Process *p) {
     if (!p->pgdir.t)
         panic ("uvm_switch: no page table");
 
-    push_cli ();
-    write_tss (p); // setup TSS
-    set_cr3 (V2P_C (this_proc()->pgdir.t));
-    pop_cli ();
+    push_cli();
+    write_tss(p); // setup TSS
+    set_cr3(V2P_C (this_proc()->pgdir.t));
+    pop_cli();
 }
 
 
@@ -219,7 +219,7 @@ void uvm_switch (Process *p) {
  *  @size     program size
  *  @return   0 when succeed, -1 on error
  * */
-int uvm_load (PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned size) {
+int uvm_load(PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned size) {
     if ((unsigned)addr % PAGE_SZ != 0)
         panic ("uvm_load: address is not aligned");
 
@@ -227,12 +227,12 @@ int uvm_load (PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned s
     physical_addr pa;
     int n;
     for (unsigned i = 0; i < size; i += PAGE_SZ) {
-        if ((pte = get_pte (pgdir, addr + i)) == 0) {
-            panic ("uvm_load: invalid address");
+        if ((pte = get_pte(pgdir, addr + i)) == 0) {
+            panic("uvm_load: invalid address");
         }
-        pa = pte_addr (*pte);
+        pa = pte_addr(*pte);
         n = min (PAGE_SZ, size - i);
-        if (inode_read (ino, (char *)P2V (pa), offset + i, n) != n) {
+        if (inode_read(ino, (char *)P2V (pa), offset + i, n) != n) {
             return -1;
         }
     }
@@ -246,7 +246,7 @@ int uvm_load (PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned s
  *  The user space address always start from 0, so the returned size can be used
  *  as the end address of the virtual memory.
  * */
-int uvm_allocate (PageDir pgdir, size_t oldsz, size_t newsz) {
+int uvm_allocate(PageDir pgdir, size_t oldsz, size_t newsz) {
 #if DEBUG && DEBUG_UVM
     debug("uvm_allocate: pgdir: %#x oldsz: %#x, newsz %#x\n", pgdir.t, oldsz, newsz);
 #endif
@@ -256,27 +256,27 @@ int uvm_allocate (PageDir pgdir, size_t oldsz, size_t newsz) {
     if (newsz < oldsz)
         return oldsz;
 
-    for (uintptr_t p = page_alignup (oldsz); p < newsz; p += PAGE_SZ) {
+    for (uintptr_t p = page_alignup(oldsz); p < newsz; p += PAGE_SZ) {
         char *mem;
 
-        if ((mem = palloc ()) == 0) {
+        if ((mem = palloc()) == 0) {
             perror ("uvm_allocate: out of memory (1)\n");
-            uvm_deallocate (pgdir, newsz, oldsz);
+            uvm_deallocate(pgdir, newsz, oldsz);
             return 0;
         }
 
-        memset (mem, 0, PAGE_SZ);
+        memset(mem, 0, PAGE_SZ);
         VMap mmap =
             { .virt   = (char *)p,
-              .pstart = V2P_C (mem),
-              .pend   = V2P_C (mem + PAGE_SZ),
+              .pstart = V2P_C(mem),
+              .pend   = V2P_C(mem + PAGE_SZ),
               .perm   = PTE_W | PTE_U
             };
 
-        if (!map_pages (pgdir, &mmap)) {
-            perror ("uvm_allocate: out of memory (2)\n");
-            uvm_deallocate (pgdir, newsz, oldsz);
-            pfree (mem);
+        if (!map_pages(pgdir, &mmap)) {
+            perror("uvm_allocate: out of memory (2)\n");
+            uvm_deallocate(pgdir, newsz, oldsz);
+            pfree(mem);
             return 0;
         }
     }
@@ -290,7 +290,7 @@ int uvm_allocate (PageDir pgdir, size_t oldsz, size_t newsz) {
  *  @sz      number of pages copy from the other process.
  *  @return  the copied page directory. 0 if failed.
  * */
-bool uvm_copy (PageDir pgdir, PageDir *out, size_t sz) {
+bool uvm_copy(PageDir pgdir, PageDir *out, size_t sz) {
     char    *mem;
     PageDir  new_pgdir;
 
@@ -300,7 +300,7 @@ bool uvm_copy (PageDir pgdir, PageDir *out, size_t sz) {
     PTE *pte;
 
     for (size_t i = 0; i < sz; i += PAGE_SZ) {
-        if ((pte = get_pte (pgdir, (void*)i)) == 0)
+        if ((pte = get_pte(pgdir, (void*)i)) == 0)
             panic("uvm_copy: trying to copy non existed pte");
 
         if (!(*pte & PTE_P))
@@ -309,12 +309,12 @@ bool uvm_copy (PageDir pgdir, PageDir *out, size_t sz) {
         physical_addr pa    = pte_addr (*pte);
         unsigned      flags = pte_flags (*pte);
 
-        if ((mem = palloc ()) == 0) {
-            vmfree (new_pgdir);
+        if ((mem = palloc()) == 0) {
+            vmfree(new_pgdir);
             return 0;
         }
 
-        memmove (mem, (char *)P2V_C (pa), PAGE_SZ);
+        memmove(mem, (char *)P2V_C (pa), PAGE_SZ);
 
         VMap mmap =
             { .virt   = (char *)i,
@@ -322,8 +322,8 @@ bool uvm_copy (PageDir pgdir, PageDir *out, size_t sz) {
               .pend   = V2P_C (mem + PAGE_SZ),
               .perm   = flags
             };
-        if (!map_pages (new_pgdir, &mmap)) {
-            vmfree (new_pgdir);
+        if (!map_pages(new_pgdir, &mmap)) {
+            vmfree(new_pgdir);
             return 0;
         }
     }
@@ -335,7 +335,7 @@ bool uvm_copy (PageDir pgdir, PageDir *out, size_t sz) {
 /* !Shrink process virtual memory from oldsz to newsz, which need not be page
  * aligned. Returns new size.
  * */
-int uvm_deallocate (PageDir pgdir, uintptr_t oldsz, uintptr_t newsz) {
+int uvm_deallocate(PageDir pgdir, uintptr_t oldsz, uintptr_t newsz) {
     if (oldsz < newsz)
         return oldsz;
 
@@ -394,13 +394,13 @@ int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *p, unsigned size) {
  *  This will also free all physical memory used in the user part. (va 0-KERN_BASE)
  *  as well as the kernel page directory (which is 1 page)
  * */
-void vmfree (PageDir pgdir) {
+void vmfree(PageDir pgdir) {
     debug("vmfree %#x\n", pgdir.t);
     if (pgdir.t == 0)
-        panic ("vmfree");
+        panic("vmfree");
 
     // Deallocate the entire user memory range.
-    uvm_deallocate (pgdir, KERN_BASE, 0);
+    uvm_deallocate(pgdir, KERN_BASE, 0);
 
     for (int i = 0; i < NPDES; ++i) {
         if (pgdir.t[i] & PDE_P) {

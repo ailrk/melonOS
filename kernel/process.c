@@ -17,12 +17,6 @@ extern PTable   ptable;
 extern Process *proc_init1;
 
 
-void process_init() {
-    ptable_init();
-    init_pid1();
-}
-
-
 /*! Fork a process
  *  @return  return 0 on child process, pid of the child process on parent. -1
  *           if failed.
@@ -52,11 +46,11 @@ int fork() {
         }
     }
 
-    strncpy (child->name, thisp->name, sizeof(thisp->name));
+    strncpy(child->name, thisp->name, sizeof(thisp->name));
 
-    lock (&ptable.lk);
+    lock(&ptable.lk);
     child->state = PROC_READY;
-    unlock (&ptable.lk);
+    unlock(&ptable.lk);
 
     return child->pid;
 }
@@ -72,7 +66,7 @@ void exit() {
     if (thisp == proc_init1)
         panic("init 1 is exiting");
 
-    lock (&ptable.lk);
+    lock(&ptable.lk);
 
     wakeup_unlocked(thisp->parent);
 
@@ -93,7 +87,7 @@ void exit() {
 
 
 /*! Wait for child process to exit. Return -1 if the process has no child */
-int wait () {
+int wait() {
     Process *thisp = this_proc ();
     bool haskids;
     lock (&ptable.lk);
@@ -105,8 +99,8 @@ int wait () {
                 haskids = true;
                 if (p->state == PROC_ZOMBIE) {
                     int pid = p->pid;
-                    deallocate_process (p);
-                    unlock (&ptable.lk);
+                    deallocate_process(p);
+                    unlock(&ptable.lk);
                     return pid;
                 }
             }

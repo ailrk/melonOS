@@ -84,7 +84,7 @@ Inode *fs_create(const char *path, FileType type, uint16_t major, uint16_t minor
  *  @return on success return the file descriptor number, return
  *          -1 on errors.
  * */
-int fs_fdalloc (File *f){
+int fs_fdalloc(File *f){
     for (int fd = 0; fd < NOFILE; ++fd) {
         if (this_proc()->file[fd] == 0) {
             this_proc()->file[fd] = f;

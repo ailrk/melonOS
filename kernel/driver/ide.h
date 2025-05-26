@@ -24,10 +24,10 @@ typedef enum ATACmd {
 } ATACmd;
 
 
-void ide_wait (Channel ch);
-void ide_request (Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn);
-void ide_read_request (Channel ch, Drive d, unsigned lba, size_t secn);
-void ide_read (Channel ch, void *dst, size_t secn);
-void ide_write_request (Channel ch, Drive d, void *src, unsigned lba, size_t secn);
-bool ide_check_error (Channel ch);
-bool ide_has_secondary (Channel ch);
+void ide_wait(Channel ch);
+void ide_request(Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn);
+void ide_read_request(Channel ch, Drive d, unsigned lba, size_t secn);
+void ide_read(Channel ch, void *dst, size_t secn);
+void ide_write_request(Channel ch, Drive d, void *src, unsigned lba, size_t secn);
+bool ide_check_error(Channel ch);
+bool ide_has_secondary(Channel ch);

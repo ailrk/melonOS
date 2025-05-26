@@ -27,14 +27,14 @@ typedef enum VgaColor {
 
 
 
-void  vga_init ();
-void  vga_clear ();
-void  vga_load_page (uint16_t page);
-void  vga_newline ();
-void  vga_set_cursor (uint16_t x, uint16_t y);
-void  vga_set_color (uint8_t color);
-void  vga_put_entry_at (char c);
-void  vga_putchar (char c);
-char *vga_writec (char *data);
-void  vga_printf (char *fmt, ...);
-void  vga_vprintf (char *fmt, va_list args);
+void  vga_init();
+void  vga_clear();
+void  vga_load_page(uint16_t page);
+void  vga_newline();
+void  vga_set_cursor(uint16_t x, uint16_t y);
+void  vga_set_color(uint8_t color);
+void  vga_put_entry_at(char c);
+void  vga_putchar(char c);
+char *vga_writec(char *data);
+void  vga_printf(char *fmt, ...);
+void  vga_vprintf(char *fmt, va_list args);

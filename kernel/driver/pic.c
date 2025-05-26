@@ -42,9 +42,9 @@
  * If IRQ comes from slave, master needs to be notified too. We simply
  * send to both all the time.
  * */
-void pic_eoi () {
-    outb (PIC2_COMMAND, PIC_EOI);
-    outb (PIC1_COMMAND, PIC_EOI);
+void pic_eoi() {
+    outb(PIC2_COMMAND, PIC_EOI);
+    outb(PIC1_COMMAND, PIC_EOI);
 }
 
 
@@ -57,48 +57,48 @@ void pic_eoi () {
  * pic follows a specific initialization sequence, at each step data sent from
  * the data port will be interpert as different ICW.
  * */
-void pic_remap (uint32_t pic1_offset, uint32_t pic2_offset) {
-    uint8_t p1 = inb (PIC1_DATA);                    // save masks
-    uint8_t p2 = inb (PIC2_DATA);
+void pic_remap(uint32_t pic1_offset, uint32_t pic2_offset) {
+    uint8_t p1 = inb(PIC1_DATA);                    // save masks
+    uint8_t p2 = inb(PIC2_DATA);
 
     {
-        outb (PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);  // ICW1 starts the initialization
-        io_wait ();
-        outb (PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
-        io_wait ();
+        outb(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);  // ICW1 starts the initialization
+        io_wait();
+        outb(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
+        io_wait();
     }
 
     {
-        outb (PIC1_DATA, pic1_offset);               // ICW2 master offset
-        io_wait ();
-        outb (PIC2_DATA, pic2_offset);               // ICW2 slave offset
-        io_wait ();
+        outb(PIC1_DATA, pic1_offset);               // ICW2 master offset
+        io_wait();
+        outb(PIC2_DATA, pic2_offset);               // ICW2 slave offset
+        io_wait();
     }
 
     // salve IRQs will be cascade through IRQ2
     {
-        outb (PIC1_DATA, 4);                         // ICW3 inform master that slave is on IRQ2
-        io_wait ();
-        outb (PIC2_DATA, 2);                         // ICW3 inform slave how to cascades
-        io_wait ();
+        outb(PIC1_DATA, 4);                         // ICW3 inform master that slave is on IRQ2
+        io_wait();
+        outb(PIC2_DATA, 2);                         // ICW3 inform slave how to cascades
+        io_wait();
     }
 
     {
-        outb (PIC1_DATA, ICW4_8086);                 // ICW4 use 8086 mode
-        io_wait ();
-        outb (PIC2_DATA, ICW4_8086);                 // ICW4 use 8086 mode
-        io_wait ();
+        outb(PIC1_DATA, ICW4_8086);                 // ICW4 use 8086 mode
+        io_wait();
+        outb(PIC2_DATA, ICW4_8086);                 // ICW4 use 8086 mode
+        io_wait();
     }
 
-    outb (PIC1_DATA, p1);                            // restore saved masks
-    outb (PIC1_DATA, p2);
+    outb(PIC1_DATA, p1);                            // restore saved masks
+    outb(PIC1_DATA, p2);
 }
 
 
 /* disable pic.
  * In order to use apic we have to disable pic first.
  * */
-void pic_disable (void) {
+void pic_disable(void) {
     outb(PIC1_DATA, 0xff);
     outb(PIC2_DATA, 0xff);
 }
@@ -113,7 +113,7 @@ void pic_disable (void) {
  * normally reading from the data port returns the IMR register. Writing to it
  * set the IMR register.
  * */
-void pic_irq_mask (uint8_t irq_line) {
+void pic_irq_mask(uint8_t irq_line) {
     uint8_t port;
     if (irq_line < 8) {
         port = PIC1_DATA;
@@ -121,11 +121,11 @@ void pic_irq_mask (uint8_t irq_line) {
         port = PIC2_DATA;
         irq_line -= 8;
     }
-    outb (port, inb (port) | (1 << irq_line));
+    outb(port, inb(port) | (1 << irq_line));
 }
 
 
-void pic_irq_unmask (uint8_t irq_line) {
+void pic_irq_unmask(uint8_t irq_line) {
     uint8_t port;
     if (irq_line < 8) {
         port = PIC1_DATA;
@@ -133,16 +133,16 @@ void pic_irq_unmask (uint8_t irq_line) {
         port = PIC2_DATA;
         irq_line -= 8;
     }
-    outb (port, inb (port) & ~(1 << irq_line));
+    outb(port, inb(port) & ~(1 << irq_line));
 }
 
 
-void pic_init () {
-    log ("[\033[32mboot\033[0m] pic...");
-    pic_remap (0x20, 0x20 + 8);
-    pic_irq_unmask (I_IRQ_TIMER);
-    pic_irq_unmask (I_IRQ_CASCADE);
-    pic_irq_unmask (I_IRQ_ERR);
-    pic_irq_unmask (I_IRQ_SPURIOUS);
-    log ("\033[32mok\033[0m\n");
+void pic_init() {
+    log("[\033[32mboot\033[0m] pic...");
+    pic_remap(0x20, 0x20 + 8);
+    pic_irq_unmask(I_IRQ_TIMER);
+    pic_irq_unmask(I_IRQ_CASCADE);
+    pic_irq_unmask(I_IRQ_ERR);
+    pic_irq_unmask(I_IRQ_SPURIOUS);
+    log("\033[32mok\033[0m\n");
 }

@@ -27,8 +27,8 @@ BCache bcache;
 
 
 /* Init the doubly linked list for bcache. */
-void bcache_init () {
-    bcache.lk = new_lock ("bcache.lk");
+void bcache_init() {
+    bcache.lk = new_lock("bcache.lk");
 
     BNode *head = &bcache.buffer[0];
     BNode *tail = &bcache.buffer[NBUF - 1];
@@ -43,7 +43,7 @@ void bcache_init () {
     for (BNode *b = head + 1; b <= tail; ++b) {
         b->prev = bcache.head;
         b->prev->next = b;
-        b->mutex = new_mutex ("bnode.mtx");
+        b->mutex = new_mutex("bnode.mtx");
         bcache.head = b;
     }
 }
@@ -51,7 +51,7 @@ void bcache_init () {
 
 /*! Lookup for block cached in bcache. If the block is not cached,
  *  return 0 */
-static BNode* bcachce_lookup (unsigned dev, blockno_t blockno) {
+static BNode* bcachce_lookup(unsigned dev, blockno_t blockno) {
     BNode *b = bcache.head;
 
     do {
@@ -69,7 +69,7 @@ static BNode* bcachce_lookup (unsigned dev, blockno_t blockno) {
 /*! Allocate an unused bcache node for the block. If no block is
  *  available return 0;
  * */
-static BNode *bcache_allocate (unsigned dev, blockno_t blockno) {
+static BNode *bcache_allocate(unsigned dev, blockno_t blockno) {
     BNode *b = bcache.head;
 
     do {
@@ -89,14 +89,14 @@ static BNode *bcache_allocate (unsigned dev, blockno_t blockno) {
 
 
 /*! Look for buffer cache on dev. Allocate if the cache is not found. */
-static BNode *bcache_acquire (unsigned dev, blockno_t blockno) {
+static BNode *bcache_acquire(unsigned dev, blockno_t blockno) {
     BNode *b;
 
-    if ((b = bcachce_lookup (dev, blockno))) {
+    if ((b = bcachce_lookup(dev, blockno))) {
         return b;
     }
 
-    if ((b = bcache_allocate (dev, blockno))) {
+    if ((b = bcache_allocate(dev, blockno))) {
         return b;
     }
 
@@ -109,29 +109,29 @@ static BNode *bcache_acquire (unsigned dev, blockno_t blockno) {
  *  mutex on that node. The node needs to be released manually
  *  to be available in the bcache again.
  * */
-BNode *bcache_read (devno_t dev, blockno_t blockno, bool poll) {
+BNode *bcache_read(devno_t dev, blockno_t blockno, bool poll) {
     BNode *b;
-    if ((b = bcache_acquire (dev, blockno)) == 0) {
-        panic ("bcache read");
+    if ((b = bcache_acquire(dev, blockno)) == 0) {
+        panic("bcache read");
     }
 
     if (!b->valid) {
-        disk_sync (b, poll);
+        disk_sync(b, poll);
     }
     return b;
 }
 
 
 /*! Write `BNode` to blockno */
-void bcache_write (BNode *b, bool poll) {
+void bcache_write(BNode *b, bool poll) {
     b->dirty = true;
-    disk_sync (b, poll);
+    disk_sync(b, poll);
 }
 
 
 /*! Clean up the node and move it to the head of the cache.
  * */
-static void bcache_free (BNode *b) {
+static void bcache_free(BNode *b) {
     b->nref--;
     if (b->nref == 0) {
         b->next->prev     = b->prev;
@@ -149,6 +149,6 @@ static void bcache_free (BNode *b) {
 
 /*! Release the BNode.
  * */
-void bcache_release (BNode *b) {
-    bcache_free (b);
+void bcache_release(BNode *b) {
+    bcache_free(b);
 }

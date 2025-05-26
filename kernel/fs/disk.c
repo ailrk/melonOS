@@ -22,7 +22,7 @@ DiskQueue disk_queue;
 
 
 /*! Find the last node in disk queue */
-static BNode *dq_last () {
+static BNode *dq_last() {
     if (!disk_queue.head) return 0;
     BNode *last = disk_queue.head;
     while (last->qnext) {
@@ -34,7 +34,7 @@ static BNode *dq_last () {
 
 /* Enqueue a new bnode task to the end of the queue.
  * */
-static void dq_enqueue (BNode *b) {
+static void dq_enqueue(BNode *b) {
     b->qnext = 0;
     if (!disk_queue.head) {
         disk_queue.head = b;
@@ -46,7 +46,7 @@ static void dq_enqueue (BNode *b) {
 
 
 /* Dequeue the head fo the queue */
-static BNode *dq_dequeue () {
+static BNode *dq_dequeue() {
     if (!disk_queue.head)
         return 0;
 
@@ -60,34 +60,34 @@ static BNode *dq_dequeue () {
  *  If `b->dirty` is true, write `b->cache` to the disk, otherwise
  *  read the block b corresponds to into `b->cache`.
  * */
-static void disk_cmd_request (BNode *b) {
+static void disk_cmd_request(BNode *b) {
     if (b->dirty) {
-        ide_write_request (ATA_PRIMARY, ATA_SLAVE, b->cache, BLK2SEC (b->blockno), SECN);
+        ide_write_request(ATA_PRIMARY, ATA_SLAVE, b->cache, BLK2SEC (b->blockno), SECN);
     } else {
-        ide_read_request (ATA_PRIMARY, ATA_SLAVE, BLK2SEC (b->blockno), SECN);
+        ide_read_request(ATA_PRIMARY, ATA_SLAVE, BLK2SEC (b->blockno), SECN);
     }
 }
 
 
 /*! Read block */
-static void read_block (BNode *b) {
-    ide_read (ATA_PRIMARY, b->cache, SECN);
+static void read_block(BNode *b) {
+    ide_read(ATA_PRIMARY, b->cache, SECN);
 }
 
 
 /*! Check if the cache synchronized synchronized with the disk */
-static bool synced (BNode *b) {
+static bool synced(BNode *b) {
     return b->valid && !b->dirty;
 }
 
 
 /*! Initialize disk */
-void disk_init () {
-    disk_queue.lk = new_lock ("disk_queue.lk");
-    if (!ide_has_secondary (ATA_PRIMARY)) {
-        panic ("Secondary disk doesn't exist");
+void disk_init() {
+    disk_queue.lk = new_lock("disk_queue.lk");
+    if (!ide_has_secondary(ATA_PRIMARY)) {
+        panic("Secondary disk doesn't exist");
     }
-    pic_irq_unmask (I_IRQ_IDE);
+    pic_irq_unmask(I_IRQ_IDE);
 }
 
 
@@ -102,23 +102,23 @@ void disk_init () {
  *
  *  If `poll` is true. `disk_sync` will poll until the device is ready.
  * */
-void disk_sync (BNode *b, bool poll) {
-    if (synced (b))
-        panic ("disc_sync: nothing to do");
+void disk_sync(BNode *b, bool poll) {
+    if (synced(b))
+        panic("disc_sync: nothing to do");
 
     if (poll) {
-        disk_cmd_request (b);
-        ide_wait (ATA_PRIMARY);
+        disk_cmd_request(b);
+        ide_wait(ATA_PRIMARY);
         if (!b->valid) {
-            read_block (b);
+            read_block(b);
         }
         b->valid = true;
         b->dirty = false;
 
     } else {
-        dq_enqueue (b);
-        disk_cmd_request (b);
-        while (!synced (b)); // TODO should sleep if block is not synced yet.
+        dq_enqueue(b);
+        disk_cmd_request(b);
+        while (!synced(b)); // TODO should sleep if block is not synced yet.
     }
 }
 
@@ -128,18 +128,18 @@ void disk_sync (BNode *b, bool poll) {
  *  is the current active request. The handler processes
  *  requests in the order until there's no more tasks left.
   * */
-void disk_handler () {
-    BNode *b = dq_dequeue ();
+void disk_handler() {
+    BNode *b = dq_dequeue();
 
     if (!b) return;
 
     if (!b->dirty) {
-        read_block (b);
+        read_block(b);
     }
 
     b->valid = true;
     b->dirty = false;
 
     if (disk_queue.head)
-        disk_cmd_request (disk_queue.head);
+        disk_cmd_request(disk_queue.head);
 }
