@@ -22,6 +22,8 @@ static bool init_serial() {
       return false;
    }
 
+   outb(COM1 + 1, 0x01);  // Enable Received Data Available interrupt
+
    // If serial is not faulty set it in normal operation mode
    // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
    outb(COM1 + 4, 0x0F);

@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 #define NO              0
 
@@ -19,5 +20,5 @@
 #define C(x) (x - '@')
 
 
-void kbd_handler();
+void kbd_handler(uint8_t (*source)());
 char kbd_getc();

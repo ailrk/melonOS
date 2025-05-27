@@ -6,12 +6,14 @@
 #include "pdefs.h"
 #include "proc.h"
 #include "process.h"
+#include "ps2.h"
 #include "sys/syscall.h"
 #include "driver/kbd.h"
 #include "driver/pic.h"
 #include "fs/disk.h"
 #include "trap/idt.h"
 #include "trap/traps.h"
+#include "uart.h"
 
 
 extern void *vectors[];
@@ -86,13 +88,10 @@ void handle_I_IRQ_TIMER(const TrapFrame *tf) {
     pic_eoi();
 }
 
-
+uint8_t source_ps2() { return ps2in(KBP_DATA); }
 void handle_I_IRQ_KBD() {
-    #ifdef DEBUG
-    debug("irq kbd\n");
-    #endif
-    kbd_handler();
-    console_handler (kbd_getc);
+    kbd_handler(source_ps2);
+    console_handler(kbd_getc);
     pic_eoi();
 }
 
@@ -105,10 +104,10 @@ void handle_I_IRQ_COM2() {
 }
 
 
+uint8_t source_uart() { return uart_getc(); }
 void handle_I_IRQ_COM1() {
-    #ifdef DEBUG
-    debug("irq com1\n");
-    #endif
+    kbd_handler(source_uart);
+    console_handler(kbd_getc);
     pic_eoi();
 }
 

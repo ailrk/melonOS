@@ -11,9 +11,9 @@ extern Dev devices[NDEV];
 
 void console_handler(console_getc_t getc) {
     char c;
-    if ((c = getc ()) != -1) {
-        vga_printf ("%c", c);
-        debug_printf ("%c", c);
+    if ((c = getc()) != -1) {
+        vga_printf("%c", c);
+        debug_printf("%c", c);
     }
 }
 

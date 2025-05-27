@@ -139,7 +139,6 @@ endif
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
 
-
 qemu:
 	tools/bridge & \
 	$(QEMU) \
@@ -147,10 +146,18 @@ qemu:
 		$(QEMU_GDB_FLAGS) \
 		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
 		-no-reboot -D $(QEMU_LOGFILE) \
+		-serial file:$(QEMU_SERIALFILE) \
 		-serial unix:/tmp/qemu-serial.sock,server,nowait \
 		-monitor stdio \
 		-m 512M \
 		$(QEMU_GRAPHICS)
+
+
+print-trace:
+	@echo "Monitoring errors..." >&2
+	cat .uart.log | \
+		sed -n '/trapframe>\|Stack trace:\|PANIC/,$$p' | \
+		tools/addr2line-filter $(KERNEL)
 
 
 elf-headers:

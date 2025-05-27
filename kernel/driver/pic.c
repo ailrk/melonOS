@@ -141,7 +141,9 @@ void pic_init() {
     log("[\033[32mboot\033[0m] pic...");
     pic_remap(0x20, 0x20 + 8);
     pic_irq_unmask(I_IRQ_TIMER);
+    pic_irq_unmask(I_IRQ_KBD);
     pic_irq_unmask(I_IRQ_CASCADE);
+    pic_irq_unmask(I_IRQ_COM1);
     pic_irq_unmask(I_IRQ_ERR);
     pic_irq_unmask(I_IRQ_SPURIOUS);
     log("\033[32mok\033[0m\n");

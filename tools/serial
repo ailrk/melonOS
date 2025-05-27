@@ -6,4 +6,4 @@
 printf "[\033[32mSerial\033[0m] waiting for /tmp/virtual-tty...\n"
 while [ ! -e /tmp/virtual-tty ]; do sleep 0.1; done
 printf "[\033[32mSerial\033[0m] found.\n"
-picocom --escape C-c --imap lfcrlf  /tmp/virtual-tty
+picocom --echo --escape C-c --flow n --imap lfcrlf  /tmp/virtual-tty

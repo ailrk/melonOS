@@ -263,8 +263,8 @@ char translate (uint16_t scancode) {
 }
 
 
-void kbd_handler() {
-    uint8_t data = ps2in (KBP_DATA);
+void kbd_handler(uint8_t (*source)()) {
+    uint8_t data = source();
     sc_buffer_put(data);
 }
 
