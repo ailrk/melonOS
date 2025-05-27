@@ -10,9 +10,11 @@ HOSTCC = gcc
 # Parameters
 #############################
 # DEBUG flag
-DEBUG = 1
+DEBUG ?= 1
 
-NOGRAPHICS = 1
+NOGRAPHICS ?= 1
+
+GDB ?= 0
 
 #############################
 # Variables
@@ -87,6 +89,9 @@ clean:
 	rm -rf *.o *.pp.* $(MELONOS) $(MELONFS) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 
 echo:
+	@echo 'DEBUG $(DEBUG)'
+	@echo 'NOGRAPHICS $(NOGRAPHICS)'
+	@echo 'GDB $(GDB)'
 	@echo 'CC $(CC)'
 	@echo 'AS $(AS)'
 	@echo 'MELONOS $(MELONOS)'
@@ -125,31 +130,27 @@ ifeq ($(NOGRAPHICS), 1)
 	QEMU_GRAPHICS += -nographic
 endif
 
+QEMU_GDB_FLAGS =
+
+ifeq ($(GDB), 1)
+QEMU_GDB_FLAGS += -s -S
+endif
+
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
 
 
 qemu:
+	tools/bridge & \
 	$(QEMU) \
 		$(QEMU_DRVS) \
+		$(QEMU_GDB_FLAGS) \
 		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
 		-no-reboot -D $(QEMU_LOGFILE) \
-		-serial file:$(QEMU_SERIALFILE) \
+		-serial unix:/tmp/qemu-serial.sock,server,nowait \
 		-monitor stdio \
 		-m 512M \
 		$(QEMU_GRAPHICS)
-
-
-qemu-debug:
-	$(QEMU) \
-		$(QEMU_DRVS) \
-		-s -S \
-		-no-reboot -D $(QEMU_LOGFILE) \
-		-serial file:$(QEMU_SERIALFILE) \
-		-monitor stdio \
-		-m 512M \
-		$(QEMU_GRAPHICS)
-
 
 
 elf-headers:
@@ -161,8 +162,8 @@ d:
 hex:
 	hexdump -C $(MELONOS)
 
-watch:
-	tail -f -n 1 .uart.log | tools/addr2line-filter $(KERNEL)
+serial:
+	tools/serial
 
 cc:
 	bear -- make $(MELONOS)

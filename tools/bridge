@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# This command creates a new virutal tty and connect it to the unix socket.
+# QEMU will output uarts to the unix socket, and on the other end we can
+# communicate with it through /tmp/virtual-tty with picocom.
+
+# wait until the qemu serial sock is created
+while [ ! -S /tmp/qemu-serial.sock ]; do sleep 0.1; done
+socat PTY,link=/tmp/virtual-tty,raw,echo=0 UNIX-CONNECT:/tmp/qemu-serial.sock

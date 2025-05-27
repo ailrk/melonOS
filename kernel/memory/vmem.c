@@ -376,12 +376,12 @@ int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *p, unsigned size) {
     char *buf = (char *)p;
     while (size > 0) {
         unsigned va0 = page_aligndown(vaddr);
-        char *pa0 = uva2ka(pgdir, (char *)va0);
-        if (pa0 == 0)
+        char *ka0 = uva2ka(pgdir, (char *)va0);
+        if (ka0 == 0)
             return -1;
         unsigned n = PAGE_SZ - (vaddr - va0);
         if (n > size) n = size;
-        memmove(pa0 + (vaddr - va0), buf, n);
+        memmove(ka0 + (vaddr - va0), buf, n);
         size -= n;
         buf += n;
         vaddr = va0 + PAGE_SZ;

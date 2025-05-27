@@ -33,9 +33,13 @@
             cp -r melonfs.img $out/
           '';
         };
-
         devShells.default = pkgs.mkShell {
-          buildInputs = [ pkgs.i686-elf-gcc pkgs.qemu ];
+          buildInputs = [
+            pkgs.i686-elf-gcc
+            pkgs.qemu
+            pkgs.socat
+            pkgs.picocom
+          ];
         };
       });
 }
