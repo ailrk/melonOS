@@ -33,7 +33,7 @@ void kmain (void) {
     pmem_report();
 #endif
 
-    uart_init();
+    uart_init(COM1);
     trap_init();
     dev_init();
     fs_init();

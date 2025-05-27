@@ -163,6 +163,12 @@ print-trace:
 		tools/addr2line-filter $(KERNEL)
 
 
+log:
+	tail -f .uart.log | \
+		tools/addr2line-filter $(KERNEL)
+
+
+
 elf-headers:
 	readelf -headers $(KERNEL)
 

@@ -9,7 +9,7 @@
 
 
 char *debug_putc(char *c) {
-    uart_putc(*c++);
+    uart_putc(COM1, *c++);
     return c;
 }
 

@@ -104,7 +104,7 @@ void handle_I_IRQ_COM2() {
 }
 
 
-uint8_t source_uart() { return uart_getc(); }
+uint8_t source_uart() { return uart_getc(COM1); }
 void handle_I_IRQ_COM1() {
     kbd_handler(source_uart);
     console_handler(kbd_getc);
