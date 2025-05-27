@@ -127,7 +127,7 @@ void boot3 () {
     paging_init ();
 
     void(*entry) ();
-    entry = (void(*)(void))(V2P_C (elf->e_entry));
+    entry = (void(*)(void))(KA2P_C (elf->e_entry));
     entry ();
     __asm__ volatile ("cli; hlt");
 }

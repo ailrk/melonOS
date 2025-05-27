@@ -64,13 +64,15 @@
 /* kernel links here */
 #define KERN_LINK (KERN_BASE+EXTMEM)
 
-/* address conversion */
-#define V2P(addr)  ((addr) - KERN_BASE)
-#define P2V(addr)  (((addr)) + KERN_BASE)
+/* address conversion.
+ * conversion between kernel address and the physical address.
+ * */
+#define KA2P(addr)  ((addr) - KERN_BASE)
+#define P2KA(addr)  (((addr)) + KERN_BASE)
 
 /* casted address conversion */
-#define V2P_C(addr)  ((uintptr_t)(addr) - KERN_BASE)
-#define P2V_C(addr)  ((void *)((char *)(addr)) + KERN_BASE)
+#define KA2P_C(addr)  ((uintptr_t)(addr) - KERN_BASE)
+#define P2KA_C(addr)  ((void *)((char *)(addr)) + KERN_BASE)
 
 /* page size is 4kb */
 #define PAGE_SZ    0x1000

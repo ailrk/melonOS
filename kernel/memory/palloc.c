@@ -73,7 +73,7 @@ end:
  *  @v:  virtual address
  * */
 void pfree (char *v) {
-    if (V2P_C (v) >= PHYSTOP) {
+    if (KA2P_C (v) >= PHYSTOP) {
         #ifdef DEBUG
         debug("pfree: %#x\n", v);
         #endif

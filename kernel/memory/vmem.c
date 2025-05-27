@@ -35,8 +35,8 @@ VMap        kmap[4];
  *  page table.
  *
  *      KERN_BASE..KERN_BASE+EXTMEM => 0..EXTMEM
- *      KERN_BASE+EXTMEM..data      => EXTMEM..V2P(data)
- *      data..KERN_BASE+PHYSTOP     => V2P(data)..PHYSTOP
+ *      KERN_BASE+EXTMEM..data      => EXTMEM..KA2P(data)
+ *      data..KERN_BASE+PHYSTOP     => KA2P(data)..PHYSTOP
  *      DEV_SPACE..0                => DEV_SPACE..0
  * */
 static void init_kmap() {
@@ -51,15 +51,15 @@ static void init_kmap() {
     // kernel text & rodata
     kmap[1] = (VMap)
         { .virt   = (void *)KERN_LINK,
-          .pstart = V2P_C(KERN_LINK),
-          .pend   = V2P_C(data),
+          .pstart = KA2P_C(KERN_LINK),
+          .pend   = KA2P_C(data),
           .perm   = 0
         };
 
     kmap[2] = (VMap)
         // kernel data & free memory
         { .virt   = (void *)(data),
-          .pstart = V2P_C(data),
+          .pstart = KA2P_C(data),
           .pend   = PHYSTOP,
           .perm   = PTE_W
         };
@@ -88,7 +88,7 @@ static void init_kmap() {
  *  @return initialized page directory
  * */
 bool kvm_allocate(PageDir *pgdir) {
-    if ((void *)P2V (PHYSTOP) > (void *)DEV_SPACE)
+    if ((void *)P2KA (PHYSTOP) > (void *)DEV_SPACE)
         panic ("PHYSTOP is too high");
 
     if ((pgdir->t = (PDE *)palloc ()) == 0)
@@ -121,7 +121,7 @@ void kvm_switch() {
     debug("kvm_switch\n");
 #endif
 
-    set_cr3(V2P_C (kernel_pgdir.t));
+    set_cr3(KA2P_C (kernel_pgdir.t));
 }
 
 
@@ -158,8 +158,8 @@ void uvm_init1(PageDir pgdir, char *init, size_t sz) {
 
     VMap mmap =
         { .virt   = 0,
-          .pstart = V2P_C(mem),
-          .pend   = V2P_C(mem + PAGE_SZ),
+          .pstart = KA2P_C(mem),
+          .pend   = KA2P_C(mem + PAGE_SZ),
           .perm   = PTE_W | PTE_U
         };
     map_pages(pgdir, &mmap);
@@ -206,7 +206,7 @@ void uvm_switch(Process *p) {
 
     push_cli();
     write_tss(p); // setup TSS
-    set_cr3(V2P_C (this_proc()->pgdir.t));
+    set_cr3(KA2P_C (this_proc()->pgdir.t));
     pop_cli();
 }
 
@@ -232,7 +232,7 @@ int uvm_load(PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned si
         }
         pa = pte_addr(*pte);
         n = min (PAGE_SZ, size - i);
-        if (inode_read(ino, (char *)P2V (pa), offset + i, n) != n) {
+        if (inode_read(ino, (char *)P2KA (pa), offset + i, n) != n) {
             return -1;
         }
     }
@@ -268,8 +268,8 @@ int uvm_allocate(PageDir pgdir, size_t oldsz, size_t newsz) {
         memset(mem, 0, PAGE_SZ);
         VMap mmap =
             { .virt   = (char *)p,
-              .pstart = V2P_C(mem),
-              .pend   = V2P_C(mem + PAGE_SZ),
+              .pstart = KA2P_C(mem),
+              .pend   = KA2P_C(mem + PAGE_SZ),
               .perm   = PTE_W | PTE_U
             };
 
@@ -314,12 +314,12 @@ bool uvm_copy(PageDir pgdir, PageDir *out, size_t sz) {
             return 0;
         }
 
-        memmove(mem, (char *)P2V_C (pa), PAGE_SZ);
+        memmove(mem, (char *)P2KA_C (pa), PAGE_SZ);
 
         VMap mmap =
             { .virt   = (char *)i,
-              .pstart = V2P_C (mem),
-              .pend   = V2P_C (mem + PAGE_SZ),
+              .pstart = KA2P_C (mem),
+              .pend   = KA2P_C (mem + PAGE_SZ),
               .perm   = flags
             };
         if (!map_pages(new_pgdir, &mmap)) {
@@ -362,7 +362,7 @@ static char *uva2ka(PageDir pgdir, char *vaddr) {
         return 0;
     if ((*pte & PTE_U) == 0)
         return 0;
-    return (char *)P2V(pte_addr(*pte));
+    return (char *)P2KA(pte_addr(*pte));
 }
 
 
@@ -404,7 +404,7 @@ void vmfree(PageDir pgdir) {
 
     for (int i = 0; i < NPDES; ++i) {
         if (pgdir.t[i] & PDE_P) {
-            pfree((char *)P2V(pte_addr(pgdir.t[i])));
+            pfree((char *)P2KA(pte_addr(pgdir.t[i])));
         }
     }
 

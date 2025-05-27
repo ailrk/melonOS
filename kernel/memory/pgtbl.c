@@ -23,12 +23,12 @@ PDE *get_pde(PageDir pgdir, const void *vaddr) {
 
 PageTable get_pt(PageDir pgdir, const void *vaddr) {
     PDE *pde = get_pde (pgdir, vaddr);
-    return (PageTable){ .t = (PTE *)P2V(pte_addr (*pde)) };
+    return (PageTable){ .t = (PTE *)P2KA(pte_addr (*pde)) };
 }
 
 
 PageTable get_pt1(PDE *pde) {
-    return (PageTable){ .t = (PTE *)P2V(pte_addr (*pde)) };
+    return (PageTable){ .t = (PTE *)P2KA(pte_addr (*pde)) };
 }
 
 
@@ -63,7 +63,7 @@ PTE *walk(PageDir pgdir, const void *vaddr) {
 
     memset(pt.t, 0, PAGE_SZ);
 
-    *pde = V2P_C((uintptr_t)pt.t | PDE_P | PDE_W | PDE_U);
+    *pde = KA2P_C((uintptr_t)pt.t | PDE_P | PDE_W | PDE_U);
     return get_pte1(pde, vaddr);
 }
 
@@ -129,7 +129,7 @@ void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
         }
 
         uintptr_t addr = pte_addr(*pte);
-        if (addr >= PHYSTOP || (char *)P2V_C(addr) < end) {
+        if (addr >= PHYSTOP || (char *)P2KA_C(addr) < end) {
 #if DEBUG && DEBUG_UNMAPPED
             debug("unmap_pages *pte: %#x, a: %#x\n", *pte, a);
             panic("unmap_pages: outside of PHYSTOP \n");
@@ -139,7 +139,7 @@ void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
 
         if (free) {
             uintptr_t addr = pte_addr(*pte);
-            pfree(P2V_C(addr));
+            pfree(P2KA_C(addr));
         }
 
         clear: *pte = 0;

@@ -1,5 +1,8 @@
 #include "sys.h"
 
+
+char *argv[] = { "sh", 0 };
+
 int main() {
     int pid;
     int wpid;
@@ -17,8 +20,7 @@ int main() {
         exit();
     }
     if (pid == 0) {
-        write(1, "child\n", 6);
-        write(1, "child\n", 6);
+        exec("/sh", argv);
         exit();
     }
     while((wpid = wait()) >= 0 && pid != wpid) {

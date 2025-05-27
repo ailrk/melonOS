@@ -15,8 +15,8 @@
 char         kstack[KSTACK_SZ];                        // kernel stack. see entry.s
 extern char  end[];                                    // defined in `kernel.ld.
 static void *ptstart = end;                            // stage 1 start
-static void *ptend   = P2V_C (PTESZ * NPDES * NPTES);  // stage 1 end. We are sure the first 4MB is available from bootloader.
-static void *phystop = P2V_C (PHYSTOP);                // physical top
+static void *ptend   = P2KA_C (PTESZ * NPDES * NPTES);  // stage 1 end. We are sure the first 4MB is available from bootloader.
+static void *phystop = P2KA_C (PHYSTOP);                // physical top
 
 
 void kmain (void) {

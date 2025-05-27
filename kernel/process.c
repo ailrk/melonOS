@@ -224,7 +224,6 @@ void scheduler() {
             if (p->state != PROC_READY)
                 continue;
             cpu->proc = p;
-            debug("proc %#x\n", p);
             uvm_switch(p);
             p->state = PROC_RUNNING;
             swtch (&cpu->scheduler, p->context);
