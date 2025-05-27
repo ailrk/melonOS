@@ -20,12 +20,12 @@ PTable   ptable;
 int      nextpid = 1;
 Process *proc_init1;
 CPU      cpu;
-extern void trapret ();
-extern void swtch (Context **save, Context *load);
+extern void trapret();
+extern void swtch(Context **save, Context *load);
 
 
-void ptable_init () {
-    ptable.lk = new_lock ("ptable.lk");
+void ptable_init() {
+    ptable.lk = new_lock("ptable.lk");
 }
 
 
@@ -79,8 +79,8 @@ void dump_process (const Process *p) {
 
 
 /* Return the running cpu */
-CPU *this_cpu () {
-    if (readeflags () & FL_IF)
+CPU *this_cpu() {
+    if (readeflags() & FL_IF)
         panic ("interrupt is enabled on `this_cpu` call");
 
     return &cpu;
@@ -88,24 +88,24 @@ CPU *this_cpu () {
 
 
 /* Return the current process */
-Process *this_proc () {
+Process *this_proc() {
     Process *p;
-    push_cli ();
+    push_cli();
     p = this_cpu()->proc;
-    pop_cli ();
+    pop_cli();
     return p;
 }
 
 
 /*! Return a forked child process to the user space */
-void forkret () {
+void forkret() {
     // it's locked from scheduler.
     unlock(&ptable.lk);
 }
 
 
 /*! Try to get the next unused process in ptable */
-static Process *get_unused_process () {
+static Process *get_unused_process() {
     Process *p;
     for (int i = 1; i < NPROC; ++i) {
         p = &ptable.t[i];
@@ -141,19 +141,19 @@ static Process *get_unused_process () {
  *  the trapframe to 0, so after `trapret` the process will start running on
  *  the address 0x0.
  */
-static bool setup_process_stack (Process *p) {
+static bool setup_process_stack(Process *p) {
     // allocate and build the kernel stack
-    if ((p->kstack = palloc ()) == 0) {
+    if ((p->kstack = palloc()) == 0) {
         p->state = PROC_UNUSED;
         return false;
     }
 
     char *sp        = p->kstack + KSTACK_SZ;
-    sp             -= sizeof (TrapFrame);
+    sp             -= sizeof(TrapFrame);
     p->trapframe    = (TrapFrame*)sp;
     sp             -= sizeof (uintptr_t);
     *(uintptr_t*)sp = (uintptr_t)trapret;
-    sp             -= sizeof (Context);
+    sp             -= sizeof(Context);
     p->context      = (Context*)sp;
 
     memset (p->context, 0, sizeof (Context));
@@ -165,36 +165,36 @@ static bool setup_process_stack (Process *p) {
 
 
 /*! Allocate a new process and set it up to run in kernel. */
-Process *allocate_process () {
+Process *allocate_process() {
     if (nextpid > NPROC)
         panic ("allocate_process: can't allocate more pids");
     lock(&ptable.lk);
     Process *p = get_unused_process ();
     if (!p) {
-        unlock (&ptable.lk);
+        unlock(&ptable.lk);
         return 0;
     }
     p->state = PROC_CREATED;
     p->pid   = nextpid++;
-    unlock (&ptable.lk);
-    if (!setup_process_stack (p)) return 0;
+    unlock(&ptable.lk);
+    if (!setup_process_stack(p)) return 0;
     return p;
 }
 
 
 /*! Deallocate a process.
- *  This is the all purpose deallocation, it tries to free all resources hold by
- *  the process.
+ *  It tries to free all resources hold by the process.
+ *  Note this is not locked, it should be called in a critical
+ *  section.
  * */
-void deallocate_process (Process *p) {
-    lock (&ptable.lk);
+void deallocate_process_unlocked(Process *p) {
     p->size = 0;
     if (p->pgdir.t) {
-        vmfree (p->pgdir);
+        vmfree(p->pgdir);
         p->pgdir.t = 0;
     }
     if (p->kstack)  {
-        pfree (p->kstack);
+        pfree(p->kstack);
         p->kstack = 0;
     }
     p->kstack    = 0;
@@ -205,8 +205,7 @@ void deallocate_process (Process *p) {
     p->context   = 0;
     p->chan      = 0;
     p->killed    = 0;
-    memset (p->name, 0, sizeof(p->name));
-    unlock (&ptable.lk);
+    memset(p->name, 0, sizeof(p->name));
 }
 
 
@@ -214,7 +213,7 @@ void deallocate_process (Process *p) {
  *  that a trap occured. So if we call trapret, it will pop all registers
  *  in the trap frame hence switch the control.
  * */
-static void set_pid1_trapframe (Process *p) {
+static void set_pid1_trapframe(Process *p) {
     memset(p->trapframe, 0, sizeof (*p->trapframe));
     p->trapframe->cs     = (SEG_UCODE << 3) | DPL_U; // set segment DPL
     p->trapframe->ds     = (SEG_UDATA << 3) | DPL_U;
@@ -227,7 +226,7 @@ static void set_pid1_trapframe (Process *p) {
 
 
 /*! Initialize the first user space process. */
-void init_pid1 () {
+void init_pid1() {
     log (LOG_BOOT " init1...\n");
     Process *p;
     if ((p = allocate_process ()) == 0) {
@@ -235,45 +234,45 @@ void init_pid1 () {
     }
 
     if (!kvm_allocate (&p->pgdir ))
-        panic ("init_pid1");
+        panic("init_pid1");
 
     extern char __INIT1_BEGIN__[];
     extern char __INIT1_END__[];
     int init1_sz = __INIT1_END__ - __INIT1_BEGIN__;
 
-    uvm_init1 (p->pgdir, __INIT1_BEGIN__, init1_sz);
+    uvm_init1(p->pgdir, __INIT1_BEGIN__, init1_sz);
     p->size = PAGE_SZ;
-    set_pid1_trapframe (p);
-    strncpy (p->name, "init", sizeof (p->name));
+    set_pid1_trapframe(p);
+    strncpy(p->name, "init", sizeof(p->name));
 
-    lock (&ptable.lk);
+    lock(&ptable.lk);
     p->state = PROC_READY;
     proc_init1 = p;
-    unlock (&ptable.lk);
+    unlock(&ptable.lk);
 
-    log (LOG_BOOT " init1 " LOG_OK "\n");
+    log(LOG_BOOT " init1 " LOG_OK "\n");
 }
 
 
 /*! Grow process user memory by n bytes, n can be negative.
  * */
-bool grow_process (int n) {
+bool grow_process(int n) {
     if (n == 0)
         return true;
 
-    Process *p = this_proc ();
+    Process *p = this_proc();
     size_t sz = p->size;
 
     if (n > 0) {
-        if ((sz = uvm_allocate (p->pgdir, sz, sz + n)) == 0) {
+        if ((sz = uvm_allocate(p->pgdir, sz, sz + n)) == 0) {
             return false;
         }
     } else {
-        if ((sz = uvm_allocate (p->pgdir, sz, sz + n)) == 0)
+        if ((sz = uvm_allocate(p->pgdir, sz, sz + n)) == 0)
             return false;
     }
 
     p->size = sz;
-    uvm_switch (p);
+    uvm_switch(p);
     return true;
 }

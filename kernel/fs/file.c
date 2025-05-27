@@ -42,7 +42,7 @@ File *file_dup(File *f) {
     if (f->nref < 1)
         panic("dup_file");
     f->nref++;
-    return 0;
+    return f;
 }
 
 /*! Close a file  */

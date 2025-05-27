@@ -276,6 +276,12 @@ int sys_dup () {
 }
 
 
+int sys_wait() {
+    return wait();
+}
+
+
+
 static int (*system_calls[])() = {
     [SYS_FORK]   = sys_fork,
     [SYS_EXIT]   = sys_exit,
@@ -291,6 +297,7 @@ static int (*system_calls[])() = {
     [SYS_LINK]   = sys_link,
     [SYS_UNLINK] = sys_unlink,
     [SYS_DUP]    = sys_dup,
+    [SYS_WAIT]   = sys_wait,
 };
 
 
@@ -308,7 +315,8 @@ static const char *syscall_name[] = {
     [SYS_CLOSE]  = "SYS_CLOSE",
     [SYS_LINK]   = "SYS_LINK",
     [SYS_UNLINK] = "SYS_UNLINK",
-    [SYS_DUP]    = "SYS_DUP"
+    [SYS_DUP]    = "SYS_DUP",
+    [SYS_WAIT]   = "SYS_WAIT",
 };
 
 

@@ -2,6 +2,7 @@
 
 int main() {
     int pid;
+    int wpid;
     if (open("/console", O_RDWR) < 0) {
         mknod("/console", 1, 1);
         open("/console", O_RDWR);
@@ -9,18 +10,18 @@ int main() {
     dup(0); // stdout
     dup(0); // stderr
 
-    for (;;) {
-        write(1, "init\n", 5);
-        pid = fork();
-        if (pid < 0) {
-            write(1, "init: fork\n", 12);
-            exit();
-        }
-        if (pid == 0) {
-            write(1, "child\n", 5);
-        }
-        for (;;) {
-            write(1, "parent\n", 7);
-        }
+    write(1, "init\n", 5);
+    pid = fork();
+    if (pid < 0) {
+        write(1, "init: fork\n", 12);
+        exit();
+    }
+    if (pid == 0) {
+        write(1, "child\n", 6);
+        write(1, "child\n", 6);
+        exit();
+    }
+    while((wpid = wait()) >= 0 && pid != wpid) {
+        write(1, "zombie\n", 7);
     }
 }

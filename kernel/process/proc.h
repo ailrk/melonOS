@@ -15,4 +15,4 @@ void     init_pid1 ();
 CPU     *this_cpu ();
 Process *this_proc ();
 Process *allocate_process ();
-void     deallocate_process (Process *p);
+void     deallocate_process_unlocked (Process *p);

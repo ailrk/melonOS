@@ -30,16 +30,16 @@ int fork() {
     }
 
     if (!uvm_copy (thisp->pgdir, &child->pgdir, thisp->size)) {
-        deallocate_process (child);
+        deallocate_process_unlocked(child);
         return -1;
     }
 
     child->size           = thisp->size;
     child->parent         = thisp;
     *child->trapframe     = *thisp->trapframe;
-    child->trapframe->eax = 0;
+    child->trapframe->eax = 0; // child return 0
 
-    for (int i = 0; i < NOFILE; ++i) {
+    for (int i = 0; i < NOFILE; ++i) { // copy parent fds
         File *f = thisp->file[i];
         if (f) {
             child->file[i] = file_dup(f);
@@ -88,9 +88,9 @@ void exit() {
 
 /*! Wait for child process to exit. Return -1 if the process has no child */
 int wait() {
-    Process *thisp = this_proc ();
+    Process *thisp = this_proc();
     bool haskids;
-    lock (&ptable.lk);
+    lock(&ptable.lk);
 
     for (;;) {
         haskids = false;
@@ -99,7 +99,7 @@ int wait() {
                 haskids = true;
                 if (p->state == PROC_ZOMBIE) {
                     int pid = p->pid;
-                    deallocate_process(p);
+                    deallocate_process_unlocked(p);
                     unlock(&ptable.lk);
                     return pid;
                 }
@@ -224,6 +224,7 @@ void scheduler() {
             if (p->state != PROC_READY)
                 continue;
             cpu->proc = p;
+            debug("proc %#x\n", p);
             uvm_switch(p);
             p->state = PROC_RUNNING;
             swtch (&cpu->scheduler, p->context);

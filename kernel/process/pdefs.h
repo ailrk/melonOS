@@ -57,5 +57,5 @@ typedef struct CPU {
     volatile bool started;
     bool          int_on; // was int enabled when ncli = 0
     int           ncli;   // levels of pushcli
-    Process     *proc;
+    Process      *proc;
 } CPU;

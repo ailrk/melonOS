@@ -14,3 +14,4 @@
 #define SYS_LINK    12
 #define SYS_UNLINK  13
 #define SYS_DUP     14
+#define SYS_WAIT    15

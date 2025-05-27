@@ -21,7 +21,7 @@
 
 
 #define DEBUG_MAP_PAGES 0
-#define DEBUG_KVM 1
+#define DEBUG_KVM 0
 #define DEBUG_UVM 1
 
 

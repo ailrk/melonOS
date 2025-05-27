@@ -3,8 +3,9 @@
 
 ;; system call interface from the user space
 %macro SYSCALL 2
-global %1
-%1:
+%define _label $%1 ; prefix $ to allow keywords like wait
+global _label
+_label:
     mov eax, %2
     int I_SYSCALL
     ret
@@ -24,3 +25,4 @@ SYSCALL mkdir,  SYS_MKDIR
 SYSCALL link,   SYS_LINK
 SYSCALL unlink, SYS_UNLINK
 SYSCALL dup,    SYS_DUP
+SYSCALL wait,   SYS_WAIT

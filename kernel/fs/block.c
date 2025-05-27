@@ -163,10 +163,10 @@ blockno_t block_alloc(devno_t dev) {
 
 
 /*! Free a block */
-void block_free (devno_t dev, blockno_t blockno) {
+void block_free(devno_t dev, blockno_t blockno) {
     if (!freemap_check (dev, blockno)) {
-        panic ("block_free: block is already free");
+        panic("block_free: block is already free");
         return;
     }
-    freemap_set (dev, blockno, false);
+    freemap_set(dev, blockno, false);
 }

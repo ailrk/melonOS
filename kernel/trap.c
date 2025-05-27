@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "err.h"
 #include "mmu.h"
+#include "pdefs.h"
 #include "proc.h"
 #include "process.h"
 #include "sys/syscall.h"
@@ -197,7 +198,27 @@ void trap(TrapFrame *tf) {
         default:
 #if DEBUG
             dump_trapframe(tf);
-            panic("trap");
 #endif
+
+            debug("- %#x\n", this_proc());
+            debug("- %#x\n", tf->cs & 3);
+            // kernel should never ends up here
+            if (!this_proc() || (tf->cs & 3) == DPL_K) {
+                panic("trap");
+            }
+
+            // it's from an errorous user space program.
+            perror("trap");
+            this_proc()->killed = 1;
+    }
+
+    // exit killed user space process
+    if (this_proc() && this_proc()->killed && (tf->cs & 3) == DPL_U) {
+        exit();
+    }
+
+    // yield running user process.
+    if (this_proc() && this_proc()->state == PROC_RUNNING && (tf->cs & 3) == DPL_U) {
+        yield();
     }
 }
