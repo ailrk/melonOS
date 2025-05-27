@@ -39,6 +39,7 @@
             pkgs.qemu
             pkgs.socat
             pkgs.picocom
+            pkgs.nasm
           ];
         };
       });

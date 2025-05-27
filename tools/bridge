@@ -6,4 +6,26 @@
 
 # wait until the qemu serial sock is created
 while [ ! -S /tmp/qemu-serial.sock ]; do sleep 0.1; done
-socat PTY,link=/tmp/virtual-tty,raw,echo=0 UNIX-CONNECT:/tmp/qemu-serial.sock
+
+o_tty="/tmp/melonos-qemu-out-tty"
+o_log="/tmp/melonos-qemu-out-log"
+
+
+cleanup() {
+    echo "Cleaning up..."
+    rm -f "$o_tty" "$o_log"
+}
+
+mkfifo $o_tty $o_log
+
+# multiplex the output from the socket.
+socat \
+  UNIX-CONNECT:/tmp/qemu-serial.sock \
+  SYSTEM:"tee $o_tty $o_log > /dev/null" &
+
+socat - PTY,link=/tmp/virtual-tty,raw,echo=0 < $o_tty &
+cat $o_log > .uart.log
+
+
+# Clean up on exit, interruption, or termination
+trap cleanup EXIT

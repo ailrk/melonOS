@@ -14,6 +14,8 @@ DEBUG ?= 1
 
 NOGRAPHICS ?= 1
 
+# Enable GDB remote debug. If it's set, make qemu will try to attach
+# to a gdb session on localhost:1234
 GDB ?= 0
 
 #############################
@@ -136,8 +138,10 @@ ifeq ($(GDB), 1)
 QEMU_GDB_FLAGS += -s -S
 endif
 
+
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
+
 
 qemu:
 	tools/bridge & \
@@ -146,7 +150,6 @@ qemu:
 		$(QEMU_GDB_FLAGS) \
 		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
 		-no-reboot -D $(QEMU_LOGFILE) \
-		-serial file:$(QEMU_SERIALFILE) \
 		-serial unix:/tmp/qemu-serial.sock,server,nowait \
 		-monitor stdio \
 		-m 512M \
@@ -156,7 +159,7 @@ qemu:
 print-trace:
 	@echo "Monitoring errors..." >&2
 	cat .uart.log | \
-		sed -n '/trapframe>\|Stack trace:\|PANIC/,$$p' | \
+		sed -n '/trapframe>\|Stack trace:\|PANIC\|ERROR/,$$p' | \
 		tools/addr2line-filter $(KERNEL)
 
 
