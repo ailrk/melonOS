@@ -32,7 +32,7 @@
  *                                  +--------------+
  *                                  |   0xffffffff | fake ip for return
  *                                  +--------------+
- *                                  |   <empty>    |
+ *                                  |   <guard>    |
  *                                  +--------------+
  *
  * where `data` and `text` section are loaded from the elf, `guard page`, `stack`, and `heap` are
@@ -114,10 +114,8 @@ int exec (char *path, char **argv) {
         goto bad;
     }
 
-    // debug_printf("%d", *get_pte(pgtbl, (char *)(size - 2 * PAGE_SZ)));
     // set guard page permission
     clear_pte_flag(pgtbl, (char *)(size - 2 * PAGE_SZ), PTE_U);
-    // debug_printf("%d", *get_pte(pgtbl, (char *)(size - 2 * PAGE_SZ)));
 
     sp = size;
 
@@ -128,16 +126,21 @@ int exec (char *path, char **argv) {
         if (argc > MAXARGS)
             goto bad;
         sp -= strlen(argv[argc]) + 1;
+
+        // copy argv[argc]
         if (uvm_memcpy (pgtbl, sp, argv[argc], strlen(argv[argc]) + 1) == -1) {
             goto bad;
         }
         buffer[3 + argc] = sp;
     }
+
     buffer[3 + argc] = 0;
     buffer[2] = sp - (argc + 1) * sizeof(argv[0]);
     buffer[1] = argc;
     buffer[0] = 0xffffffff; // fake return ip
-    if (uvm_memcpy(pgtbl, sp, buffer, 3 + argc + 1) == -1) {
+    sp -= (3 + argc + 1) * sizeof(buffer[0]); // set sp to top
+
+    if (uvm_memcpy(pgtbl, sp, buffer, (3 + argc + 1) * sizeof(buffer[0])) == -1) {
         goto bad;
     }
 

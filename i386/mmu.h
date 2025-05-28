@@ -98,7 +98,6 @@ page_aligndown (uintptr_t addr) {
 static inline uintptr_t
 pte_addr (PTE pte) {
     return (uintptr_t)(pte) & ~0xFFF;
-
 }
 
 

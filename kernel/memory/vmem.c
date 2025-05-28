@@ -365,25 +365,30 @@ static char *uva2ka(PageDir pgdir, char *vaddr) {
     return (char *)P2KA(pte_addr(*pte));
 }
 
-
-/*! Copy size amount of bytes from address p to user addr in pgdir.
+/*! Copy size amount of bytes from address p to user virtual addr in pgdir.
  *  This can be used to copy memory to a different page table.
  *  The page being copied into must have PTE_P and PTE_U set, otherwise
  *  the copy is aborted immediately.
  *  If succeed return 0, otherwise return -1;
  * */
-int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *p, unsigned size) {
-    char *buf = (char *)p;
+int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *buf, unsigned size) {
+    char *p = (char *)buf;
+    uintptr_t va0;
+    char *ka0;
     while (size > 0) {
-        unsigned va0 = page_aligndown(vaddr);
-        char *ka0 = uva2ka(pgdir, (char *)va0);
-        if (ka0 == 0)
+        va0 = page_aligndown(vaddr);
+        ka0 = uva2ka(pgdir, (char *)va0);
+        if (ka0 == 0) {
+#if DEBUG
+            debug("uvm_memcpy: vaddr %#x, va0 %#x, size %#x\n", vaddr, va0, size);
+#endif
             return -1;
+        }
         unsigned n = PAGE_SZ - (vaddr - va0);
         if (n > size) n = size;
-        memmove(ka0 + (vaddr - va0), buf, n);
+        memmove(ka0 + (vaddr - va0), p, n);
         size -= n;
-        buf += n;
+        p += n;
         vaddr = va0 + PAGE_SZ;
     }
     return 0;
