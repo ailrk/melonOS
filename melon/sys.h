@@ -20,3 +20,5 @@ int   mkdir(const char *path);
 int   link(const char *, const char*);
 int   unlink(const char *);
 int   dup(int fd);
+int   pipe(int *);
+

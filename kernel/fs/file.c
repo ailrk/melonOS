@@ -1,5 +1,6 @@
 #include "err.h"
 #include "fdefs.fwd.h"
+#include "pipe.h"
 #include "spinlock.h"
 #include "fs/inode.h"
 #include "fs/file.h"
@@ -77,7 +78,7 @@ int file_read(File *f, char *buf, int n) {
     case FD_NONE:
         panic("file read");
     case FD_PIPE:
-        panic("file_read: pipe not supported");
+        return pipe_read(f->pipe, buf, n);
     case FD_INODE:
         if ((rd = inode_read(f->ino, buf, f->offset, n)) > 0)
             f->offset += rd;
@@ -97,7 +98,7 @@ int file_write(File *f, const char *buf, int n) {
     case FD_NONE:
         panic("file read");
     case FD_PIPE:
-        panic("file_read: pipe not supported");
+        return pipe_write(f->pipe, buf, n);
     case FD_INODE:
         if ((wt = inode_write(f->ino, buf, f->offset, n)))
             f->offset += wt;

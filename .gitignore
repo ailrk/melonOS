@@ -61,6 +61,7 @@ mkfs.melonfs
 melonos.img
 melonosfs.img
 libmelon.a
+*.qcow2
 
 # Generated files should be obtained from the Makefile
 vectors.s

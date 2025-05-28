@@ -3,6 +3,7 @@
 #include "fdefs.h"
 #include "inode.h"
 #include "debug.h"
+#include "pipe.h"
 #include "proc.h"
 #include "proc.h"
 #include "string.h"
@@ -135,8 +136,8 @@ int sys_mknod() {
     const char  *path  = getptr (0);
     unsigned     major = getint (1);
     unsigned     minor = getint (2);
-    Inode       *ino;
-    if ((ino = fs_create (path, F_DEV, major, minor)) == 0)
+    Inode       *ino   = fs_create (path, F_DEV, major, minor);
+    if (ino == 0)
         return -1;
     inode_drop (ino);
     return 0;
@@ -145,8 +146,8 @@ int sys_mknod() {
 
 int sys_mkdir() {
     const char  *path = getptr (0);
-    Inode       *ino;
-    if ((ino = fs_create (path, F_DIR, 0, 0)) == 0) {
+    Inode       *ino  = fs_create (path, F_DIR, 0, 0);
+    if (ino == 0) {
         return -1;
     }
     inode_drop (ino);
@@ -162,12 +163,14 @@ int sys_open() {
     File        *f;
 
     if (mode & O_CREAT) {
-        if ((ino = fs_create(path, F_FILE, 0, 0)) == 0) {
+        ino = fs_create(path, F_FILE, 0, 0);
+        if (ino == 0) {
             return -1;
         }
 
     } else {
-        if ((ino = dir_abspath(path, false)) == 0) {
+        ino = dir_abspath(path, false);
+        if (ino == 0) {
             return -1;
         }
 
@@ -180,12 +183,14 @@ int sys_open() {
         }
     }
 
-    if ((f = file_allocate()) == 0) {
+    f = file_allocate();
+    if (f == 0) {
         inode_drop(ino);
         return -1;
     }
 
-    if ((fd = fs_fdalloc(f)) == -1) {
+    fd = fs_fdalloc(f);
+    if (fd == -1) {
         file_close(f);
         inode_drop(ino);
         return -1;
@@ -217,8 +222,8 @@ int sys_link () {
     if (!old) return -1;
     if (!new) return -1;
 
-    Inode *ino;
-    if ((ino = dir_abspath (old, false)) == 0) {
+    Inode *ino = dir_abspath (old, false);
+    if (ino == 0) {
         return -1;
     }
 
@@ -229,8 +234,8 @@ int sys_link () {
     ino->d.nlink++;
     inode_flush (ino);
 
-    Inode *dir;
-    if ((dir = dir_abspath (new, true)) == 0) {
+    Inode *dir = dir_abspath (new, true);
+    if (dir == 0) {
         goto bad;
     }
 
@@ -266,11 +271,12 @@ int sys_dup () {
 
     if (!f) return -1;
 
-    int fd;
+    int fd = fs_fdalloc(f);
 
-    if ((fd = fs_fdalloc(f)) == -1) {
+    if (fd == -1) {
         return -1;
     }
+
     file_dup(f);
     return fd;
 }
@@ -278,6 +284,48 @@ int sys_dup () {
 
 int sys_wait() {
     return wait();
+}
+
+
+int sys_pipe() {
+    int  *fds = (int *)getptr(0);
+    File *read;
+    File *write;
+    int fdr, fdw;
+    bool failed = false;
+    fdr = fdw = -1;
+
+    if (pipe_allocate(&read, &write) == -1) {
+        return -1;
+    }
+
+    fdr = fs_fdalloc(read);
+    fdw = fs_fdalloc(write);
+
+    if (fdr == -1) {
+        failed = true;
+        file_close(read);
+    }
+
+    if (fdw == -1) {
+        failed = true;
+        file_close(write);
+    }
+
+    if (fdr && failed) {
+        this_proc()->file[fdr] = 0;
+    }
+
+    if (fdw && failed) {
+        this_proc()->file[fdw] = 0;
+    }
+
+    if (failed)
+        return -1;
+
+    fds[0] = fdr;
+    fds[1] = fdw;
+    return 0;
 }
 
 
@@ -298,6 +346,7 @@ static int (*system_calls[])() = {
     [SYS_UNLINK] = sys_unlink,
     [SYS_DUP]    = sys_dup,
     [SYS_WAIT]   = sys_wait,
+    [SYS_PIPE]   = sys_pipe,
 };
 
 
@@ -317,6 +366,7 @@ static const char *syscall_name[] = {
     [SYS_UNLINK] = "SYS_UNLINK",
     [SYS_DUP]    = "SYS_DUP",
     [SYS_WAIT]   = "SYS_WAIT",
+    [SYS_PIPE]   = "SYS_PIPE",
 };
 
 
@@ -342,7 +392,7 @@ void syscall() {
     }
 
 #ifdef DEBUG
-    debug("syscall %d, %s\n", n, syscall_name[n]);
+    debug("pid %d, syscall %d, %s\n", this_proc()->pid, n, syscall_name[n]);
 #endif
     int r = system_calls[n]();
     p->trapframe->eax = r;

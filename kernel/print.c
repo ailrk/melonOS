@@ -11,6 +11,7 @@ void printf(char *fmt, ...) {
     va_end (args);
 }
 
+
 void putc(char *addr) {
     vga_writec(addr);
     uart_putc(COM1, *addr);

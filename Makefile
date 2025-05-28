@@ -43,7 +43,9 @@ F_DIR = mkfs
 BOOT = melonos-bootloader
 KERNEL = melonos-kernel
 MELONOS = melonos.img
+MELONOS_QCOW2 = melonos.qcow2
 MELONFS = melonfs.img
+MELONFS_QCOW2 = melonfs.qcow2
 
 MKFS = mkfs.melonfs
 
@@ -54,8 +56,9 @@ QEMU = qemu-system-i386
 
 .PHONY: boot kernel all
 
-default: all
-all: $(MELONOS)
+default: qcow2
+qcow2: $(MELONOS_QCOW2)
+img: $(MELONOS)
 boot: $(BOOT)
 kernel: $(KERNEL)
 
@@ -73,6 +76,14 @@ include melon/Makefile
 userprogs: $(USERPROGS)
 
 
+$(MELONOS_QCOW2): $(MELONOS) $(MELONFS_QCOW2)
+	qemu-img convert -f raw -O qcow2 $(MELONOS) $(MELONOS_QCOW2)
+
+
+$(MELONFS_QCOW2): $(MELONFS)
+	qemu-img convert -f raw -O qcow2 $(MELONFS) $(MELONFS_QCOW2)
+
+
 $(MELONOS): $(BOOT) $(KERNEL) $(MELONFS)
 	dd if=/dev/zero of=$(MELONOS) count=10000
 	dd if=$(BOOT) of=$(MELONOS) conv=notrunc
@@ -88,7 +99,7 @@ clean:
 	find $(B_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(L_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(M_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
-	rm -rf *.o *.pp.* $(MELONOS) $(MELONFS) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
+	rm -rf *.o *.pp.* $(MELONOS_QCOW2) $(MELONOS) $(MELONFS) $(MELONFS_QCOW2) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 
 echo:
 	@echo 'DEBUG $(DEBUG)'
@@ -97,6 +108,7 @@ echo:
 	@echo 'CC $(CC)'
 	@echo 'AS $(AS)'
 	@echo 'MELONOS $(MELONOS)'
+	@echo 'MELONOS $(MELONOS_QCOW2)'
 	@echo 'BOOT	$(BOOT)'
 	@echo 'KERNEL $(KERNEL)'
 	@echo 'K_OBJS $(K_OBJS)'
@@ -116,8 +128,8 @@ echo:
 # QEMU drives. To simply the development we put the kernel and the
 # filesystem in two different drives.
 QEMU_DRVS = \
-	-drive format=raw,file=$(MELONOS),index=0,media=disk \
-	-drive format=raw,file=$(MELONFS),index=1,media=disk
+	-drive format=qcow2,file=$(MELONOS_QCOW2),index=0,media=disk \
+	-drive format=qcow2,file=$(MELONFS_QCOW2),index=1,media=disk
 
 # The file for uart debug output
 QEMU_DEBUG_SERIALFILE = .debug.log
@@ -182,7 +194,7 @@ serial:
 	tools/serial
 
 cc:
-	bear -- make $(MELONOS)
+	bear -- make
 
 # subfolder makefiles
 include boot/Makefile

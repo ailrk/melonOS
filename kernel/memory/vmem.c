@@ -314,7 +314,7 @@ bool uvm_copy(PageDir pgdir, PageDir *out, size_t sz) {
             return 0;
         }
 
-        memmove(mem, (char *)P2KA_C (pa), PAGE_SZ);
+       memmove(mem, (char *)P2KA_C (pa), PAGE_SZ);
 
         VMap mmap =
             { .virt   = (char *)i,

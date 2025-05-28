@@ -14,6 +14,7 @@ typedef unsigned inodeno_t;
 typedef unsigned devno_t;
 typedef unsigned offset_t; // byte offset
 
+typedef struct Pipe Pipe;
 
 /* File descriptor types */
 typedef enum FDType {
@@ -31,12 +32,12 @@ typedef enum FileType {
 } FileType;
 
 
-
 typedef struct File {
+    Inode   *ino;
+    Pipe    *pipe;
+    offset_t offset;   // file cursor
     FDType   type;
     int      nref;     // reference count
     bool     readable;
     bool     writable;
-    offset_t offset;   // file cursor
-    Inode   *ino;
 } File;
