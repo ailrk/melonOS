@@ -19,6 +19,9 @@
 /* control `x` */
 #define C(x) (x - '@')
 
+typedef uint16_t Scancode;
 
-void kbd_handler(uint8_t (*source)());
-char kbd_getc();
+void kbd_read(uint8_t (*source)());
+int  kbd_getc();
+char kbd_translate (Scancode scancode);
+

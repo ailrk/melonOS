@@ -44,6 +44,11 @@ static void dump_trapframe(const TrapFrame *tf) {
 }
 #endif
 
+/* Input source */
+uint8_t source_uart() { return uart_getc(COM1); }
+uint8_t source_ps2() { return ps2in(KBP_DATA); }
+
+
 
 void trap_init() {
     for (int i = 0; i < 256; ++i) {
@@ -88,11 +93,11 @@ void handle_I_IRQ_TIMER(const TrapFrame *tf) {
     pic_eoi();
 }
 
-uint8_t source_ps2() { return ps2in(KBP_DATA); }
+
 void handle_I_IRQ_KBD() {
     debug("irq ps2\n");
-    kbd_handler(source_ps2);
-    console_handler(kbd_getc);
+    kbd_read(source_ps2);
+    console_handler();
     pic_eoi();
 }
 
@@ -105,11 +110,10 @@ void handle_I_IRQ_COM2() {
 }
 
 
-uint8_t source_uart() { return uart_getc(COM1); }
 void handle_I_IRQ_COM1() {
     debug("irq com1\n");
-    kbd_handler(source_uart);
-    console_handler(kbd_getc);
+    kbd_read(source_uart);
+    console_handler();
     pic_eoi();
 }
 
@@ -200,9 +204,6 @@ void trap(TrapFrame *tf) {
 #if DEBUG
             dump_trapframe(tf);
 #endif
-
-            debug("- %#x\n", this_proc());
-            debug("- %#x\n", tf->cs & 3);
             // kernel should never ends up here
             if (!this_proc() || (tf->cs & 3) == DPL_K) {
                 panic("trap");

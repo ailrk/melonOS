@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "kbd.h"
-#include "ps2.h"
-
 
 
 /* Set 1 make code */
@@ -166,8 +164,6 @@ char capslockmap[256] = {
 
 uint16_t modifier = 0;
 
-typedef uint16_t Scancode;
-
 #define SCBUFFER_SZ 256
 
 /* Circular buffer scancode for further consumption */
@@ -249,13 +245,18 @@ static bool update_modifier(Scancode scancode) {
 
 
 /*! Translate scan code into character */
-char translate (uint16_t scancode) {
+char kbd_translate (Scancode scancode) {
+    if (scancode < 0) {
+        return -1;
+    }
+
     if (update_modifier(scancode)) {
         return -1;
     }
 
-    if (is_break_code(scancode))
+    if (is_break_code(scancode)) {
         return -1;
+    }
 
     if (modifier & SHIFT) return shiftmap[scancode];
     if (modifier & CAPSLOCK) return capslockmap[scancode];
@@ -263,16 +264,16 @@ char translate (uint16_t scancode) {
 }
 
 
-void kbd_handler(uint8_t (*source)()) {
+void kbd_read(uint8_t (*source)()) {
     uint8_t data = source();
     sc_buffer_put(data);
 }
 
 
-char kbd_getc() {
+int kbd_getc() {
     uint16_t value;
     if (sc_buffer_get(&value)) {
-        return translate(value);
+        return value;
     }
     return -1;
 }
