@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "err.h"
 #include "uart.h"
+#include "fmt.h"
 #include "i386.h"
 
 
@@ -66,4 +67,31 @@ static void write_serial(uint16_t com, char a) {
 
 void uart_putc(uint16_t com, char c) {
     write_serial(com, c);
+}
+
+
+
+static char *uart_putc_com1(char *c) { uart_putc(COM1, *c++); return c; }
+static char *uart_putc_com2(char *c) { uart_putc(COM2, *c++); return c; }
+
+
+void uart_vprintf(uint16_t com,char *fmt, va_list args) {
+    char *(*putc)(char *) = 0;
+    switch (com) {
+        case COM1:
+            putc = uart_putc_com1;
+            break;
+        case COM2:
+            putc = uart_putc_com2;
+            break;
+        default:
+            panic("invalid uart port\n");
+            break;
+    }
+
+    FmtIO io = {
+        .putchar = putc
+    };
+
+    format(io, fmt, args);
 }

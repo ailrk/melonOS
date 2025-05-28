@@ -90,6 +90,7 @@ void handle_I_IRQ_TIMER(const TrapFrame *tf) {
 
 uint8_t source_ps2() { return ps2in(KBP_DATA); }
 void handle_I_IRQ_KBD() {
+    debug("irq ps2\n");
     kbd_handler(source_ps2);
     console_handler(kbd_getc);
     pic_eoi();
@@ -106,6 +107,7 @@ void handle_I_IRQ_COM2() {
 
 uint8_t source_uart() { return uart_getc(COM1); }
 void handle_I_IRQ_COM1() {
+    debug("irq com1\n");
     kbd_handler(source_uart);
     console_handler(kbd_getc);
     pic_eoi();

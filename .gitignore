@@ -42,7 +42,8 @@ sysroot
 .qemu.log
 .bochs.log
 .bochsrc
-.uart.log
+.debug.log
+.history.log
 .ccls-cache
 .cache
 .vim-session

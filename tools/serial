@@ -2,8 +2,24 @@
 
 # Start picocom
 
-# wait until the virtual-tty is created
-printf "[\033[32mSerial\033[0m] waiting for /tmp/virtual-tty...\n"
-while [ ! -e /tmp/virtual-tty ]; do sleep 0.1; done
-printf "[\033[32mSerial\033[0m] found.\n"
-picocom --echo --escape C-c --flow n --imap lfcrlf  /tmp/virtual-tty
+run() {
+  # wait until the virtual-tty is created
+  printf "[\033[32mSerial\033[0m] waiting for /tmp/virtual-tty...\n"
+
+  while [ ! -e /tmp/virtual-tty ]; do sleep 0.1; done
+  printf "[\033[32mSerial\033[0m] found.\n"
+  picocom --echo --escape C-c --flow n --imap lfcrlf  /tmp/virtual-tty
+}
+
+
+# Loop and restart picocom on failure
+while true; do
+  run
+  ec=$?
+  echo "[Serial] picocom exited with code $ec"
+  if [ $ec -eq 0 ]; then
+    break  # normal exit
+  fi
+  echo "[Serial] restarting picocom in 1s..."
+  sleep 1
+done

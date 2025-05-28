@@ -1,7 +1,7 @@
 #include "i386.h"
 #include "driver/vga.h"
 #include "trap/traps.h"
-#include "log.h"
+#include "print.h"
 #include <stdint.h>
 
 /* handles hardware interrupts and map them to the system interrupt.
@@ -138,7 +138,7 @@ void pic_irq_unmask(uint8_t irq_line) {
 
 
 void pic_init() {
-    log("[\033[32mboot\033[0m] pic...");
+    printf("[\033[32mboot\033[0m] pic...");
     pic_remap(0x20, 0x20 + 8);
     pic_irq_unmask(I_IRQ_TIMER);
     pic_irq_unmask(I_IRQ_KBD);
@@ -147,5 +147,5 @@ void pic_init() {
     pic_irq_unmask(I_IRQ_ERR);
     pic_irq_unmask(I_IRQ_IDE);
     pic_irq_unmask(I_IRQ_SPURIOUS);
-    log("\033[32mok\033[0m\n");
+    printf("\033[32mok\033[0m\n");
 }

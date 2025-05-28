@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "debug.h"
-#include "log.h"
+#include "print.h"
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
@@ -127,13 +127,13 @@ void kvm_switch() {
 
 /*! Setup global kernel virtual memory */
 void kvm_init() {
-    log (LOG_BOOT " kvm_alloc...\n");
+    printf(LOG_BOOT " kvm_alloc...\n");
     init_kmap();
     if (!kvm_allocate(&kernel_pgdir)) {
         panic("kvm_init");
     }
     kvm_switch();
-    log (LOG_BOOT " kvm_alloc " LOG_OK "\n");
+    printf(LOG_BOOT " kvm_alloc " LOG_OK "\n");
 }
 
 

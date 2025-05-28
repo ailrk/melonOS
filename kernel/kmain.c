@@ -34,6 +34,7 @@ void kmain (void) {
 #endif
 
     uart_init(COM1);
+    uart_init(COM2);
     trap_init();
     dev_init();
     fs_init();

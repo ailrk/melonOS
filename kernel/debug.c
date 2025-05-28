@@ -7,11 +7,7 @@
 #include "errno.h"
 #include "driver/uart.h"
 
-
-char *debug_putc(char *c) {
-    uart_putc(COM1, *c++);
-    return c;
-}
+/* uart COM2 is used for debugging. */
 
 
 void debug(char *fmt, ...) {
@@ -32,11 +28,7 @@ void debug_printf(char *fmt, ...) {
 
 
 void debug_vprintf(char *fmt, va_list args) {
-    FmtIO io = {
-        .putchar = &debug_putc
-    };
-
-    format(io, fmt, args);
+    uart_vprintf(COM2, fmt, args);
 }
 
 

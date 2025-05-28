@@ -1,6 +1,6 @@
 #include "i386.h"
 #include "mmu.h"
-#include "log.h"
+#include "print.h"
 #include "memory/gdt.h"
 #include "process/pdefs.h"
 
@@ -33,7 +33,7 @@ GDTEntry create_descriptor (uint32_t base, uint32_t limit, uint16_t flag) {
 
 
 void gdt_init () {
-    log ("[\033[32mboot\033[0m] gdt...");
+    printf("[\033[32mboot\033[0m] gdt...");
     cpu.gdtr.limit     = sizeof(GDTEntry) * NSEGS - 1;
     cpu.gdtr.base      = (uint32_t)&cpu.gdt;
 
@@ -68,5 +68,5 @@ void gdt_init () {
     }
 
     lgdt ((void*)&cpu.gdtr);
-    log ("\033[32mok\033[0m\n");
+    printf("\033[32mok\033[0m\n");
 }

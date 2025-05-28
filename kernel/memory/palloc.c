@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "debug.h"
-#include "log.h"
+#include "print.h"
 #include "palloc.h"
 #include "mem.h"
 #include "err.h"
@@ -28,9 +28,9 @@ void pfree_range (void *vstart, void *vend) {
 
 /*! free the memory from vstart to vend */
 void palloc_init (void *vstart, void *vend) {
-    log (LOG_BOOT " palloc_init %#x:%#x...\n", vstart, vend);
+    printf(LOG_BOOT " palloc_init %#x:%#x...\n", vstart, vend);
     pfree_range (vstart, vend);
-    log (LOG_BOOT " palloc_init " LOG_OK  "\n");
+    printf(LOG_BOOT " palloc_init " LOG_OK  "\n");
 }
 
 

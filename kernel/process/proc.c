@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "debug.h"
-#include "log.h"
+#include "print.h"
 #include "defs.h"
 #include "err.h"
 #include "i386.h"
@@ -227,7 +227,7 @@ static void set_pid1_trapframe(Process *p) {
 
 /*! Initialize the first user space process. */
 void init_pid1() {
-    log (LOG_BOOT " init1...\n");
+    printf(LOG_BOOT " init1...\n");
     Process *p;
     if ((p = allocate_process ()) == 0) {
         panic ("init_pid1: failed to allocate process");
@@ -250,7 +250,7 @@ void init_pid1() {
     proc_init1 = p;
     unlock(&ptable.lk);
 
-    log(LOG_BOOT " init1 " LOG_OK "\n");
+    printf(LOG_BOOT " init1 " LOG_OK "\n");
 }
 
 

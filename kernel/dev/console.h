@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "fdefs.fwd.h"
 typedef char (*console_getc_t)();
 
 void console_init();

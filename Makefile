@@ -120,16 +120,16 @@ QEMU_DRVS = \
 	-drive format=raw,file=$(MELONFS),index=1,media=disk
 
 # The file for uart debug output
-QEMU_SERIALFILE = .uart.log
+QEMU_DEBUG_SERIALFILE = .debug.log
 
 # The file for qemu logs
 QEMU_LOGFILE = .qemu.log
 
 # QEMU graphics options. Turned off by default.
-QEMU_GRAPHICS =
+QEMU_GRAPHICS_FLAGS =
 
 ifeq ($(NOGRAPHICS), 1)
-	QEMU_GRAPHICS += -nographic
+	QEMU_GRAPHICS_FLAGS += -nographic
 endif
 
 QEMU_GDB_FLAGS =
@@ -151,22 +151,22 @@ qemu:
 		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
 		-no-reboot -D $(QEMU_LOGFILE) \
 		-serial unix:/tmp/qemu-serial.sock,server,nowait \
+		-serial file:$(QEMU_DEBUG_SERIALFILE) \
 		-monitor stdio \
 		-m 512M \
-		$(QEMU_GRAPHICS)
+		$(QEMU_GRAPHICS_FLAGS)
 
 
 print-trace:
 	@echo "Monitoring errors..." >&2
-	cat .uart.log | \
+	cat $(QEMU_DEBUG_SERIALFILE) | \
 		sed -n '/trapframe>\|Stack trace:\|PANIC\|ERROR/,$$p' | \
 		tools/addr2line-filter $(KERNEL)
 
 
-log:
-	tail -f .uart.log | \
+debug:
+	tail -f $(QEMU_DEBUG_SERIALFILE) | \
 		tools/addr2line-filter $(KERNEL)
-
 
 
 elf-headers:

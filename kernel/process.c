@@ -3,7 +3,7 @@
 #include "fdefs.fwd.h"
 #include "string.h"
 #include "err.h"
-#include "log.h"
+#include "print.h"
 #include "spinlock.h"
 #include "process.h"
 #include "process/proc.h"
@@ -214,7 +214,7 @@ void yield() {
  *  back to the scheduler.
  * */
 void scheduler() {
-    log (LOG_BOOT " scheduler...\n");
+    printf(LOG_BOOT " scheduler...\n");
     CPU *cpu = this_cpu ();
     cpu->proc = 0;
     for (;;) {

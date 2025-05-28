@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "mutex.h"
-#include "log.h"
+#include "print.h"
 #include "stdlib.h"
 #include "string.h"
 #include "bcache.h"
@@ -30,9 +30,9 @@ inline static blockno_t inode_block(inodeno_t inum) {
 
 
 void inode_init() {
-    log("[\033[32mboot\033[0m] inode...");
+    printf("[\033[32mboot\033[0m] inode...");
     icache.lk = new_lock("icache.lk");
-    log("\033[32mok\033[0m\n");
+    printf("\033[32mok\033[0m\n");
 }
 
 
