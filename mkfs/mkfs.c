@@ -12,6 +12,8 @@
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
+#define DEBUG 1
+
 /* Make melonfs file image */
 
 void      bwrite(off_t sec, char *buf);
@@ -150,7 +152,6 @@ int main(int argc, char *argv[]) {
         int   ffd;
 
         parsename(path, namebuf, sizeof(namebuf));
-        report("writing /%s from %s ...\n", namebuf, path);
 
         if ((ffd = open (path, O_RDONLY)) < 0) {
             perror (argv[i]);
@@ -167,9 +168,13 @@ int main(int argc, char *argv[]) {
 
         // write file content
         unsigned r;
+        unsigned totalr = 0;
         char buf[BSIZE];
-        while ((r = read(ffd, buf, sizeof(buf))) > 0)
+        while ((r = read(ffd, buf, sizeof(buf))) > 0) {
+            totalr += r;
             iappend(ino, buf, r);
+        }
+        report("written /%s from %s, total %d bytes\n", namebuf, path, totalr);
 
         close(ffd);
     }
@@ -323,6 +328,15 @@ void report(const char *fmt, ...) {
     va_list args;
     va_start (args, fmt);
     printf("\033[32m[mkfs]\033[0m ");
+    vprintf(fmt, args);
+    va_end (args);
+}
+
+
+void debug(const char *fmt, ...) {
+    va_list args;
+    va_start (args, fmt);
+    printf("\033[34m[mkfs]\033[0m ");
     vprintf(fmt, args);
     va_end (args);
 }

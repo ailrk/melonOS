@@ -162,13 +162,13 @@ static blockno_t bmap0(Inode *ino, unsigned nth) {
 
 /*! Map layer 1 indirect blocks */
 static blockno_t bmap1(Inode *ino, unsigned nth) {
-    blockno_t ptrsno  = 0;
+    blockno_t ptrsno  = 0; // blockno of the pointer block
     offset_t  offset  = nth - NDIRECT;
     blockno_t blockno = 0;
 
-    if ((ptrsno = ino->d.addrs[nth]) == 0) {
+    if ((ptrsno = ino->d.addrs[NDIRECT]) == 0) {
         ptrsno            = block_alloc(ino->dev);
-        ino->d.addrs[nth] = ptrsno;
+        ino->d.addrs[NDIRECT] = ptrsno;
         inode_flush(ino);
     }
 

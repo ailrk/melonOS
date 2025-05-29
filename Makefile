@@ -16,7 +16,10 @@ NOGRAPHICS		?= 1
 
 # Enable GDB remote debug. If it's set, make qemu will try to attach
 # to a gdb session on localhost:1234
-GDB ?= 0
+GDB 			?= 0
+
+
+BINARY			?= $(KERNEL)
 
 #############################
 # Variables
@@ -196,7 +199,7 @@ elf-headers:
 	readelf -headers $(KERNEL)
 
 d:
-	objdump -d $(KERNEL)
+	i686-elf-objdump -M intel -d $(BINARY)
 
 hex:
 	hexdump -C $(MELONOS)
