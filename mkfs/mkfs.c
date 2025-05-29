@@ -134,12 +134,12 @@ int main(int argc, char *argv[]) {
     // point current folder . to root itself
     memset(&de, 0, sizeof(de));
     de.inum = rootino;
-    strncpy(de.name, ".", sizeof("."));
+    strncpy(de.name, ".", 2);
     iappend(rootino, &de, sizeof(DirEntry));
 
     // point parent folder .. to root itself
     memset(&de, 0, sizeof(de));
-    strncpy(de.name, "..", sizeof(".."));
+    strncpy(de.name, "..", 3);
     iappend(rootino, &de, sizeof(DirEntry));
 
 

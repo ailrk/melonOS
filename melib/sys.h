@@ -21,4 +21,3 @@ int   link(const char *, const char*);
 int   unlink(const char *);
 int   dup(int fd);
 int   pipe(int *);
-

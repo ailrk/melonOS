@@ -37,6 +37,7 @@ B_DIR = boot
 K_DIR = kernel
 L_DIR = lib
 M_DIR = melon
+MELIB_DIR = melib
 F_DIR = mkfs
 
 
@@ -72,6 +73,8 @@ echo-img:
 	@echo "$(MELONOS)"
 
 # order of the import matters here.
+include lib/Makefile
+include melib/Makefile
 include melon/Makefile
 userprogs: $(USERPROGS)
 
@@ -99,6 +102,7 @@ clean:
 	find $(B_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(L_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
 	find $(M_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
+	find $(MELIB_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
 	rm -rf *.o *.pp.* $(MELONOS_QCOW2) $(MELONOS) $(MELONFS) $(MELONFS_QCOW2) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 
 echo:
@@ -199,7 +203,6 @@ cc:
 # subfolder makefiles
 include boot/Makefile
 include kernel/Makefile
-include lib/Makefile
 include mkfs/Makefile
 
 -include .local.mk

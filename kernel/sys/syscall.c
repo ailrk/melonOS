@@ -215,9 +215,9 @@ int sys_close () {
 }
 
 
-int sys_link () {
-    const char  *old  = getptr (0);
-    const char  *new  = getptr (1);
+int sys_link() {
+    const char  *old = getptr (0);
+    const char  *new = getptr (1);
 
     if (!old) return -1;
     if (!new) return -1;
@@ -234,7 +234,7 @@ int sys_link () {
     ino->d.nlink++;
     inode_flush (ino);
 
-    Inode *dir = dir_abspath (new, true);
+    Inode *dir = dir_abspath(new, true);
     if (dir == 0) {
         goto bad;
     }
@@ -245,29 +245,29 @@ int sys_link () {
 
     DirEntry new_entry;
     new_entry.inum = ino->inum;
-    strncpy (new_entry.name, new, DIRNAMESZ);
+    strncpy(new_entry.name, new, DIRNAMESZ);
 
-    if (!dir_link (dir, new_entry)) {
+    if (!dir_link(dir, new_entry)) {
         goto bad;
     }
 
-    inode_drop (dir);
+    inode_drop(dir);
     return 0;
 
 bad:
     ino->d.nlink--;
-    inode_flush (ino);
+    inode_flush(ino);
     return -1;
 }
 
 
-int sys_unlink () {
+int sys_unlink() {
     return -1;
 }
 
 
-int sys_dup () {
-    File *f = getfile (0);
+int sys_dup() {
+    File *f = getfile(0);
 
     if (!f) return -1;
 

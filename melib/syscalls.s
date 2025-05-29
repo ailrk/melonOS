@@ -1,5 +1,5 @@
-#include "syscalls.h"
-#include "traps.h"
+#include "sys/syscalls.h"
+#include "trap/traps.h"
 
 ;; system call interface from the user space
 %macro SYSCALL 2
