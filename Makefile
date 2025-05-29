@@ -1,18 +1,18 @@
-ARCH ?= i686
-CC = $(ARCH)-elf-gcc
-LD = $(ARCH)-elf-ld
-AS = nasm -f elf32
-AR = ar rcs
-CPP = cpp
-HOSTCC = gcc
+ARCH		?= i686
+CC		= $(ARCH)-elf-gcc
+LD		= $(ARCH)-elf-ld
+AS		= nasm -f elf32
+AR		= ar rcs
+CPP		= cpp
+HOSTCC		= gcc
 
 #############################
 # Parameters
 #############################
 # DEBUG flag
-DEBUG ?= 1
+DEBUG 			?= 1
 
-NOGRAPHICS ?= 1
+NOGRAPHICS		?= 1
 
 # Enable GDB remote debug. If it's set, make qemu will try to attach
 # to a gdb session on localhost:1234
@@ -23,37 +23,36 @@ GDB ?= 0
 #############################
 
 # CFLAGS
-CFLAGS = -ffreestanding -nostdlib -fno-omit-frame-pointer
+CFLAGS 			= -ffreestanding -nostdlib -fno-omit-frame-pointer
 ifeq ($(DEBUG), 1)
     CFLAGS += -g -DDEBUG
 endif
 
 
-CWARNS = -Wall -Wextra -fno-exceptions
+CWARNS 			= -Wall -Wextra -fno-exceptions
 
 
 # Directories
-B_DIR = boot
-K_DIR = kernel
-L_DIR = lib
-M_DIR = melon
-MELIB_DIR = melib
-F_DIR = mkfs
+BOOT_DIR 		= boot
+KERN_DIR 		= kernel
+LIB_DIR 		= lib
+MELON_DIR		= melon
+MELIBOOT_DIR 	= melib
+MKFS_DIR		= mkfs
 
 
-BOOT = melonos-bootloader
-KERNEL = melonos-kernel
-MELONOS = melonos.img
-MELONOS_QCOW2 = melonos.qcow2
-MELONFS = melonfs.img
-MELONFS_QCOW2 = melonfs.qcow2
+BOOT			= melonos-bootloader
+KERNEL			= melonos-kernel
+MELONOS 		= melonos.img
+MELONOS_QCOW2 	= melonos.qcow2
+MELONFS 		= melonfs.img
+MELONFS_QCOW2 	= melonfs.qcow2
+MKFS 			= mkfs.melonfs
 
-MKFS = mkfs.melonfs
+LIBUTILS		= libutils.a
+LIBMELON		= libmelon.a
 
-LIBUTILS = libutils.a
-LIBMELON = libmelon.a
-
-QEMU = qemu-system-i386
+QEMU 			= qemu-system-i386
 
 .PHONY: boot kernel all
 
@@ -98,10 +97,10 @@ $(MELONFS): $(MKFS) $(USERPROGS)
 
 .PHONY: clean qemu-debug copy echo
 clean:
-	find $(K_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	find $(B_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	find $(L_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	find $(M_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
+	find $(KERN_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
+	find $(BOOT_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
+	find $(LIB_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
+	find $(MELON_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
 	find $(MELIB_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
 	rm -rf *.o *.pp.* $(MELONOS_QCOW2) $(MELONOS) $(MELONFS) $(MELONFS_QCOW2) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 

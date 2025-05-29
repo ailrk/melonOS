@@ -4,35 +4,31 @@
 # A preprocessed file will have `.pp` extension being added before it's suffix.
 # For example, linker.ld will become linker.pp.ld, and the linker.pp.ld will be
 # used in the following linking process.
-K_CFILES = $(shell find $(K_DIR) -name "*.c")
-
-# vectors.s is generated from vectors.py
-K_VECTORS = $(K_DIR)/trap/vectors.s
-
-K_ASMFILES = $(filter-out $(K_VECTORS) $(shell find $(K_DIR) -name "*.pp.s"),$(shell find $(K_DIR) -name "*.s")) $(K_VECTORS)
-
-K_LINKER = $(K_DIR)/kernel.ld
-K_OBJS = $(K_CFILES:.c=.o) $(K_ASMFILES:.s=.o)
-K_INCS = $(shell find kernel -type d -exec echo -I"{}" \;) -I$(L_DIR) -Ii386
-K_LIBS = -L. -lutils
+KERN_CFILES 	= $(shell find $(KERN_DIR) -name "*.c")
+KERN_VECTORS 	= $(KERN_DIR)/trap/vectors.s # vectors.s is generated from vectors.py
+KERN_ASMFILES 	= $(filter-out $(KERN_VECTORS) $(shell find $(KERN_DIR) -name "*.pp.s"),$(shell find $(KERN_DIR) -name "*.s")) $(KERN_VECTORS)
+KERN_LINKER 	= $(KERN_DIR)/kernel.ld
+KERN_OBJS 		= $(KERN_CFILES:.c=.o) $(KERN_ASMFILES:.s=.o)
+KERN_INCS 		= $(shell find kernel -type d -exec echo -I"{}" \;) -I$(LIB_DIR) -Ii386
+KERN_LIBS 		= -L. -lutils
 
 
-$(KERNEL): $(K_OBJS) $(LIBUTILS)
+$(KERNEL): $(KERN_OBJS) $(LIBUTILS)
 	@echo "kernel> Building Melon OS Kernel..."
-	@echo "$(K_ASMFILES)"
-	@echo "$(K_ASMFILES)"
-	@echo "$(K_OBJS)"
-	@echo "$(K_INCS)"
-	@$(CPP) $(K_INCS) $(K_LINKER) | tools/pptrim > $(K_LINKER:.ld=.pp.ld)
-	@$(CC) -T $(K_LINKER:.ld=.pp.ld) $(CFLAGS) $(CWARNS) $(K_OBJS) -o $@ $(K_LIBS)
+	@echo "$(KERN_ASMFILES)"
+	@echo "$(KERN_ASMFILES)"
+	@echo "$(KERN_OBJS)"
+	@echo "$(KERN_INCS)"
+	$(CPP) $(KERN_INCS) $(KERN_LINKER) | tools/pptrim > $(KERN_LINKER:.ld=.pp.ld)
+	$(CC) -T $(KERN_LINKER:.ld=.pp.ld) $(CFLAGS) $(CWARNS) $(KERN_OBJS) -o $@ $(KERN_LIBS)
 
-$(K_CFILES:.c=.o): %.o: %.c
-	@$(CC) $(K_INCS) $(CFLAGS) $(CWARNS) -c -o $@ $*.c
+$(KERN_CFILES:.c=.o): %.o: %.c
+	$(CC) $(KERN_INCS) $(CFLAGS) $(CWARNS) -c -o $@ $*.c
 
-$(K_ASMFILES:.s=.o): %.o: %.s
-	@$(CPP) $(K_INCS) $^ | tools/pptrim > $(^:.s=.pp.s)
-	@$(AS) $(^:.s=.pp.s) -o $@
+$(KERN_ASMFILES:.s=.o): %.o: %.s
+	$(CPP) $(KERN_INCS) $^ | tools/pptrim > $(^:.s=.pp.s)
+	$(AS) $(^:.s=.pp.s) -o $@
 
-$(K_VECTORS): $(K_VECTORS:.s=.py)
-	rm -f $(K_VECTORS) $(K_VECTORS:.s=.pp.s)
-	$(K_DIR)/trap/vectors.py > $@
+$(KERN_VECTORS): $(KERN_VECTORS:.s=.py)
+	rm -f $(KERN_VECTORS) $(KERN_VECTORS:.s=.pp.s)
+	$(KERN_DIR)/trap/vectors.py > $@

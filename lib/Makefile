@@ -1,5 +1,5 @@
-L_CFILES		= $(wildcard $(L_DIR)/*.c)
-L_OBJS			= $(L_CFILES:.c=.o)
+LIB_CFILES		= $(wildcard $(LIB_DIR)/*.c)
+LIB_OBJS		= $(LIB_CFILES:.c=.o)
 
-$(LIBUTILS): $(L_OBJS)
-	@$(AR) $@ $^
+$(LIBUTILS): $(LIB_OBJS)
+	$(AR) $@ $^

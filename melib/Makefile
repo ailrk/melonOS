@@ -5,11 +5,9 @@ MELIB_ASMS      = $(MELIB_DIR)/syscalls.s
 MELIB_ASM_PPS   = $(MELIB_DIR)/syscalls.pp.s
 MELIB_ASM_OBJS  = $(MELIB_DIR)/syscalls.o
 
-MELIB_LINKER  	= $(M_DIR)/user.ld
+MELIB_LINKER  	= $(MELIB_DIR)/user.ld
 MELIB_CFLAGS  	= $(CFLAGS) $(CWARNS) $(MELIB_INCS)
-MELIB_INCS    	= -Ii386 -I$(L_DIR) -I$(K_DIR)
-
-# -I$(shell find kernel -type d -exec echo -I"{}" \;)
+MELIB_INCS    	= -Ii386 -I$(LIB_DIR) -I$(KERN_DIR)
 
 
 $(LIBMELON): $(MELIB_OBJS)

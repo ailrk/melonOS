@@ -1,8 +1,8 @@
-M_CFILES 	= $(wildcard $(M_DIR)/*.c)
-M_OBJS 		= $(M_CFILES:.c=.o)
-M_LINKER 	= $(M_DIR)/user.ld
-M_LIBS 		= -L. -lutils -lmelon
-M_INCS 		= -I$(K_DIR) -Ii386 -I$(M_DIR) -I$(MELIB_DIR)
+MELON_CFILES 	= $(wildcard $(MELON_DIR)/*.c)
+MELON_OBJS 		= $(MELON_CFILES:.c=.o)
+MELON_LINKER 	= $(MELON_DIR)/user.ld
+MELON_LIBS 		= -L. -lutils -lmelon
+MELON_INCS 		= -I$(KERN_DIR) -Ii386 -I$(MELON_DIR) -I$(MELIB_DIR)
 
 
 USERPROGS = $(M_CFILES:.c=_)
