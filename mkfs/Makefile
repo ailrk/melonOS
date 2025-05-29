@@ -1,5 +1,5 @@
-MKFS_CFILES = $(MKFS_DIR)/mkfs.c
-MKFS_INCS = -I$(KERN_DIR) -Ii386
+MKFS_CFILES 	= $(MKFS_DIR)/mkfs.c
+MKFS_INCS 	= -I$(KERN_DIR) -Ii386
 
 $(MKFS): $(MKFS_CFILES)
 	$(HOSTCC) $(MKFS_INCS) $(CWARNS) -g -o $@ $^

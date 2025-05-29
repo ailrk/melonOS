@@ -1,10 +1,10 @@
-ARCH		?= i686
-CC		= $(ARCH)-elf-gcc
-LD		= $(ARCH)-elf-ld
-AS		= nasm -f elf32
-AR		= ar rcs
-CPP		= cpp
-HOSTCC		= gcc
+ARCH			?= i686
+CC			= $(ARCH)-elf-gcc
+LD			= $(ARCH)-elf-ld
+AS			= nasm -f elf32
+AR			= ar rcs
+CPP			= cpp
+HOSTCC			= gcc
 
 #############################
 # Parameters

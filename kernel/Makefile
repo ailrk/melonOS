@@ -8,9 +8,9 @@ KERN_CFILES 	= $(shell find $(KERN_DIR) -name "*.c")
 KERN_VECTORS 	= $(KERN_DIR)/trap/vectors.s # vectors.s is generated from vectors.py
 KERN_ASMFILES 	= $(filter-out $(KERN_VECTORS) $(shell find $(KERN_DIR) -name "*.pp.s"),$(shell find $(KERN_DIR) -name "*.s")) $(KERN_VECTORS)
 KERN_LINKER 	= $(KERN_DIR)/kernel.ld
-KERN_OBJS 		= $(KERN_CFILES:.c=.o) $(KERN_ASMFILES:.s=.o)
-KERN_INCS 		= $(shell find kernel -type d -exec echo -I"{}" \;) -I$(LIB_DIR) -Ii386
-KERN_LIBS 		= -L. -lutils
+KERN_OBJS 	= $(KERN_CFILES:.c=.o) $(KERN_ASMFILES:.s=.o)
+KERN_INCS 	= $(shell find kernel -type d -exec echo -I"{}" \;) -I$(LIB_DIR) -Ii386
+KERN_LIBS 	= -L. -lutils
 
 
 $(KERNEL): $(KERN_OBJS) $(LIBUTILS)
