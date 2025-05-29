@@ -26,7 +26,6 @@ typedef struct Pipe {
 } Pipe;
 
 
-
 int pipe_allocate(File **read, File **write) {
     Pipe *pipe = 0;
     *read = *write = 0;

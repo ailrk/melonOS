@@ -37,16 +37,16 @@ BOOT_DIR 		= boot
 KERN_DIR 		= kernel
 LIB_DIR 		= lib
 MELON_DIR		= melon
-MELIBOOT_DIR 	= melib
+MELIB_DIR 		= melib
 MKFS_DIR		= mkfs
 
 
 BOOT			= melonos-bootloader
 KERNEL			= melonos-kernel
 MELONOS 		= melonos.img
-MELONOS_QCOW2 	= melonos.qcow2
+MELONOS_QCOW2 		= melonos.qcow2
 MELONFS 		= melonfs.img
-MELONFS_QCOW2 	= melonfs.qcow2
+MELONFS_QCOW2 		= melonfs.qcow2
 MKFS 			= mkfs.melonfs
 
 LIBUTILS		= libutils.a
@@ -62,11 +62,14 @@ img: $(MELONOS)
 boot: $(BOOT)
 kernel: $(KERNEL)
 
+
 echo-kernel-elf:
 	@echo "$(KERNEL)"
 
+
 echo-bootloader:
 	@echo "$(BOOTLOADER)"
+
 
 echo-img:
 	@echo "$(MELONOS)"
@@ -137,17 +140,22 @@ QEMU_DRVS = \
 # The file for uart debug output
 QEMU_DEBUG_SERIALFILE = .debug.log
 
+
 # The file for qemu logs
 QEMU_LOGFILE = .qemu.log
 
+
 # QEMU graphics options. Turned off by default.
 QEMU_GRAPHICS_FLAGS =
+
 
 ifeq ($(NOGRAPHICS), 1)
 	QEMU_GRAPHICS_FLAGS += -nographic
 endif
 
+
 QEMU_GDB_FLAGS =
+
 
 ifeq ($(GDB), 1)
 QEMU_GDB_FLAGS += -s -S
@@ -197,7 +205,8 @@ serial:
 	tools/serial
 
 cc:
-	bear -- make
+	bear --append -- make
+	bear --append -- make $(LIBMELON)
 
 # subfolder makefiles
 include boot/Makefile
