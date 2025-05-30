@@ -46,7 +46,6 @@ static void dump_trapframe(const TrapFrame *tf) {
 
 /* Input source */
 uint8_t source_uart() { return uart_getc(COM1); }
-uint8_t source_ps2() { return ps2in(KBP_DATA); }
 
 
 
@@ -96,7 +95,7 @@ void handle_I_IRQ_TIMER(const TrapFrame *tf) {
 
 void handle_I_IRQ_KBD() {
     debug("irq ps2\n");
-    kbd_read(source_ps2);
+    kbd_read();
     console_handler();
     pic_eoi();
 }
@@ -112,7 +111,7 @@ void handle_I_IRQ_COM2() {
 
 void handle_I_IRQ_COM1() {
     debug("irq com1\n");
-    kbd_read(source_uart);
+    uart_read(COM1);
     console_handler();
     pic_eoi();
 }

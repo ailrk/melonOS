@@ -7,6 +7,7 @@
 
 
 void uart_init(uint16_t com);
+void uart_read(uint16_t com);
 char uart_getc(uint16_t com);
 void uart_putc(uint16_t com, char c);
 void uart_vprintf(uint16_t com,char *fmt, va_list args);

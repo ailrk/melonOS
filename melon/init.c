@@ -1,5 +1,4 @@
 #include "sys.h"
-#include "melon.h"
 
 
 char *argv[] = { "sh", 0 };
@@ -14,8 +13,6 @@ int main() {
     }
     dup(0); // stdout
     dup(0); // stderr
-
-    write(1, "init\n", 5);
 
     pid = fork();
     if (pid < 0) {

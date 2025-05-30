@@ -6,6 +6,60 @@
 #include "i386.h"
 
 
+#define BUF_SZ 256
+
+
+/* Circular buffer scancode for further consumption */
+typedef struct UArtBuffer {
+    char    data[BUF_SZ];
+    uint8_t head;
+    uint8_t tail;
+} UArtBuffer;
+
+
+UArtBuffer com1_buffer = { .head = 0, .tail = 0 };
+UArtBuffer com2_buffer = { .head = 0, .tail = 0 };
+
+
+UArtBuffer *get_buffer(uint16_t com) {
+    switch (com) {
+        case COM1:
+            return &com1_buffer;
+        case COM2:
+            return &com2_buffer;
+        default:
+            return 0;
+    }
+}
+
+
+bool buffer_empty(uint16_t com) {
+    UArtBuffer *buffer = get_buffer(com);
+    return buffer->head == buffer->tail;
+}
+
+
+bool buffer_put(uint16_t com, char value) {
+    UArtBuffer *buffer = get_buffer(com);
+    uint8_t tail = (buffer->tail + 1) % BUF_SZ;
+    if (tail == buffer->head) return false;
+    buffer->tail = tail;
+    buffer->data[buffer->tail] = value;
+    return true;
+}
+
+
+bool buffer_get(uint16_t com, char *value) {
+    UArtBuffer *buffer = get_buffer(com);
+    if (buffer_empty(com)) {
+        return false;
+    }
+    *value = buffer->data[buffer->head % BUF_SZ];
+    buffer->head = (buffer->head + 1)  % BUF_SZ;
+    return true;
+}
+
+
 static bool init_serial(uint16_t com) {
    outb(com + 1, 0x00);    // Disable all interrupts
    outb(com + 3, 0x80);    // Enable DLAB (set baud rate divisor)
@@ -38,6 +92,11 @@ void uart_init(uint16_t com) {
 }
 
 
+static int is_transmit_empty(uint16_t com) {
+   return inb(com + 5) & 0x20;
+}
+
+
 static int serial_received(uint16_t com) {
    return inb(com + 5) & 1;
 }
@@ -49,26 +108,30 @@ static char read_serial(uint16_t com) {
 }
 
 
-char uart_getc(uint16_t com) {
-    return read_serial(com);
-}
-
-
-static int is_transmit_empty(uint16_t com) {
-   return inb(com + 5) & 0x20;
-}
-
-
 static void write_serial(uint16_t com, char a) {
    while (is_transmit_empty(com) == 0);
    outb(com,a);
 }
 
 
+void uart_read(uint16_t com) {
+    char c = read_serial(com);
+    buffer_put(com, c);
+}
+
+
+char uart_getc(uint16_t com) {
+    char c;
+    if (buffer_get(com, &c)) {
+        return c;
+    }
+    return -1;
+}
+
+
 void uart_putc(uint16_t com, char c) {
     write_serial(com, c);
 }
-
 
 
 static char *uart_putc_com1(char *c) { uart_putc(COM1, *c++); return c; }

@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "kbd.h"
+#include "debug.h"
+#include "ps2.h"
 
 
 /* Set 1 make code */
@@ -166,6 +168,7 @@ uint16_t modifier = 0;
 
 #define SCBUFFER_SZ 256
 
+
 /* Circular buffer scancode for further consumption */
 typedef struct ScancodeBuffer {
     Scancode data[SCBUFFER_SZ];
@@ -174,12 +177,11 @@ typedef struct ScancodeBuffer {
 } ScancodeBuffer;
 
 
-ScancodeBuffer sc_buffer = {
-    .head = 0,
-    .tail = 0
-};
+ScancodeBuffer sc_buffer = { .head = 0, .tail = 0 };
+
 
 bool sc_buffer_empty() { return sc_buffer.head == sc_buffer.tail; }
+
 
 bool sc_buffer_put(Scancode value) {
     uint8_t tail = (sc_buffer.tail + 1) % SCBUFFER_SZ;
@@ -202,6 +204,7 @@ bool sc_buffer_get(Scancode *value) {
 static bool is_break_code(Scancode scancode) {
     return scancode & 0x80;
 }
+
 
 /*! modify keycode j
  *  @scancode  SET 1 scancode recived from the keyboard.
@@ -264,13 +267,13 @@ char kbd_translate (Scancode scancode) {
 }
 
 
-void kbd_read(uint8_t (*source)()) {
-    uint8_t data = source();
+void kbd_read() {
+    uint8_t data = ps2in(KBP_DATA);
     sc_buffer_put(data);
 }
 
 
-int kbd_getc() {
+int kbd_getscancode() {
     uint16_t value;
     if (sc_buffer_get(&value)) {
         return value;

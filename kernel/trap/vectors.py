@@ -7,7 +7,7 @@
 #     push 0
 #     jmp trapgo
 #   ...
-#   
+#
 #   ; vector table
 #   global vectors
 #   vectors:

@@ -109,11 +109,6 @@ int pipe_read(Pipe *pipe, char *buf, size_t n) {
         sleep(&pipe->nread, &pipe->lk);
     }
 
-    if (pipe->nread < pipe->nwritten) {
-        r = min(pipe->nwritten - pipe->nread, n);
-        memcpy(buf, &pipe->data[pipe->nread % PIPESZ], r);
-    }
-
     while (n--) {
         if (pipe->nread == pipe->nwritten) break;
         buf[r++] = pipe->data[pipe->nread++ % PIPESZ];

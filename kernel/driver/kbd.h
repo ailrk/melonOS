@@ -21,7 +21,6 @@
 
 typedef uint16_t Scancode;
 
-void kbd_read(uint8_t (*source)());
-int  kbd_getc();
+void kbd_read();
+int  kbd_getscancode();
 char kbd_translate (Scancode scancode);
-
