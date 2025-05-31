@@ -12,7 +12,7 @@ HOSTCC			= gcc
 # DEBUG flag
 DEBUG 			?= 1
 
-NOGRAPHICS		?= 1
+GRAPHICS		?= 0
 
 # Enable GDB remote debug. If it's set, make qemu will try to attach
 # to a gdb session on localhost:1234
@@ -112,7 +112,7 @@ clean:
 
 echo:
 	@echo 'DEBUG $(DEBUG)'
-	@echo 'NOGRAPHICS $(NOGRAPHICS)'
+	@echo 'GRAPHICS $(GRAPHICS)'
 	@echo 'GDB $(GDB)'
 	@echo 'CC $(CC)'
 	@echo 'AS $(AS)'
@@ -152,7 +152,7 @@ QEMU_LOGFILE = .qemu.log
 QEMU_GRAPHICS_FLAGS =
 
 
-ifeq ($(NOGRAPHICS), 1)
+ifeq ($(GRAPHICS), 0)
 	QEMU_GRAPHICS_FLAGS += -nographic
 endif
 
