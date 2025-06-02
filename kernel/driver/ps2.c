@@ -8,7 +8,7 @@
 
 /*! wait for the input buffer to be ready */
 static void waiti() {
-    int n = 0x100;
+    int n = 0x1000;
     while (n--) {
         if (inb((KBP_STAT & KBS_IB) == 0))
             return;

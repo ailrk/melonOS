@@ -11,12 +11,14 @@
 #include "fs.h"
 #include "fdefs.fwd.h"
 #include "file.h"
+#include "proc.h"
 #include "pdefs.h"
 #include "process.h"
 #include "exec.h"
 #include "fs/fcntl.h"
 #include "sys/syscall.h"
 #include "sys/syscalls.h"
+#include <stdint.h>
 
 /* After `int I_SYSCALL`, the user stack on system call looks
  * like this:
@@ -79,18 +81,18 @@ File *getfile (size_t nth) {
 }
 
 
-int sys_fork() {
+uintptr_t sys_fork() {
     return fork();
 }
 
 
-int sys_exit() {
+uintptr_t sys_exit() {
     exit();
     return 0;
 }
 
 
-int sys_exec() {
+uintptr_t sys_exec() {
     char *path = (char *)getptr(0);
     char **argv = (char **)getptr(1);
     if (!path) return -1;
@@ -100,17 +102,21 @@ int sys_exec() {
 }
 
 
-int sys_sbrk() {
-    return -1;
+uintptr_t sys_sbrk() {
+    int brk = getint(0);
+    int addr = this_proc()->size;
+    if (grow_process(brk) == 0) {
+        return addr;
+    }
 }
 
 
-int sys_getpid() {
+uintptr_t sys_getpid() {
     return this_proc()->pid;
 }
 
 
-int sys_read() {
+uintptr_t sys_read() {
     File        *f    = getfile(0);
     char        *buf  = getptr(1);
     int          sz   = getint(2);
@@ -121,7 +127,7 @@ int sys_read() {
 }
 
 
-int sys_write() {
+uintptr_t sys_write() {
     File        *f    = getfile(0);
     const void  *buf  = getptr (1);
     int          sz   = getint (2);
@@ -132,7 +138,7 @@ int sys_write() {
 }
 
 
-int sys_mknod() {
+uintptr_t sys_mknod() {
     const char  *path  = getptr (0);
     unsigned     major = getint (1);
     unsigned     minor = getint (2);
@@ -144,7 +150,7 @@ int sys_mknod() {
 }
 
 
-int sys_mkdir() {
+uintptr_t sys_mkdir() {
     const char  *path = getptr (0);
     Inode       *ino  = fs_create (path, F_DIR, 0, 0);
     if (ino == 0) {
@@ -155,7 +161,7 @@ int sys_mkdir() {
 }
 
 
-int sys_open() {
+uintptr_t sys_open() {
     const char  *path = getptr(0);
     int          mode = getint(1);
     Inode       *ino;
@@ -206,7 +212,7 @@ int sys_open() {
 }
 
 
-int sys_close () {
+uintptr_t sys_close () {
     File *f = getfile (0);
 
     if (!f) return -1;
@@ -215,7 +221,7 @@ int sys_close () {
 }
 
 
-int sys_link() {
+uintptr_t sys_link() {
     const char  *old = getptr (0);
     const char  *new = getptr (1);
 
@@ -261,12 +267,12 @@ bad:
 }
 
 
-int sys_unlink() {
+uintptr_t sys_unlink() {
     return -1;
 }
 
 
-int sys_dup() {
+uintptr_t sys_dup() {
     File *f = getfile(0);
 
     if (!f) return -1;
@@ -282,12 +288,12 @@ int sys_dup() {
 }
 
 
-int sys_wait() {
+uintptr_t sys_wait() {
     return wait();
 }
 
 
-int sys_pipe() {
+uintptr_t sys_pipe() {
     int  *fds = (int *)getptr(0);
     File *read;
     File *write;
@@ -330,7 +336,7 @@ int sys_pipe() {
 
 
 
-static int (*system_calls[])() = {
+static uintptr_t (*system_calls[])() = {
     [SYS_FORK]   = sys_fork,
     [SYS_EXIT]   = sys_exit,
     [SYS_EXEC]   = sys_exec,

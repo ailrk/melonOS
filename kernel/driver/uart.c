@@ -1,5 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
+#include "debug.h"
 #include "err.h"
 #include "uart.h"
 #include "fmt.h"
@@ -9,11 +11,11 @@
 #define BUF_SZ 256
 
 
-/* Circular buffer scancode for further consumption */
+/* Circular buffer scancode for further consumption. Drops data if it's full */
 typedef struct UArtBuffer {
     char    data[BUF_SZ];
-    uint8_t head;
-    uint8_t tail;
+    size_t head;
+    size_t tail;
 } UArtBuffer;
 
 
@@ -21,7 +23,7 @@ UArtBuffer com1_buffer = { .head = 0, .tail = 0 };
 UArtBuffer com2_buffer = { .head = 0, .tail = 0 };
 
 
-UArtBuffer *get_buffer(uint16_t com) {
+static UArtBuffer *get_buffer(uint16_t com) {
     switch (com) {
         case COM1:
             return &com1_buffer;
@@ -33,29 +35,34 @@ UArtBuffer *get_buffer(uint16_t com) {
 }
 
 
-bool buffer_empty(uint16_t com) {
+static bool buffer_empty(uint16_t com) {
     UArtBuffer *buffer = get_buffer(com);
     return buffer->head == buffer->tail;
 }
 
-
-bool buffer_put(uint16_t com, char value) {
+static bool buffer_full(uint16_t com) {
     UArtBuffer *buffer = get_buffer(com);
-    uint8_t tail = (buffer->tail + 1) % BUF_SZ;
-    if (tail == buffer->head) return false;
-    buffer->tail = tail;
-    buffer->data[buffer->tail] = value;
+    return (buffer->head == buffer->tail + 1 % BUF_SZ);
+}
+
+
+static bool buffer_put(uint16_t com, char value) {
+    UArtBuffer *buffer = get_buffer(com);
+    if (buffer_full(com)) {
+        return false;
+    }
+
+    buffer->data[buffer->tail++ % BUF_SZ] = value;
     return true;
 }
 
 
-bool buffer_get(uint16_t com, char *value) {
+static bool buffer_get(uint16_t com, char *value) {
     UArtBuffer *buffer = get_buffer(com);
     if (buffer_empty(com)) {
         return false;
     }
-    *value = buffer->data[buffer->head % BUF_SZ];
-    buffer->head = (buffer->head + 1)  % BUF_SZ;
+    *value = buffer->data[buffer->head++ % BUF_SZ];
     return true;
 }
 

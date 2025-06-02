@@ -22,5 +22,6 @@
 typedef uint16_t Scancode;
 
 void kbd_read();
+void kbd_drain();
 int  kbd_getscancode();
 char kbd_translate (Scancode scancode);

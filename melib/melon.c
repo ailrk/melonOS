@@ -1,8 +1,9 @@
 #include "melon.h"
 #include "fmt.h"
 #include "sys.h"
+#include <stddef.h>
 
-
+/* io */
 void putc(char c) {
     write(2, &c, 1);
 }

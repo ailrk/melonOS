@@ -145,7 +145,11 @@ QEMU_DEBUG_SERIALFILE = .debug.log
 
 
 # The file for qemu logs
-QEMU_LOGFILE = .qemu.log
+QEMU_LOGFILE = -D .qemu.log
+
+
+# QEMU_LOG_SETTING = -d 'int,cpu_reset,guest_errors'
+QEMU_LOG_SETTING = -d 'cpu_reset'
 
 
 # QEMU graphics options. Turned off by default.
@@ -165,6 +169,7 @@ QEMU_GDB_FLAGS += -s -S
 endif
 
 
+
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
 
@@ -174,8 +179,9 @@ qemu:
 	$(QEMU) \
 		$(QEMU_DRVS) \
 		$(QEMU_GDB_FLAGS) \
-		-d 'int,cpu_reset,guest_errors,in_asm,exec' \
-		-no-reboot -D $(QEMU_LOGFILE) \
+		$(QEMU_LOG_SETTING) \
+		$(QEMU_LOGFILE) \
+		-no-reboot \
 		-serial unix:/tmp/qemu-serial.sock,server,nowait \
 		-serial file:$(QEMU_DEBUG_SERIALFILE) \
 		-monitor stdio \

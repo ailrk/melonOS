@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 #include "kbd.h"
 #include "debug.h"
 #include "ps2.h"
@@ -166,37 +167,42 @@ char capslockmap[256] = {
 
 uint16_t modifier = 0;
 
-#define SCBUFFER_SZ 256
+#define BUF_SZ 256
 
 
 /* Circular buffer scancode for further consumption */
-typedef struct ScancodeBuffer {
-    Scancode data[SCBUFFER_SZ];
-    uint8_t head;
-    uint8_t tail;
-} ScancodeBuffer;
+struct ScancodeBuffer {
+    Scancode data[BUF_SZ];
+    size_t   head;
+    size_t   tail;
+} sc_buffer = { .head = 0, .tail = 0 };
 
 
-ScancodeBuffer sc_buffer = { .head = 0, .tail = 0 };
+static bool buffer_empty() {
+    return sc_buffer.head == sc_buffer.tail;
+}
 
 
-bool sc_buffer_empty() { return sc_buffer.head == sc_buffer.tail; }
+static bool buffer_full() {
+    return (sc_buffer.head == sc_buffer.tail + 1 % BUF_SZ);
+}
 
 
-bool sc_buffer_put(Scancode value) {
-    uint8_t tail = (sc_buffer.tail + 1) % SCBUFFER_SZ;
-    if (tail == sc_buffer.head) return false;
-    sc_buffer.tail = tail;
-    sc_buffer.data[sc_buffer.tail] = value;
+static bool buffer_put(Scancode value) {
+    if (buffer_full()) {
+        return false;
+    }
+
+    sc_buffer.data[sc_buffer.tail++ % BUF_SZ] = value;
     return true;
 }
 
-bool sc_buffer_get(Scancode *value) {
-    if (sc_buffer_empty()) {
+
+static bool buffer_get(Scancode *value) {
+    if (buffer_empty()) {
         return false;
     }
-    *value = sc_buffer.data[sc_buffer.head % SCBUFFER_SZ];
-    sc_buffer.head = (sc_buffer.head + 1)  % SCBUFFER_SZ;
+    *value = sc_buffer.data[sc_buffer.head++ % BUF_SZ];
     return true;
 }
 
@@ -267,15 +273,22 @@ char kbd_translate (Scancode scancode) {
 }
 
 
+/* Drain keyboard input */
+void kbd_drain() {
+    ps2in(KBP_DATA);
+}
+
+
 void kbd_read() {
     uint8_t data = ps2in(KBP_DATA);
-    sc_buffer_put(data);
+    if (data == 0 || data == 0xff) return;
+    buffer_put(data);
 }
 
 
 int kbd_getscancode() {
     uint16_t value;
-    if (sc_buffer_get(&value)) {
+    if (buffer_get(&value)) {
         return value;
     }
     return -1;

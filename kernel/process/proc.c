@@ -256,23 +256,23 @@ void init_pid1() {
 
 /*! Grow process user memory by n bytes, n can be negative.
  * */
-bool grow_process(int n) {
+int grow_process(int n) {
     if (n == 0)
-        return true;
+        return 0;
 
     Process *p = this_proc();
     size_t sz = p->size;
 
     if (n > 0) {
         if ((sz = uvm_allocate(p->pgdir, sz, sz + n)) == 0) {
-            return false;
+            return -1;
         }
     } else {
-        if ((sz = uvm_allocate(p->pgdir, sz, sz + n)) == 0)
-            return false;
+        if ((sz = uvm_deallocate(p->pgdir, sz, sz + n)) == 0)
+            return -1;
     }
 
     p->size = sz;
     uvm_switch(p);
-    return true;
+    return 0;
 }

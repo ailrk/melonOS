@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "defs.h"
 #include "fdefs.fwd.h"
+#include "kbd.h"
 #include "string.h"
 #include "err.h"
 #include "print.h"

@@ -11,7 +11,7 @@ void perror(const char *);
 #define kassert(expr)                                         \
     do {                                                      \
         if (!(expr)) {                                        \
-            panic("assert: " #expr ","                        \
+            panic("assert: " #expr ", "                       \
                     __FILE__ ":" TOSTRING(__LINE__) "\n" );   \
         }                                                     \
     } while (0)

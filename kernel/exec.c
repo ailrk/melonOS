@@ -102,6 +102,21 @@ int exec (char *path, char **argv) {
         }
     }
 
+
+#ifdef DEBUG
+    debug("exec: %s ", path);
+    for (int i = 0; i < MAXARGS; ++i) {
+        if (argv[i]) {
+            debug_printf("%s,", argv[i]);
+        } else {
+            break;
+        }
+        debug_printf(" ");
+    }
+    debug_printf(" binary loaded\n");
+#endif
+
+
     // don't need inode any more.
     inode_drop(ino);
     ino = 0;
@@ -143,6 +158,10 @@ int exec (char *path, char **argv) {
     if (uvm_memcpy(pgtbl, sp, buffer, (3 + argc + 1) * sizeof(buffer[0])) == -1) {
         goto bad;
     }
+
+#ifdef DEBUG
+    debug("exec: %s, uvm is ready\n", path);
+#endif
 
     // go to user space
     p = this_proc();

@@ -8,7 +8,7 @@ run() {
 
   while [ ! -e /tmp/virtual-tty ]; do sleep 0.1; done
   printf "[\033[32mSerial\033[0m] found.\n"
-  picocom --echo --escape C-c --flow n --imap lfcrlf  /tmp/virtual-tty
+  picocom  --escape C-c --flow n --imap lfcrlf --omap crlf /tmp/virtual-tty
 }
 
 

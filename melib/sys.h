@@ -10,7 +10,7 @@ int   kill(int pid);
 int   exec(char *, char **);
 int   getpid();
 int   sleep(int);
-char *sbrk(int);
+void *sbrk(int);
 int   open(const char *, int);
 int   close(int fd);
 int   read(int fd, char *buf, int size);

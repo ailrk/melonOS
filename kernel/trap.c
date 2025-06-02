@@ -61,8 +61,8 @@ void trap_init() {
             vectors[I_SYSCALL],
             GATE_P(1) | GATE_DPL(DPL_U) | TRAP_GATE);
 
-    pic_init();
     idt_init();
+    pic_init();
 }
 
 
