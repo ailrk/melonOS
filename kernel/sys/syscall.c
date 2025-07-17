@@ -53,7 +53,7 @@
  *            c: char
  *  @return the pointer points to the nth argument
  * */
-void *getarg (size_t nth) {
+void *getarg(size_t nth) {
     Process *thisp = this_proc();
     void *esp = (void *)thisp->trapframe->esp;
     int offset = sizeof(size_t);
@@ -62,16 +62,16 @@ void *getarg (size_t nth) {
 }
 
 
-int getint (size_t nth) { return *(int *)getarg (nth); }
+int getint(size_t nth) { return *(int *)getarg (nth); }
 
 
-void *getptr (size_t nth) { return *(void **)getarg (nth); }
+void *getptr(size_t nth) { return *(void **)getarg (nth); }
 
 
-char getchr (size_t nth) { return *(char *)getarg (nth); }
+char getchr(size_t nth) { return *(char *)getarg (nth); }
 
 
-File *getfile (size_t nth) {
+File *getfile(size_t nth) {
     int fd = getint(nth);
     File *f;
     if (fd < 0)                           return 0;
@@ -212,8 +212,8 @@ uintptr_t sys_open() {
 }
 
 
-uintptr_t sys_close () {
-    File *f = getfile (0);
+uintptr_t sys_close() {
+    File *f = getfile(0);
 
     if (!f) return -1;
     file_close (f);
@@ -222,8 +222,8 @@ uintptr_t sys_close () {
 
 
 uintptr_t sys_link() {
-    const char  *old = getptr (0);
-    const char  *new = getptr (1);
+    const char  *old = getptr(0);
+    const char  *new = getptr(1);
 
     if (!old) return -1;
     if (!new) return -1;

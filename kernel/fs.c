@@ -29,11 +29,11 @@ Inode *fs_create(const char *path, FileType type, uint16_t major, uint16_t minor
     char   name[DIRNAMESZ];
 
     // get parent dir
-    if ((dir = dir_abspath (path, true)) == 0)
+    if ((dir = dir_abspath(path, true)) == 0)
         return 0;
 
     // get path name
-    if (!dir_pathidx (path, -1, name))
+    if (!dir_pathidx(path, -1, name))
         return 0;
 
     devno_t dev = dir->dev;
@@ -84,7 +84,7 @@ Inode *fs_create(const char *path, FileType type, uint16_t major, uint16_t minor
  *  @return on success return the file descriptor number, return
  *          -1 on errors.
  * */
-int fs_fdalloc(File *f){
+int fs_fdalloc(File *f) {
     for (int fd = 0; fd < NOFILE; ++fd) {
         if (this_proc()->file[fd] == 0) {
             this_proc()->file[fd] = f;

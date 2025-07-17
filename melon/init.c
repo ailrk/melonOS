@@ -23,7 +23,7 @@ int main() {
         exec("/sh", argv);
         exit();
     }
-    while((wpid = wait()) >= 0 && pid != wpid) {
+    while ((wpid = wait()) >= 0 && pid != wpid) {
         write(1, "zombie\n", 7);
     }
 }

@@ -30,7 +30,7 @@ void ptable_init() {
 
 
 #if DEBUG
-void dump_context (const Context *c) {
+void dump_context(const Context *c) {
     if (!c) {
         debug("[CTX| no context yet]");
         return;
@@ -40,7 +40,7 @@ void dump_context (const Context *c) {
 }
 
 
-void dump_process (const Process *p) {
+void dump_process(const Process *p) {
     if (p->pid > NPROC)
         return;
 
@@ -169,7 +169,7 @@ Process *allocate_process() {
     if (nextpid > NPROC)
         panic ("allocate_process: can't allocate more pids");
     lock(&ptable.lk);
-    Process *p = get_unused_process ();
+    Process *p = get_unused_process();
     if (!p) {
         unlock(&ptable.lk);
         return 0;
@@ -229,11 +229,11 @@ static void set_pid1_trapframe(Process *p) {
 void init_pid1() {
     printf(LOG_BOOT " init1...\n");
     Process *p;
-    if ((p = allocate_process ()) == 0) {
+    if ((p = allocate_process()) == 0) {
         panic ("init_pid1: failed to allocate process");
     }
 
-    if (!kvm_allocate (&p->pgdir ))
+    if (!kvm_allocate(&p->pgdir ))
         panic("init_pid1");
 
     extern char __INIT1_BEGIN__[];

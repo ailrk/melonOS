@@ -93,7 +93,7 @@ void parsename(char *path, char *namebuf, size_t n) {
 }
 
 /* Write super block */
-void wsb () {
+void wsb() {
     char buf[BSIZE];
     memset(buf, 0, sizeof(buf));
     memcpy(buf, &sb, sizeof(sb));

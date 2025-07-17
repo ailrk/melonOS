@@ -18,7 +18,7 @@ static uint32_t elf_offset = SECSZ * BOOTLDSECN;
  *
  * The disk is ready when BSY = 1 && RDY = 0
  * */
-void wait_disk () {
+void wait_disk() {
     uint8_t mask = IDE_S_RDY | IDE_S_BSY;
     uint8_t ready = IDE_S_RDY ;
     while ((inb(0x1F7) & mask) != ready); // read status register
@@ -26,17 +26,17 @@ void wait_disk () {
 
 
 /* read a single sector at offset into dst LBA style. */
-void read_sector (void *dst, uint32_t lba) {
+void read_sector(void *dst, uint32_t lba) {
     // send command
-    wait_disk ();
-    outb (0x1F2, 1);
-    outb (0x1F3, lba);
-    outb (0x1F4, lba >> 8);
-    outb (0x1F5, lba >> 16);
-    outb (0x1F6, (lba >> 24) | 0xE0);
-    outb (0x1F7, 0x20); // read data cmd
-    wait_disk ();
-    insl (0x1F0, dst, SECSZ/4);     // /4 because insl read words
+    wait_disk();
+    outb(0x1F2, 1);
+    outb(0x1F3, lba);
+    outb(0x1F4, lba >> 8);
+    outb(0x1F5, lba >> 16);
+    outb(0x1F6, (lba >> 24) | 0xE0);
+    outb(0x1F7, 0x20); // read data cmd
+    wait_disk();
+    insl(0x1F0, dst, SECSZ/4);     // /4 because insl read words
 }
 
 
@@ -44,7 +44,7 @@ void read_sector (void *dst, uint32_t lba) {
  *
  * The dst buffer size should be greater than (n/SECSZ)+1.
  * */
-void read_offset (void *dst, uint32_t n, uint32_t offset) {
+void read_offset(void *dst, uint32_t n, uint32_t offset) {
     char *p = dst;
     uint32_t lba = offset / SECSZ;
     int remained = (n / SECSZ) + 1;
@@ -58,15 +58,15 @@ void read_offset (void *dst, uint32_t n, uint32_t offset) {
     p += rest;
 
     while (remained) {
-        read_sector (p, lba++);
+        read_sector(p, lba++);
         p += SECSZ;
         remained--;
     }
 }
 
 
-void read_offset_from_kernel (void *dst, uint32_t n, uint32_t offset) {
-    read_offset (dst, n, offset + elf_offset);
+void read_offset_from_kernel(void *dst, uint32_t n, uint32_t offset) {
+    read_offset(dst, n, offset + elf_offset);
 }
 
 
@@ -79,7 +79,7 @@ PDE pagetbl[NPTES] __attribute__((aligned(PAGE_SZ)));
  *
  *  Only setup 1 page table which gives 4MB virtual memory.
  * */
-void paging_init () {
+void paging_init() {
     for (int i = 0; i < NPDES; ++i) pagedir[i] = 0 | PDE_W;
 
     // page table for PA [0, 4096 * 1024)
@@ -92,7 +92,7 @@ void paging_init () {
     pagedir[KERN_BASE>>PD_IDX_SHIFT] = (uint32_t)pagetbl | PDE_P | PDE_W;
 
     set_cr3 ((physical_addr)pagedir);
-    set_cr0 (get_cr0 () | CR0_WP | CR0_PG);
+    set_cr0 (get_cr0() | CR0_WP | CR0_PG);
 }
 
 
@@ -101,14 +101,14 @@ void paging_init () {
  * - jump to the entry (kmain)
  * */
 
-void boot3 () {
+void boot3() {
     char *paddr;
 
     // put elf at some unused space. After kernel is loaded
     // this memory is not used.
     ELF32Header *elf = (ELF32Header *)0x10000;
 
-    read_offset_from_kernel (elf, PAGE_SZ, 0);
+    read_offset_from_kernel(elf, PAGE_SZ, 0);
 
     if (!is_elf(elf)) {
         __asm__ volatile ("cli; hlt");
@@ -117,17 +117,17 @@ void boot3 () {
     ELF32ProgramHeader *ph = (ELF32ProgramHeader *)((char *)elf + elf->e_phoff);
     for (ELF32ProgramHeader *p = ph; p < ph + elf->e_phnum; ++p) {
         paddr = (char *)p->p_paddr;
-        read_offset_from_kernel (paddr, p->p_filesz, p->p_offset);
+        read_offset_from_kernel(paddr, p->p_filesz, p->p_offset);
 
         // pad till memsz
         if (p->p_memsz > p->p_filesz)
             stosb(paddr + p->p_filesz, 0, p->p_memsz - p->p_filesz);
     }
 
-    paging_init ();
+    paging_init();
 
-    void(*entry) ();
-    entry = (void(*)(void))(KA2P_C (elf->e_entry));
-    entry ();
+    void(*entry)();
+    entry = (void(*)(void))(KA2P_C(elf->e_entry));
+    entry();
     __asm__ volatile ("cli; hlt");
 }

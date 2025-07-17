@@ -91,11 +91,11 @@ bool map_pages(PageDir pgdir, const VMap *k) {
         panic("map_pages: not on page boundry");
 
     for (; vstart != vend; vstart += PAGE_SZ, pstart += PAGE_SZ) {
-        if ((pte = walk (pgdir, vstart)) == 0)
+        if ((pte = walk(pgdir, vstart)) == 0)
             return false;
 
         if (*pte & PTE_P)
-            panic ("map_pages: remap");
+            panic("map_pages: remap");
 
         *pte = pstart | PTE_P | k->perm;
     }

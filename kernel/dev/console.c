@@ -26,9 +26,9 @@ enum {
     STATE_ESC_BRACKET
 };
 
-#define ESC            0x1B
+#define ESC           0x1B
 #define RAW_BUF_SZ    32
-#define LINE_BUF_SZ    1024
+#define LINE_BUF_SZ   1024
 extern Dev devices[NDEV];
 
 ConsoleMode console_mode;

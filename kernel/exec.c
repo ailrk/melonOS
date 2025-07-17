@@ -43,7 +43,7 @@
  */
 
 /*! Execute a program */
-int exec (char *path, char **argv) {
+int exec(char *path, char **argv) {
     Inode             *ino;
     PageDir            pgtbl;
     ELF32Header        elfhdr;

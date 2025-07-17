@@ -36,45 +36,45 @@ uint8_t ps2in(uint16_t port)  {
 
 
 static void disable_p1() {
-    ps2out (KBP_CMD, 0xad);
+    ps2out(KBP_CMD, 0xad);
 }
 
 static void disable_p2() {
-    ps2out (KBP_CMD, 0xa7);
+    ps2out(KBP_CMD, 0xa7);
 }
 
 static void enable_p1() {
-    ps2out (KBP_CMD, 0xae);
+    ps2out(KBP_CMD, 0xae);
 }
 
 static void enable_p2() {
-    ps2out (KBP_CMD, 0xa8);
+    ps2out(KBP_CMD, 0xa8);
 }
 
 static bool self_test1() {
-    ps2out (KBP_CMD, 0xaa);
-    return ps2in (KBP_DATA) == 0x55;
+    ps2out(KBP_CMD, 0xaa);
+    return ps2in(KBP_DATA) == 0x55;
 }
 
 static bool self_test2() {
-    ps2out (KBP_CMD, 0xa9);
-    return ps2in (KBP_DATA) == 0x00;
+    ps2out(KBP_CMD, 0xa9);
+    return ps2in(KBP_DATA) == 0x00;
 }
 
 static void flush_datap() {
-    ps2in (KBP_DATA);
+    ps2in(KBP_DATA);
 }
 
 
 /*! Read controller configuration bytes */
 static uint8_t read_ccb() {
-    ps2out (KBP_CMD, 0x20);
-    return ps2in (KBP_DATA);
+    ps2out(KBP_CMD, 0x20);
+    return ps2in(KBP_DATA);
 }
 
 static void write_ccb(uint8_t b) {
-    ps2out (KBP_CMD, 0x60);
-    ps2out (KBP_DATA, b);
+    ps2out(KBP_CMD, 0x60);
+    ps2out(KBP_DATA, b);
 }
 
 
@@ -95,10 +95,10 @@ void ps2_reset() {
 }
 
 
-static void echo_test () {
-    ps2out (KBP_DATA, 0xee);
-    if (ps2in (KBP_DATA) != 0xee) {
-        perror ("[\033[31mkbd\033[0m] failed to echo\n");
+static void echo_test() {
+    ps2out(KBP_DATA, 0xee);
+    if (ps2in(KBP_DATA) != 0xee) {
+        perror("[\033[31mkbd\033[0m] failed to echo\n");
     }
 }
 

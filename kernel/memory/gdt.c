@@ -13,7 +13,7 @@ extern char data[]; // defined by kernel.ld
 extern CPU  cpu;
 
 
-GDTEntry create_descriptor (uint32_t base, uint32_t limit, uint16_t flag) {
+GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag) {
     GDTEntry descriptor;
 
     // Create the high 32 bit segment
@@ -32,12 +32,12 @@ GDTEntry create_descriptor (uint32_t base, uint32_t limit, uint16_t flag) {
 }
 
 
-void gdt_init () {
+void gdt_init() {
     printf("[\033[32mboot\033[0m] gdt...");
     cpu.gdtr.limit     = sizeof(GDTEntry) * NSEGS - 1;
     cpu.gdtr.base      = (uint32_t)&cpu.gdt;
 
-    cpu.gdt[SEG_NULL]  = create_descriptor (0, 0, 0);
+    cpu.gdt[SEG_NULL]  = create_descriptor(0, 0, 0);
 
     {
         uint16_t flag = SEG_S(1)       | SEG_P(1)  | SEG_AVL(0) |

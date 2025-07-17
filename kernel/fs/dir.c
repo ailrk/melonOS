@@ -35,8 +35,8 @@ Inode *dir_lookup(Inode *dir, char *name, offset_t *offset) {
 
     DirEntry entry;
 
-    for (offset_t off = 0; off < dir->d.size; off += sizeof (DirEntry)) {
-        if (inode_read(dir, (char *)&entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+    for (offset_t off = 0; off < dir->d.size; off += sizeof(DirEntry)) {
+        if (inode_read(dir, (char *)&entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
             panic("dir_lookup: invalid dir");
 
         if (entry.inum == 0) continue;
@@ -59,17 +59,17 @@ bool dir_link (Inode *dir, DirEntry new_entry) {
     Inode   *ino;
     DirEntry entry;
 
-    if ((ino = dir_lookup (dir, new_entry.name, 0)) != 0) {  // exists
+    if ((ino = dir_lookup(dir, new_entry.name, 0)) != 0) {  // exists
         return false;
     }
 
     offset_t off;
-    for (off = 0; off < dir->d.size; off += sizeof (DirEntry)) {
-        if (inode_read(dir, (char *)&entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+    for (off = 0; off < dir->d.size; off += sizeof(DirEntry)) {
+        if (inode_read(dir, (char *)&entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
             panic ("dir_link: invalid dir");
 
         if (entry.inum == 0) { // empty dir entry.
-            if (inode_write(dir, (char *)&new_entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+            if (inode_write(dir, (char *)&new_entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
                 panic("dir_link: write error");
             return true;
         }
@@ -77,7 +77,7 @@ bool dir_link (Inode *dir, DirEntry new_entry) {
 
     // no enough space, allocate new blocks
     inode_offmap(dir, off + sizeof(DirEntry));
-    if (inode_write(dir, (char *)&new_entry, off, sizeof (DirEntry)) != sizeof (DirEntry))
+    if (inode_write(dir, (char *)&new_entry, off, sizeof(DirEntry)) != sizeof(DirEntry))
         panic("dir_link: write error");
 
     return true;

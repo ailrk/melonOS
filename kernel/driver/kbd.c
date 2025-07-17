@@ -254,7 +254,7 @@ static bool update_modifier(Scancode scancode) {
 
 
 /*! Translate scan code into character */
-char kbd_translate (Scancode scancode) {
+char kbd_translate(Scancode scancode) {
     if (scancode < 0) {
         return -1;
     }

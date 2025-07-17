@@ -142,7 +142,7 @@ static void bcache_free(BNode *b) {
         b->dirty          = false;
         bcache.head->prev = b;
         bcache.head       = b;
-        memset(b->cache, 0, sizeof (b->cache));
+        memset(b->cache, 0, sizeof(b->cache));
     }
 }
 

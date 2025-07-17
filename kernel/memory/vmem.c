@@ -121,7 +121,7 @@ void kvm_switch() {
     debug("kvm_switch\n");
 #endif
 
-    set_cr3(KA2P_C (kernel_pgdir.t));
+    set_cr3(KA2P_C(kernel_pgdir.t));
 }
 
 
@@ -306,8 +306,8 @@ bool uvm_copy(PageDir pgdir, PageDir *out, size_t sz) {
         if (!(*pte & PTE_P))
             panic("uvm_copy: page not present");
 
-        physical_addr pa    = pte_addr (*pte);
-        unsigned      flags = pte_flags (*pte);
+        physical_addr pa    = pte_addr(*pte);
+        unsigned      flags = pte_flags(*pte);
 
         if ((mem = palloc()) == 0) {
             vmfree(new_pgdir);
@@ -318,8 +318,8 @@ bool uvm_copy(PageDir pgdir, PageDir *out, size_t sz) {
 
         VMap mmap =
             { .virt   = (char *)i,
-              .pstart = KA2P_C (mem),
-              .pend   = KA2P_C (mem + PAGE_SZ),
+              .pstart = KA2P_C(mem),
+              .pend   = KA2P_C(mem + PAGE_SZ),
               .perm   = flags
             };
         if (!map_pages(new_pgdir, &mmap)) {

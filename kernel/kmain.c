@@ -19,13 +19,13 @@ static void *ptend   = P2KA_C (PTESZ * NPDES * NPTES);  // stage 1 end. We are s
 static void *phystop = P2KA_C (PHYSTOP);                // physical top
 
 
-void kmain (void) {
+void kmain(void) {
     vga_init();
 
 #ifdef DEBUG
     debug("memory: %x:%x, size: %d\n", ptstart, phystop, ptend - phystop);
 #endif
-    palloc_init (ptstart, ptend);
+    palloc_init(ptstart, ptend);
     kvm_init();
     gdt_init();
     palloc_init(ptend, phystop);

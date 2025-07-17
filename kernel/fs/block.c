@@ -97,7 +97,7 @@ static bool freemap_check(devno_t dev, blockno_t blockno) {
 
 
 /*! Set freemap bit */
-static void freemap_set (devno_t dev, blockno_t blockno, bool used) {
+static void freemap_set(devno_t dev, blockno_t blockno, bool used) {
     if (blockno < super_block.datastart) {
         panic ("freemap_set");
     }
@@ -164,7 +164,7 @@ blockno_t block_alloc(devno_t dev) {
 
 /*! Free a block */
 void block_free(devno_t dev, blockno_t blockno) {
-    if (!freemap_check (dev, blockno)) {
+    if (!freemap_check(dev, blockno)) {
         panic("block_free: block is already free");
         return;
     }

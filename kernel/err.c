@@ -37,7 +37,7 @@ void panic(const char *msg) {
 }
 
 
-void perror (const char *msg) {
+void perror(const char *msg) {
     vga_printf("[\033[31mERROR\033[0m] %s\n", msg);
     debug_printf("[\033[31mERROR\033[0m] %s\n", msg);
 }

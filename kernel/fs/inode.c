@@ -281,7 +281,7 @@ int inode_read(Inode *ino, char *buf, offset_t offset, unsigned sz) {
  *  @return number of bytes written. Return -1 if failed.
  * */
 int inode_write (Inode *ino, const char *buf, offset_t offset, unsigned sz) {
-    if (!ino->read) inode_load (ino);
+    if (!ino->read) inode_load(ino);
 
     switch (ino->d.type) {
     case F_DEV:
@@ -304,7 +304,7 @@ int inode_write (Inode *ino, const char *buf, offset_t offset, unsigned sz) {
             b                 = bcache_read(ino->dev, blockno, false);
             m                 = min(sz - wt, BSIZE - offset % BSIZE);
 
-            memmove (&b->cache[offset % BSIZE], buf, m);
+            memmove(&b->cache[offset % BSIZE], buf, m);
             bcache_write(b, false);
             wt     += m;
             buf    += m;

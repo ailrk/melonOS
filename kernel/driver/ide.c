@@ -114,7 +114,7 @@ bool ide_has_secondary(Channel ch) {
 
 /*! Check ide errors */
 bool ide_check_error (Channel ch) {
-    return inb (regc(ch, CR_ALTSTATUS)) & (ATA_S_ERR | ATA_S_DFE);
+    return inb(regc(ch, CR_ALTSTATUS)) & (ATA_S_ERR | ATA_S_DFE);
 }
 
 

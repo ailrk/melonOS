@@ -6,64 +6,64 @@
 #define BUFSZ 64
 
 
-static int ansi_buflen (ANSIState *s) {
+static int ansi_buflen(ANSIState *s) {
     return s->buf_top - s->buf;
 }
 
 
-static bool arity_check (ANSIState *s, int arity) {
-    return ansi_buflen (s) == arity;
+static bool arity_check(ANSIState *s, int arity) {
+    return ansi_buflen(s) == arity;
 }
 
 
-static bool set_state (ANSIState *s, char c) {
+static bool set_state(ANSIState *s, char c) {
     switch (c) {
     /* ANSI_CURSOR */
     case 'H':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_MOVE;
-        return arity_check (s, 2) || arity_check (s, 0);
+        return arity_check(s, 2) || arity_check(s, 0);
     case 'f':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_MOVEX;
-        return arity_check (s, 2);
+        return arity_check(s, 2);
     case 'A':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_UP;
-        return arity_check (s, 1);
+        return arity_check(s, 1);
     case 'B':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_DOWN;
-        return arity_check (s, 1);
+        return arity_check(s, 1);
     case 'C':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_RIGHT;
-        return arity_check (s, 1);
+        return arity_check(s, 1);
     case 'D':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_LEFT;
-        return arity_check (s, 1);
+        return arity_check(s, 1);
     case 'R':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_REP;
-        return arity_check (s, 1);
+        return arity_check(s, 1);
     case 's':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_SAVE;
-        return arity_check (s, 0);
+        return arity_check(s, 0);
     case 'u':
         s->tag          = ANSI_CURSOR;
         s->value.cursor = ANSICursor_RESTORE;
-        return arity_check (s, 0);
+        return arity_check(s, 0);
 
     /* ANSI_ERASE */
     case 'J':
         s->tag = ANSI_ERASE;
-        if (arity_check (s, 0)) {
+        if (arity_check(s, 0)) {
             s->value.erase = ANSIErase_J;
             return true;
         }
-        if (arity_check (s, 1)) {
+        if (arity_check(s, 1)) {
             int *p = s->buf_top;
             int n  = *--p;
             switch (n) {
@@ -79,12 +79,12 @@ static bool set_state (ANSIState *s, char c) {
 
     case 'K':
         s->tag = ANSI_ERASE;
-        if (arity_check (s, 0)) {
+        if (arity_check(s, 0)) {
             s->value.erase = ANSIErase_K;
             return true;
         }
 
-        if (arity_check (s, 1)) {
+        if (arity_check(s, 1)) {
             int *p = s->buf_top;
             int n = *--p;
             switch (n) {
@@ -100,7 +100,7 @@ static bool set_state (ANSIState *s, char c) {
     /* ANSI_COLOR */
     case 'm':
         s->tag = ANSI_COLOR;
-        if (arity_check (s, 1)) {
+        if (arity_check(s, 1)) {
             int *p = s->buf_top;
             int n = *--p;
             s->value.color = (ANSIColor)n;
@@ -143,18 +143,18 @@ static int *parse_list(int *top, char **cbegin) {
  *  @size:   max size of the string
  *  @return  the pointer to one plus the last character from the escape code
  * */
-char *ansi_parse (ANSIState *state, char *c) {
+char *ansi_parse(ANSIState *state, char *c) {
     int *top;
     if (*c++ == '\033' && *c++ == '[') {
 
-        if (isalpha (*c)) {
-            return set_state (state, *c++) ? c : 0;
+        if (isalpha(*c)) {
+            return set_state(state, *c++) ? c : 0;
         }
 
-        if (isdigit (*c)) {
-            if ((top = parse_list (state->buf, &c)) != 0) {
+        if (isdigit(*c)) {
+            if ((top = parse_list(state->buf, &c)) != 0) {
                 state->buf_top = top;
-                return set_state (state, *c++) ? c : 0;
+                return set_state(state, *c++) ? c : 0;
             }
         }
    }
