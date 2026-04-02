@@ -50,6 +50,6 @@ void unlock(SpinLock *lk) {
     lk->cpu = 0;
     __sync_synchronize();
       // The xchg is atomic.
-    while(xchg(&lk->locked, 0) == 0);
+    xchg(&lk->locked, 0);
     pop_cli();
 }
