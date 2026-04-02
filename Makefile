@@ -217,6 +217,21 @@ cc:
 	bear --append -- make
 	bear --append -- make $(LIBMELON)
 
+run:
+	tmux split-window -h "make debug" \; \
+	split-window -v "make serial" \; \
+	select-pane -t 0 \; \
+	send-keys -t 0 "env GDB=$(GDB) GRAPHICS=$(GRAPHICS) make qemu" C-m \; \
+	split-window -v "cgdb melonos-kernel"
+
+
+stop:
+	@# Kill panes 1 through 3, ignoring errors if they are already closed
+	-tmux kill-pane -t 1
+	-tmux kill-pane -t 1
+	-tmux kill-pane -t 1
+
+
 # subfolder makefiles
 include boot/Makefile
 include kernel/Makefile

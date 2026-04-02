@@ -2,7 +2,6 @@
 #include "sys.h"
 #include "melon.h"
 #include "string.h"
-#include "sys/types.h"
 
 /* melonshell
  *
