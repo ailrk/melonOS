@@ -169,6 +169,11 @@ QEMU_GDB_FLAGS += -s -S
 endif
 
 
+QEMU_NO_REBOOT_FLAGS =
+
+ifeq ($(NO_REBOOT), 1)
+QEMU_NO_REBOOT_FLAGS += -no-reboot
+endif
 
 qemu-boot:
 	$(QEMU) -drive format=raw,file=$(BOOT)
@@ -181,7 +186,7 @@ qemu:
 		$(QEMU_GDB_FLAGS) \
 		$(QEMU_LOG_SETTING) \
 		$(QEMU_LOGFILE) \
-		-no-reboot \
+		$(QEMU_NO_REBOOT_FLAGS) \
 		-serial unix:/tmp/qemu-serial.sock,server,nowait \
 		-serial file:$(QEMU_DEBUG_SERIALFILE) \
 		-monitor stdio \
@@ -230,6 +235,13 @@ stop:
 	-tmux kill-pane -t 1
 	-tmux kill-pane -t 1
 	-tmux kill-pane -t 1
+
+dump:
+	tmux split-window -h "hexdump -C $(FILE) | bat --chop-long-lines" \; \
+	split-window -v "readelf -headers $(FILE) | bat -l help --chop-long-lines" \; \
+	select-pane -t 0 \; \
+	send-keys -t 0 "i686-elf-objdump -M intel -d $(FILE) | bat -l asm --chop-long-lines" C-m \; \
+	split-window -v "bat $(SRC)"
 
 
 # subfolder makefiles

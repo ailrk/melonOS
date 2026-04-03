@@ -1,9 +1,10 @@
+#include "alloca.h"
 #include "driver/ide.h"
 #include "sys.h"
 #include "melon.h"
 #include "string.h"
 
-/* melonshell
+/* The shell
  *
  * cmd    := seq
  * seq    := pipe (';' seq)?
@@ -14,6 +15,9 @@
 
 #define NARGS 2
 #define BUF_SZ 512
+
+const char whitespace[] = " \t\r\n";
+const char symbols[]    = "|&;()";
 
 
 typedef enum CmdType {
@@ -49,48 +53,54 @@ typedef struct PipeCmd {
 } PipeCmd;
 
 
-
-static const char whitespace[] = " \t\r\n";
-static const char symbols[]    = "|&;()";
-
-
-char     buf[BUF_SZ];
-char    *p;                 // line buffer pointer
-
-
-/* We use sbrk as a bump allocator. Heap memory is allocated for
- * commands, when process a new line we free all memory for the
- * previous command at once.
+/*
+ * Gloal State of the shell.
  * */
-unsigned allocated = 0;     // total number of allocated bytes
+struct State {
+    char     buf[BUF_SZ];
+    char    *p;            // line buffer pointer
+
+    /* We use sbrk as a bump allocator. Heap memory is allocated for
+     * commands, when process a new line we free all memory for the
+     * previous command at once.
+     * */
+    unsigned allocated; // total number of allocated bytes
+} st = {
+    .buf       = { 0 },
+    .p         = 0,
+    .allocated = 0
+};
 
 
-void *alloc(int n) { // allocate n bytes
-    allocated += n;
+/* Allocate n bytes */
+void *alloc(int n) {
+    st.allocated += n;
     return sbrk(n);
 }
 
 
-void free() { // free all allocated heap memory
-    sbrk(-allocated);
-    allocated = 0;
+/* Free all allocated heap memory */
+void free() {
+    sbrk(-st.allocated);
+    st.allocated = 0;
 }
 
 
-void clear() { // clear all state and memory.
-    memset(buf, -1, BUF_SZ);
-    p = buf;
+/* clear all state and memory. */
+void clear() {
+    memset(st.buf, 0, BUF_SZ);
+    st.p = st.buf;
     free();
 }
 
 
 int is_eof() {
-    return buf[0];
+    return st.buf[0];
 }
 
 
 void skip_whitespaces() {
-    while (*p && strchr(whitespace, *p)) p++;
+    while (*st.p && strchr(whitespace, *st.p)) st.p++;
 }
 
 
@@ -100,11 +110,11 @@ void skip_whitespaces() {
 char *parse_word() {
     char *begin;
     skip_whitespaces();
-    begin = p;
-    while (*p && !strchr(whitespace, *p) && !strchr(symbols, *p)) {
-        p++;
+    begin = st.p;
+    while (*st.p && !strchr(whitespace, *st.p) && !strchr(symbols, *st.p)) {
+        st.p++;
     }
-    *p = '\0';
+    *st.p = '\0';
     return begin;
 }
 
@@ -114,7 +124,7 @@ Cmd *parse_exec() {
     cmd->type    = EXEC;
     char *arg    = 0;
     int   i      = 0;
-    while (!strchr(symbols, *p)) {
+    while (!strchr(symbols, *st.p)) {
         if (i > NARGS) {
             return 0;
         }
@@ -129,8 +139,8 @@ Cmd *parse_exec() {
 Cmd *parse_pipe() {
     Cmd *cmd = parse_exec();
     skip_whitespaces();
-    if (*p == '|') {
-        p++;
+    if (*st.p == '|') {
+        st.p++;
         PipeCmd *pcmd = alloc(sizeof(PipeCmd));
         pcmd->type = PIPE;
         pcmd->cmd1 = cmd;
@@ -144,8 +154,8 @@ Cmd *parse_pipe() {
 Cmd *parse_seq() {
     Cmd *cmd = parse_pipe();
     skip_whitespaces();
-    if (*p == ';') {
-        p++;
+    if (*st.p == ';') {
+        st.p++;
         SeqCmd *scmd = alloc(sizeof(SeqCmd));
         scmd->type = SEQ;
         scmd->cmd1 = cmd;
@@ -175,12 +185,41 @@ void run_cmd(Cmd *cmd) {
 }
 
 
+/* Read a line from buffer */
+char *gets() {
+  char gets_buf[128];
+  int  pos = 0;
+  int  len = 0;
+
+  int i = 0;
+  char c;
+
+  while (i < BUF_SZ - 1) {
+      if (pos >= len) {
+          len = read(0, gets_buf, sizeof(gets_buf));
+          pos = 0;
+          if (len <= 0) break; // EOF
+      }
+
+      c = gets_buf[pos++];
+      st.buf[i++] = c;
+      if (c == '\n' || c == '\r') break;
+  }
+
+  st.buf[i] = '\0';
+
+  if (i == 0 && len <= 0) {
+      return 0;
+  }
+  return st.buf;
+}
+
+
 int next_line() {
-    clear();
     printf("> ");
-    memset(buf, 0, BUF_SZ);
-    gets(buf, BUF_SZ);
-    if (buf[0] == 0)  return 0; // EOF
+    clear();
+    gets();
+    if (st.buf[0] == 0)  return 0; // EOF
     return 1;
 }
 

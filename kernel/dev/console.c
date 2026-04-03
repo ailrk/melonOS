@@ -271,18 +271,6 @@ void console_handler_raw() {
     }
 
     unlock(&raw_buffer.lk);
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 
@@ -318,10 +306,6 @@ void console_handler() {
     switch (console_mode) {
         case CONSOLE_COOKED_MODE: console_handler_cooked(); break;
         case CONSOLE_RAW_MODE:    console_handler_raw(); break;
-
-
-
-
     }
 }
 

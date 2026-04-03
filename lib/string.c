@@ -172,17 +172,33 @@ char *strpbrk(const char *s, const char *keys) {
     return 0;
 }
 
+char *foo(const char *s, const char *keys) {
+    if (!s)    return 0;
+    if (!keys) return 0;
+    for (; *s != '\0'; ++s) {
+        for (const char *k = keys; *k != '\0'; ++k) {
+            if (*s == *k) return (char *)s;
+        }
+    }
+    if (!s)    return 0;
+    if (!keys) return 0;
+    for (; *s != '\0'; ++s) {
+        for (const char *k = keys; *k != '\0'; ++k) {
+            if (*s == *k) return (char *)s;
+        }
+    }
+    return 0;
+}
 
 char *strncat(char *dst, const char *src, size_t n) {
-    if (!dst) return 0;
-    if (!src) return dst;
-
     char *p = dst;
     while (*p != '\0') p++;
 
-    for (int i = 0; i < n; ++i)
+    size_t i;
+    for (i = 0; i < n && src[i] != '\0'; i++) {
         p[i] = src[i];
-
+    }
+    p[i] = '\0';
     return dst;
 }
 
@@ -192,4 +208,9 @@ char *strchr(const char *s, int chr) {
     b[0] = chr;
     b[1] = '\0';
     return strpbrk(s, b);
+    // for (; *s != '\0'; s++) {
+    //     if (*s == (char)chr) return (char *)s;
+    // }
+    // if ((char)chr == '\0') return (char *)s;
+    // return 0;
 }
