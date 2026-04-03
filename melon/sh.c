@@ -54,7 +54,7 @@ static const char whitespace[] = " \t\r\n";
 static const char symbols[]    = "|&;()";
 
 
-char     linebuffer[BUF_SZ];
+char     buf[BUF_SZ];
 char    *p;                 // line buffer pointer
 
 
@@ -78,14 +78,14 @@ void free() { // free all allocated heap memory
 
 
 void clear() { // clear all state and memory.
-    memset(linebuffer, -1, BUF_SZ);
-    p = linebuffer;
+    memset(buf, -1, BUF_SZ);
+    p = buf;
     free();
 }
 
 
 int is_eof() {
-    return linebuffer[0];
+    return buf[0];
 }
 
 
@@ -187,10 +187,10 @@ int next_line() {
         if (n <= 0) break;       // EOF or error
         if (c == '\n') break;    // end of line
 
-        linebuffer[i++] = c;
+        buf[i++] = c;
     }
 
-    linebuffer[i] = '\0';  // null-terminate
+    buf[i] = '\0';  // null-terminate
     return i > 0;
 }
 
