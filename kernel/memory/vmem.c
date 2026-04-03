@@ -85,6 +85,11 @@ static void init_kmap() {
  *  a single page to hold the PageDir. Then we map pages base
  *  on the `kmap` to setup the kernel virtual memory.
  *
+ *  The kernel space is mapped in every process's page table
+ *  so we don't need to switch page table on every system call.
+ *  Otherwise we need to flush the full TLB which is of course
+ *  expensive.
+ *
  *  @return initialized page directory
  * */
 bool kvm_allocate(PageDir *pgdir) {
@@ -151,6 +156,7 @@ void uvm_init1(PageDir pgdir, char *init, size_t sz) {
     if (sz > PAGE_SZ)
         panic("uvm_init: more than a page");
 
+    // allocate 1 page
     if ((mem = palloc()) == 0)
         panic("uvm_init: not enough memory");
 
@@ -280,6 +286,11 @@ int uvm_allocate(PageDir pgdir, size_t oldsz, size_t newsz) {
             return 0;
         }
     }
+
+#if DEBUG && DEBUG_UVM
+    PTE *check = get_pte(pgdir, (void*)page_aligndown(oldsz));
+    if (check) debug("Page at %#x flags: %#x\n", oldsz, pte_flags(*check));
+#endif
     return newsz;
 }
 

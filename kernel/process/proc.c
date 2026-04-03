@@ -225,7 +225,11 @@ static void set_pid1_trapframe(Process *p) {
 }
 
 
-/*! Initialize the first user space process. */
+/*! Initialize the first user space process.
+ *  We allocate 1 page for the user memory of init. The
+ *  source code of init is direclty copied from the
+ *  kernel's .text section to the user vmem.
+ * */
 void init_pid1() {
     printf(LOG_BOOT " init1...\n");
     Process *p;
@@ -233,18 +237,24 @@ void init_pid1() {
         panic ("init_pid1: failed to allocate process");
     }
 
-    if (!kvm_allocate(&p->pgdir ))
+    // Allocate a page to hold the pgdir for init.
+    // The kernel space is also mapped into the pgdir in
+    // this process.
+    if (!kvm_allocate(&p->pgdir))
         panic("init_pid1");
 
     extern char __INIT1_BEGIN__[];
     extern char __INIT1_END__[];
+
     int init1_sz = __INIT1_END__ - __INIT1_BEGIN__;
 
+    // init itself starts with 1 page user memory.
     uvm_init1(p->pgdir, __INIT1_BEGIN__, init1_sz);
     p->size = PAGE_SZ;
     set_pid1_trapframe(p);
     strncpy(p->name, "init", sizeof(p->name));
 
+    // Protect the state transition
     lock(&ptable.lk);
     p->state = PROC_READY;
     proc_init1 = p;

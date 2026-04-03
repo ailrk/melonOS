@@ -38,8 +38,8 @@
  * where `data` and `text` section are loaded from the elf, `guard page`, `stack`, and `heap` are
  * allocated by `exec`.
  *
- * Note: text section doesn't start from va 0. Typically in unix like system elf virtual address will leave some
- * space before text. e.g 32 bit starts at 0x08004000, 64 bit starts at 0x40000000.
+ * Note: text section doesn't start from va 0. Typically in unix like system elf virtual address will
+ * leave some space before text. e.g 32 bit starts at 0x08004000, 64 bit starts at 0x40000000.
  */
 
 /*! Execute a program */
@@ -55,23 +55,26 @@ int exec(char *path, char **argv) {
     Process           *p;
     PageDir            old_pgtbl;
 
-    // load program
+    // Load program
     if ((ino = dir_abspath(path, false)) == 0) {
         perror ("exec: invalid path\n");
         return -1;
     }
 
+    // Check ELF
     if (inode_read(ino, (char *)&elfhdr, 0, sizeof(ELF32Header)) != sizeof(ELF32Header))
         goto bad;
 
     if (!is_elf(&elfhdr))
         goto bad;
 
+    // Make sure kernel space is mapped.
     if (!kvm_allocate(&pgtbl))
         goto bad;
 
     offset = elfhdr.e_phoff;
 
+    // Load code from ELF program headers.
     for (int i = 0; i < elfhdr.e_phnum; ++i, offset += sizeof(ph)) {
         if (inode_read (ino, (char *)&ph, offset, sizeof(ph)) != sizeof (ph)) {
             goto bad;
@@ -89,7 +92,7 @@ int exec(char *path, char **argv) {
             goto bad;
         }
 
-        if ((size = uvm_allocate(pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) { // note. text is loaded from 0x1000
+        if ((size = uvm_allocate(pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) { // .text is loaded from 0x1000
             goto bad;
         }
 
@@ -121,7 +124,7 @@ int exec(char *path, char **argv) {
     inode_drop(ino);
     ino = 0;
 
-    // allocate 2 pages at the next page boundary,
+    // Allocate 2 pages at the next page boundary,
     // the first page is the guard page and is inaccessible
     // the second page is the user stack
     size = page_alignup(size);

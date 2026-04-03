@@ -1,6 +1,10 @@
 #pragma once
 
-/* Define some virtual address markers
+/* Define some virtual address markers.
+ *
+ * We uses a higher half kernel layout. The kernel lives in the
+ * top half of the virtual address space while user memory lives
+ * in the bottom half.
  *
  * NOTE: this file is used with CPP on the linker file as well,
  * so please don't add comment after #define because CPP will
@@ -15,35 +19,44 @@
  *           |                  | kmap[3]         |                  |
  * DEV_SPACE +------------------+-----> DEV_SPACE +------------------+
  *
- *               UNUSED                              UNUSED
+ *                                     UNUSED
+ *
  *               you can tweak the PHYSTOP and KERN_BASE to change the
  *               amount of memory you can use.
  *
  *           +------------------+----->   PHYSTOP +------------------+
  *           |  free memory     |                 |                  |
  *           |  (palloc)        |                 |                  |
- *       end +------------------+        data end +------------------+ (from linker)
- *           |  kernel  data    |                 |                  |
- *           |                  |  kmap[2]        |                  |
- *      data +------------------+------>     data +------------------+ (from linker)
+ *       end +------------------+----->       end +------------------+ (from linker)
+ *           |  kernel data     |                 |                  |
+ *           |     & bss        |  kmap[2]        |                  |
+ *      data +------------------+----->      data +------------------+ (from linker)
  *           |kernel text&rodata|  kmap[1]        |                  |
  * KERN_LINK +------------------+----->    EXTMEM +------------------+
  *   (text)  |                  |                 |                  |
  *           |  IO space        |           640k  +------------------+
  *           |                  |  kmap[0]        |                  |
- * KERN_BASE +------------------+ ---------->   0 +------------------+
- *           |                  |
- *           |                  |
- *           |  program data    |
- *           |     & heap       |
- *           |                  |
- *           +------------------+
- *   PAGE_SZ |  user stack      |
- *           +------------------+
- *           |  user data       |
- *           +------------------+
- *           |  user text       |
- *         0 +------------------+
+ * KERN_BASE ++================++----->         0 +------------------+
+ *           ||                ||
+ *           ||                ||
+ *           || program data   ||
+ *           ||    & heap      ||
+ *           ||                ||
+ *           ++----------------++
+ *   PAGE_SZ || user stack     ||
+ *           ++----------------++
+ *           || user data      ||
+ *           ++----------------++
+ *           || user text      ||
+ *         0 ++----------------++
+ *
+ * We use a direct map, the kernel virtual address is just a shift
+ * from it's physical address. In this case, shift is KERN_BASE. The
+ * small gap between KERN_BASE and KERN_LINK covers the first 1MB of
+ * physical RAM. This is usually where legacy BIOS data and VGA buffers sit.
+ * The kernel starts at KERN_LINK. Immediately after it is the kernel
+ * text and rodata section. The size of this section is dependent on the
+ * `data` marker, which is defined by kernel.ld.
  * */
 
 /* Start of extended memory */
