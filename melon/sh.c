@@ -178,20 +178,10 @@ void run_cmd(Cmd *cmd) {
 int next_line() {
     clear();
     printf("> ");
-
-    int i = 0;
-    while (i < BUF_SZ - 1) {
-        char c;
-        int n = read(0, &c, 1);  // read from stdin
-
-        if (n <= 0) break;       // EOF or error
-        if (c == '\n') break;    // end of line
-
-        buf[i++] = c;
-    }
-
-    buf[i] = '\0';  // null-terminate
-    return i > 0;
+    memset(buf, 0, BUF_SZ);
+    gets(buf, BUF_SZ);
+    if (buf[0] == 0)  return 0; // EOF
+    return 1;
 }
 
 
