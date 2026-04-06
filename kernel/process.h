@@ -2,6 +2,9 @@
 #include "process/spinlock.h"
 
 
+void     ptable_init();
+void     init_pid1();
+int      grow_process(int n);
 int      fork();
 void     exit();
 int      wait();

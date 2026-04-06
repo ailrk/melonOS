@@ -174,7 +174,6 @@ void console_handler_cooked() {
                     }
                     continue;
                 }
-
                 break;
             case STATE_ESC:
                 if (c == '[') {
@@ -249,8 +248,6 @@ int console_read_raw(Inode *ino, char *addr, int n) {
 }
 
 
-
-
 /* Raw mode handler. When a byte arrives we simply put it on the buffer, then
  * wake up the sleeping process immediately.
  * */
@@ -280,9 +277,8 @@ int console_write(Inode *ino, char *addr, int n) {
         panic("wrong device\n");
     }
 
-    while (n) {
+    for (int i = n; i > 0; i--) {
         putc(addr++);
-        n--;
     }
 
     return n;

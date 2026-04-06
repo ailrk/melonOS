@@ -4,6 +4,9 @@
 
 /* Layout of the trap frame built on the stack by the
  * hardware and by trapasm.S, and passed to trap().
+ *
+ * TrapFrame saves the state of the user mode program
+ * when it enters the kernel.
  */
 typedef struct TrapFrame {
   /* pushed by `trapgo` in `trapasm.s` */
@@ -23,16 +26,18 @@ typedef struct TrapFrame {
   uint16_t _padding3;
   uint16_t ds;
   uint16_t _padding4;
+
+  /* Pushed by vector.s */
   uint32_t trapno;
 
-  /* pushed by x86 hardware on interrupt */
+  /* Pushed by x86 hardware on interrupt */
   uint32_t err;
   uint32_t eip;
   uint16_t cs;
   uint16_t _padding5;
   uint32_t eflags;
 
-  // exists when crossing rings, such as from user to kernel
+  // Exists when crossing rings, such as from user to kernel
   uint32_t esp;
   uint16_t ss;
   uint16_t _padding6;
@@ -41,3 +46,7 @@ typedef struct TrapFrame {
 
 void trap_init();
 void trap(TrapFrame *);
+
+#if DEBUG
+void dump_trapframe(const TrapFrame *tf);
+#endif

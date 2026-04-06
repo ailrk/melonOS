@@ -17,7 +17,7 @@ typedef struct KernelMem {
 KernelMem kernel_mem;
 
 
-/*! free the memory in range [vstart, vend) */
+/* Free the memory in range [vstart, vend) */
 void pfree_range(void *vstart, void *vend) {
     char *p = (char *)vstart;
     for (; p + PAGE_SZ <= (char *)vend; p += PAGE_SZ) {
@@ -26,7 +26,7 @@ void pfree_range(void *vstart, void *vend) {
 }
 
 
-/*! free the memory from vstart to vend */
+/* Free the memory from vstart to vend */
 void palloc_init(void *vstart, void *vend) {
     printf(LOG_BOOT " palloc_init %#x:%#x...\n", vstart, vend);
     pfree_range(vstart, vend);
@@ -34,8 +34,8 @@ void palloc_init(void *vstart, void *vend) {
 }
 
 
-/*! alloc a PAGE_SZ memory aligned at page boundry
- *  return 0 if the memory cannot be allocated.
+/* Alloc a PAGE_SZ memory aligned at page boundry
+ * return 0 if the memory cannot be allocated.
  * */
 char *palloc() {
     Run *r = kernel_mem.freelist;
@@ -62,15 +62,15 @@ void pmem_report() {
     }
 
 end:
-    debug("pmem: %d pages free \n", n);
+    debug("pmem> %d pages free \n", n);
 }
 #endif
 
 
-/*! free a page of physical memory pointed by v
- *  v needs to align at page boundry otherwise we panic.
+/* Free a page of physical memory pointed by v
+ * v needs to align at page boundry otherwise we panic.
  *
- *  @v:  virtual address
+ * @v:  virtual address
  * */
 void pfree(char *v) {
     if (KA2P_C (v) >= PHYSTOP) {

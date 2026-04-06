@@ -9,7 +9,6 @@
 #include "memory/gdt.h"
 #include "memory/vmem.h"
 #include "memory/palloc.h"
-#include "process/proc.h"
 
 
 char         kstack[KSTACK_SZ];                        // kernel stack. see entry.s
@@ -25,10 +24,12 @@ void kmain(void) {
 #ifdef DEBUG
     debug("memory: %x:%x, size: %d\n", ptstart, phystop, ptend - phystop);
 #endif
+
     palloc_init(ptstart, ptend);
     kvm_init();
     gdt_init();
     palloc_init(ptend, phystop);
+
 #ifdef DEBUG
     pmem_report();
 #endif

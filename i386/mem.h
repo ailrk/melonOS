@@ -68,24 +68,24 @@
 /* Top physical memory */
 #define PHYSTOP   0x20000000
 
-/* peripheral device at high address */
+/* Peripheral device at high address */
 #define DEV_SPACE 0xFE000000
 
-/* separation between ker and user space */
+/* Separation between ker and user space */
 #define KERN_BASE 0x80000000
 
-/* kernel links here */
+/* Kernel links here */
 #define KERN_LINK (KERN_BASE+EXTMEM)
 
-/* address conversion.
+/* Address conversion.
  * conversion between kernel address and the physical address.
  * */
 #define KA2P(addr)  ((addr) - KERN_BASE)
 #define P2KA(addr)  (((addr)) + KERN_BASE)
 
-/* casted address conversion */
+/* Casted address conversion */
 #define KA2P_C(addr)  ((uintptr_t)(addr) - KERN_BASE)
 #define P2KA_C(addr)  ((void *)((char *)(addr)) + KERN_BASE)
 
-/* page size is 4kb */
+/* Page size is 4kb */
 #define PAGE_SZ    0x1000

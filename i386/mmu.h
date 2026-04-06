@@ -25,7 +25,7 @@
  *  CD:  cache disabled
  *  WT:  1=write through, 0=write back
  *  U:   user
- *  U:   writable
+ *  W:   writable
  *  P:   present, accessing when it's 0 cause page fault.
  */
 

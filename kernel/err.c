@@ -19,8 +19,8 @@ void print_stack_trace() {
 
     for (int i = 0; ebp && i < 15; ++i) {
         uintptr_t ret = ebp[1];
-        vga_printf("  [<%08x>]\n", ret);
-        debug_printf("  [<%08x>]\n", ret);
+        vga_printf("  [<%#08x>]\n", ret);
+        debug_printf("  [<%#08x>]\n", ret);
         ebp = (uintptr_t*) ebp[0];
     }
 }

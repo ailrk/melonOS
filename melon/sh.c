@@ -1,5 +1,3 @@
-#include "alloca.h"
-#include "driver/ide.h"
 #include "sys.h"
 #include "melon.h"
 #include "string.h"
@@ -70,6 +68,10 @@ struct State {
     .p         = 0,
     .allocated = 0
 };
+
+
+// void aa() {
+// }
 
 
 /* Allocate n bytes */
@@ -187,7 +189,7 @@ void run_cmd(Cmd *cmd) {
 
 /* Read a line from buffer */
 char *gets() {
-  char gets_buf[128];
+  char gets_buf[512];
   int  pos = 0;
   int  len = 0;
 

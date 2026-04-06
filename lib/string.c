@@ -172,23 +172,6 @@ char *strpbrk(const char *s, const char *keys) {
     return 0;
 }
 
-char *foo(const char *s, const char *keys) {
-    if (!s)    return 0;
-    if (!keys) return 0;
-    for (; *s != '\0'; ++s) {
-        for (const char *k = keys; *k != '\0'; ++k) {
-            if (*s == *k) return (char *)s;
-        }
-    }
-    if (!s)    return 0;
-    if (!keys) return 0;
-    for (; *s != '\0'; ++s) {
-        for (const char *k = keys; *k != '\0'; ++k) {
-            if (*s == *k) return (char *)s;
-        }
-    }
-    return 0;
-}
 
 char *strncat(char *dst, const char *src, size_t n) {
     char *p = dst;

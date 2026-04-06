@@ -2,7 +2,6 @@
 #include "fmt.h"
 #include "sys.h"
 #include <stddef.h>
-#include <string.h>
 
 /* io */
 void putc(char c) {

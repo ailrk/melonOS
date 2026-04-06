@@ -8,11 +8,11 @@
 
 extern char end[];
 
-/*! Some untilities for handling page table access
+/* Some untilities for handling page table access
  *
- *  Virtual (va) to physical (pa) address translation process:
- *  1. Take PDE of va from page directory
- *  2. Use PDE of va to get PT from page directory
+ * Virtual (va) to physical (pa) address translation process:
+ * 1. Take PDE of va from page directory
+ * 2. Use PDE of va to get PT from page directory
  * */
 
 
@@ -44,12 +44,12 @@ PTE *get_pte1(PDE *pde, const void *vaddr) {
 }
 
 
-/*! Walk the page directory to find the PTE corresponding to the virtual address.
- *  walk will allocate the page table if it doesn't exists.
+/* Walk the page directory to find the PTE corresponding to the virtual address.
+ * walk will allocate the page table if it doesn't exists.
  *
- *  @pgdir  the page directory
- *  @vaddr  virtual addess
- *  @return the address of the page table entry. 0 indicates failed to find pte
+ * @pgdir  the page directory
+ * @vaddr  virtual addess
+ * @return the address of the page table entry. 0 indicates failed to find pte
  * */
 PTE *walk(PageDir pgdir, const void *vaddr) {
     PDE      *pde = get_pde(pgdir, vaddr);
@@ -69,16 +69,19 @@ PTE *walk(PageDir pgdir, const void *vaddr) {
 
 
 
-/*! Create PTE for virtual addresses starting at vaddr mapped to paddr
- *  virtual address doesn't need to align on page boundry, `map_pages
- *  will automatically round down the address.
+/* Create PTE for virtual addresses starting at vaddr, mapped to paddr.
+ * virtual address doesn't need to align on page boundry, `map_pages
+ * will automatically round down the address.
  *
- *  @return true if pages are mapped successfully. false otherwise.
+ * @return true if pages are mapped successfully. false otherwise.
  * */
 bool map_pages(PageDir pgdir, const VMap *k) {
-    int           size   = k->pend - k->pstart;
-    char         *vstart = (char *)page_aligndown((uintptr_t)k->virt);
-    char         *vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
+    int size   = k->pend - k->pstart;
+
+    // vstart and vend are aligned downward by page boundary.
+    char *vstart = (char *)page_aligndown((uintptr_t)k->virt);
+    char *vend   = (char *)page_aligndown((uintptr_t)k->virt + size);
+
     physical_addr pstart = k->pstart;
     PTE          *pte;
 
@@ -103,10 +106,10 @@ bool map_pages(PageDir pgdir, const VMap *k) {
 }
 
 
-/*! Unmap npages from the virtual address mapping k. If free is true then free
- *  the allocation as well. The mapping must exists.
- *  If ptr_add(*pte) is in invalid address range, we simply ignore it.
- * */
+/* Unmap npages from the virtual address mapping k. If free is true then free
+ * the allocation as well. The mapping must exists.
+ * If ptr_add(*pte) is in invalid address range, we simply ignore it.
+ **/
 void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
     uintptr_t vend = vstart + n * PAGE_SZ;
     PTE      *pte;
@@ -145,7 +148,6 @@ void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
         clear: *pte = 0;
     }
 }
-
 
 
 void set_pte_flag(PageDir pgdir, char *vaddr, unsigned flag) {

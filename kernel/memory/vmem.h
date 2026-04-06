@@ -24,6 +24,7 @@ int  uvm_allocate (PageDir pgdir, size_t oldsz, size_t newsz);
 int  uvm_deallocate (PageDir pgdir, size_t oldsz, size_t newsz);
 void uvm_switch (Process *p);
 int  uvm_load(PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned size);
-bool uvm_copy (PageDir pgdir, PageDir *out, size_t sz);
+bool uvm_copy (PageDir *out, PageDir in, size_t npg);
 int  uvm_memcpy(PageDir pgdir, unsigned vaddr, void *p, unsigned size);
+
 void vmfree (PageDir);

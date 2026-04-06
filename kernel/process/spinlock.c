@@ -2,7 +2,7 @@
 #include "err.h"
 #include "i386.h"
 #include "ncli.h"
-#include "process/proc.h"
+#include "process.h"
 
 /* Simple busy waiting spinlock */
 

@@ -18,11 +18,15 @@ typedef enum ProcState {
 } ProcState;
 
 
-// In x86 convention %eax, %ecx, %edx are caller saved register so we
-// don't need to save them in context. Segment registers are always the
-// same so we don't need to save them either.
-// For context swithcing we only need to save the following general
-// purpose registers.
+/* Context saves the state of kernel thread when it decides to stop
+ * running and let the scheduler takes over.
+ *
+ * In x86 convention %eax, %ecx, %edx are caller saved register so we
+ * don't need to save them in context. Segment registers are always the
+ * same so we don't need to save them either.
+ * For context swithcing we only need to save the following general
+ * purpose registers.
+ */
 typedef struct Context {
   uint32_t          edi;
   uint32_t          esi;
@@ -55,7 +59,7 @@ typedef struct CPU {
     TaskState     ts;
     Context      *scheduler; // Scheduler context. Points to kernel stack.
     volatile bool started;
-    bool          int_on; // was int enabled when ncli = 0
-    int           ncli;   // levels of pushcli
+    bool          int_on;    // was int enabled when ncli = 0
+    int           ncli;      // levels of pushcli
     Process      *proc;
 } CPU;

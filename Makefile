@@ -11,6 +11,8 @@ HOSTCC			= gcc
 #############################
 # DEBUG flag
 DEBUG 			?= 1
+DEBUG_VM 		?= 0
+DEBUG_PROC 		?= 0
 
 GRAPHICS		?= 0
 
@@ -29,6 +31,14 @@ BINARY			?= $(KERNEL)
 CFLAGS 			= -ffreestanding -nostdlib -fno-omit-frame-pointer
 ifeq ($(DEBUG), 1)
     CFLAGS += -g -DDEBUG
+endif
+
+ifeq ($(DEBUG_VM), 1)
+    CFLAGS += -DDEBUG_VM
+endif
+
+ifeq ($(DEBUG_PROC), 1)
+    CFLAGS += -DDEBUG_PROC
 endif
 
 
@@ -230,18 +240,18 @@ run:
 	split-window -v "cgdb melonos-kernel"
 
 
-stop:
-	@# Kill panes 1 through 3, ignoring errors if they are already closed
-	-tmux kill-pane -t 1
-	-tmux kill-pane -t 1
-	-tmux kill-pane -t 1
-
 dump:
 	tmux split-window -h "hexdump -C $(FILE) | bat --chop-long-lines" \; \
 	split-window -v "readelf -headers $(FILE) | bat -l help --chop-long-lines" \; \
 	select-pane -t 0 \; \
 	send-keys -t 0 "i686-elf-objdump -M intel -d $(FILE) | bat -l asm --chop-long-lines" C-m \; \
 	split-window -v "bat $(SRC)"
+
+stop:
+	@# Kill panes 1 through 3, ignoring errors if they are already closed
+	-tmux kill-pane -t 1
+	-tmux kill-pane -t 1
+	-tmux kill-pane -t 1
 
 
 # subfolder makefiles

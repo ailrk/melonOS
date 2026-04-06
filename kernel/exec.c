@@ -9,7 +9,6 @@
 #include "err.h"
 #include "elf.h"
 #include "process.h"
-#include "process/proc.h"
 #include "process/pdefs.h"
 #include "memory/vmem.h"
 #include "fs/dir.h"
@@ -92,7 +91,9 @@ int exec(char *path, char **argv) {
             goto bad;
         }
 
-        if ((size = uvm_allocate(pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) { // .text is loaded from 0x1000
+        // Load
+        // .text is loaded from 0x1000
+        if ((size = uvm_allocate(pgtbl, size, ph.p_vaddr + ph.p_memsz)) == 0) {
             goto bad;
         }
 
@@ -105,9 +106,8 @@ int exec(char *path, char **argv) {
         }
     }
 
-
-#ifdef DEBUG
-    debug("exec: %s ", path);
+#if DEBUG
+    debug("exec> %s ", path);
     for (int i = 0; i < MAXARGS; ++i) {
         if (argv[i]) {
             debug_printf("%s,", argv[i]);
@@ -116,7 +116,8 @@ int exec(char *path, char **argv) {
         }
         debug_printf(" ");
     }
-    debug_printf(" binary loaded\n");
+    debug_printf("binary loaded\n");
+    dump_trapframe(this_proc()->trapframe);
 #endif
 
 
@@ -132,12 +133,12 @@ int exec(char *path, char **argv) {
         goto bad;
     }
 
-    // set guard page permission
+    // Set guard page permission
     clear_pte_flag(pgtbl, (char *)(size - 2 * PAGE_SZ), PTE_U);
 
     sp = size;
 
-    // push arguments
+    // Push arguments
     unsigned buffer[3 + MAXARGS + 1];
     memset(buffer, 0, sizeof(buffer));
     for (argc = 0; argv[argc]; ++argc) {
@@ -163,18 +164,24 @@ int exec(char *path, char **argv) {
     }
 
 #ifdef DEBUG
-    debug("exec: %s, uvm is ready\n", path);
+    debug("exec> %s, uvm is ready\n", path);
 #endif
 
-    // go to user space
     p = this_proc();
+
+    // Setup Process.
     strncpy(p->name, path, sizeof(p->name));
     old_pgtbl = p->pgdir;
     p->pgdir = pgtbl;
     p->size = size;
+
+    // Setup the trap frame to jump to e_entry.
     p->trapframe->eip = elfhdr.e_entry;
     p->trapframe->esp = sp;
+
+    // Go to user space
     uvm_switch(p);
+
     vmfree(old_pgtbl);
     return 0;
 

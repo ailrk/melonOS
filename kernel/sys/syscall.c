@@ -4,14 +4,11 @@
 #include "inode.h"
 #include "debug.h"
 #include "pipe.h"
-#include "proc.h"
-#include "proc.h"
 #include "string.h"
 #include "err.h"
 #include "fs.h"
 #include "fdefs.fwd.h"
 #include "file.h"
-#include "proc.h"
 #include "pdefs.h"
 #include "process.h"
 #include "exec.h"
@@ -398,7 +395,7 @@ void syscall() {
     }
 
 #ifdef DEBUG
-    debug("pid %d, syscall %d, %s\n", this_proc()->pid, n, syscall_name[n]);
+    debug("syscall> pid %d, syscall %d, %s\n", this_proc()->pid, n, syscall_name[n]);
 #endif
     int r = system_calls[n]();
     p->trapframe->eax = r;

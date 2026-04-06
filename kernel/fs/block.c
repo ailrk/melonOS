@@ -23,7 +23,7 @@ void block_init(devno_t dev) {
 }
 
 
-/*! Zero a disk block */
+/* Zero a disk block */
 void block_zero(devno_t dev, blockno_t blockno) {
     BNode *b = bcache_read(dev, blockno, false);
     memset(b->cache, 0, BSIZE);
@@ -32,10 +32,10 @@ void block_zero(devno_t dev, blockno_t blockno) {
 }
 
 
-/*! Read superblock. If `update` is true, read the superblock from the disk.
- *  @dev     Device number.
- *  @sb      Output. If it's 0, don't output anything.
- *  @update  If `update` is true, read the superblock from  the disk
+/* Read superblock. If `update` is true, read the superblock from the disk.
+ * @dev     Device number.
+ * @sb      Output. If it's 0, don't output anything.
+ * @update  If `update` is true, read the superblock from  the disk
  * */
 void block_super(devno_t dev, SuperBlock *sb, bool update) {
     if (update) {
@@ -51,23 +51,22 @@ void block_super(devno_t dev, SuperBlock *sb, bool update) {
 }
 
 
-/*! Freemap bit address.
- *  The freemap stores blocks of bits to indicate whether a data block is in use.
- *  the nth bit from super_block.bmapstart indicates the availability of
- *  (super_block.datastart + nth bit).
+/* Freemap bit address.
+ * The freemap stores blocks of bits to indicate whether a data block is in use.
+ * the nth bit from super_block.bmapstart indicates the availability of
+ * (super_block.datastart + nth bit).
  *
- *  To access the bit for a specific `blockno`, you need to  obtain the bitmap block with
- *  `super_block.bmapstart + (blockno - super_block.datastart)`, then access the nth
- *  bit in that block counts from MSB.
- *  */
+ * To access the bit for a specific `blockno`, you need to  obtain the bitmap block with
+ * `super_block.bmapstart + (blockno - super_block.datastart)`, then access the nth
+ * bit in that block counts from MSB.
+ * */
 typedef struct FreemapAddr {
     blockno_t bno;   // the block that contains the bit.
     unsigned  nbit; // n bits from `bmapstart`
 } FreemapAddr;
 
 
-/*! Get freemap bit address for `blockno`.
- * */
+/* Get freemap bit address for `blockno`. */
 static FreemapAddr freemap_addr(unsigned blockno) {
     FreemapAddr addr;
     if (blockno < super_block.datastart) {
@@ -85,7 +84,7 @@ static FreemapAddr freemap_addr(unsigned blockno) {
 }
 
 
-/*! Check if `blockno` is used */
+/* Check if `blockno` is used */
 static bool freemap_check(devno_t dev, blockno_t blockno) {
     FreemapAddr addr = freemap_addr(blockno);
     BNode *b         = bcache_read(dev, addr.bno, false);
@@ -96,7 +95,7 @@ static bool freemap_check(devno_t dev, blockno_t blockno) {
 }
 
 
-/*! Set freemap bit */
+/* Set freemap bit */
 static void freemap_set(devno_t dev, blockno_t blockno, bool used) {
     if (blockno < super_block.datastart) {
         panic ("freemap_set");
@@ -114,7 +113,7 @@ static void freemap_set(devno_t dev, blockno_t blockno, bool used) {
 }
 
 
-/*! Search for the first free block in the freemap */
+/* Search for the first free block in the freemap */
 static unsigned freemap_search(devno_t dev, blockno_t *out) {
     unsigned nblks = super_block.datastart - super_block.bmapstart;
     for (unsigned off = 0; off < nblks; ++off) {
@@ -143,10 +142,10 @@ static unsigned freemap_search(devno_t dev, blockno_t *out) {
 }
 
 
-/*! Allocate a zeroed disk block
- *  This will look for the first free block from the freemap.
+/* Allocate a zeroed disk block
+ * This will look for the first free block from the freemap.
  *
- *  @return  the allocated blockno. 0 if the allocation is failed.
+ * @return  the allocated blockno. 0 if the allocation is failed.
  * */
 blockno_t block_alloc(devno_t dev) {
     blockno_t fbno;
@@ -162,7 +161,7 @@ blockno_t block_alloc(devno_t dev) {
 }
 
 
-/*! Free a block */
+/* Free a block */
 void block_free(devno_t dev, blockno_t blockno) {
     if (!freemap_check(dev, blockno)) {
         panic("block_free: block is already free");

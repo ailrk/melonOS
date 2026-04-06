@@ -2,7 +2,7 @@
 #include "ncli.h"
 #include "err.h"
 #include "i386.h"
-#include "process/proc.h"
+#include "process.h"
 
 /* n push_cli requires n pop_cli to undo.
  *

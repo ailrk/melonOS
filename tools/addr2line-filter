@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 """
-Filter address pattern like [<80106b3d>] to [<80106b3d> → file.c:20]. This can be applied on
+Filter address pattern like [<0x80106b3d>] to [<0x80106b3d> → file.c:20]. This can be applied on
 uart output to translate stack trace pointer to readable address.
 """
 
@@ -18,7 +18,7 @@ def run(cmd):
 def resolve_addr(elf, addr):
     if addr not in addr_cache:
         try:
-            addr_cache[addr] = run(["addr2line", "-e", elf, addr])
+            addr_cache[addr] = run(["addr2line", "-e", elf, addr, "-f", "-p"])
         except subprocess.CalledProcessError:
             addr_cache[addr] = "??"
     return addr_cache[addr]

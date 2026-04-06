@@ -4,7 +4,6 @@
 #include "err.h"
 #include "mmu.h"
 #include "pdefs.h"
-#include "proc.h"
 #include "process.h"
 #include "ps2.h"
 #include "sys/syscall.h"
@@ -17,11 +16,47 @@
 
 
 extern void *vectors[];
-unsigned ticks;
+unsigned     ticks;
+
+
+static char *traperrs[] = {
+    [I_DIVBYZERO]             = "I_DIVBYZERO",
+    [I_DEBUG]                 = "I_DEBUG",
+    [I_NMI]                   = "I_NMI",
+    [I_BRKPNT]                = "I_BRKPNT",
+    [I_OVERFLOW]              = "I_OVERFLOW",
+    [I_BOUND]                 = "I_BOUND",
+    [I_ILLEGALOP]             = "I_ILLEGALOP",
+    [I_COPNOAVIL]             = "I_COPNOAVIL",
+    [I_DOUBLEFLT]             = "I_DOUBLEFLT",
+    [I_COPSEG]                = "I_COPSEG",
+    [I_TSS]                   = "I_TSS",
+    [I_SEGNP]                 = "I_SEGNP",
+    [I_STKSGFLT]              = "I_STKSGFLT",
+    [I_GPFLT]                 = "I_GPFLT",
+    [I_PGFLT]                 = "I_PGFLT",
+    [0xf]                     = "0xf",
+    [I_FPERR]                 = "I_FPERR",
+    [I_ALIGN]                 = "I_ALIGN",
+    [I_MACHINE]               = "I_MACHINE",
+    [I_SIMDERR]               = "I_SIMDERR",
+    [MAP_IRQ(I_IRQ_TIMER)]    = "I_IRQ_TIMER",
+    [MAP_IRQ(I_IRQ_KBD)]      = "I_IRQ_KBD",
+    [MAP_IRQ(I_IRQ_CASCADE)]  = "I_IRQ_CASCADE",
+    [MAP_IRQ(I_IRQ_COM2)]     = "I_IRQ_COM2",
+    [MAP_IRQ(I_IRQ_COM1)]     = "I_IRQ_COM1",
+    [MAP_IRQ(I_IRQ_LPT1)]     = "I_IRQ_LPT1",
+    [MAP_IRQ(I_IRQ_CMOS)]     = "I_IRQ_CMOS",
+    [MAP_IRQ(I_IRQ_MOUSE)]    = "I_IRQ_MOUSE",
+    [MAP_IRQ(I_IRQ_IDE)]      = "I_IRQ_IDE",
+    [MAP_IRQ(I_IRQ_ERR)]      = "I_IRQ_ERR",
+    [MAP_IRQ(I_IRQ_SPURIOUS)] = "I_IRQ_SPURIOUS",
+    [I_SYSCALL]               = "I_SYSCALL",
+};
 
 
 #if DEBUG
-static void dump_trapframe(const TrapFrame *tf) {
+void dump_trapframe(const TrapFrame *tf) {
     debug("trapframe> \n");
     debug(" edi:    %#x\n", tf->edi);
     debug(" esi:    %#x\n", tf->esi);
@@ -34,21 +69,22 @@ static void dump_trapframe(const TrapFrame *tf) {
     debug(" fs:     %#x\n", tf->fs);
     debug(" es:     %#x\n", tf->es);
     debug(" ds:     %#x\n", tf->ds);
-    debug(" trapno: %#x\n", tf->trapno);
+    debug(" trapno: %#x, %s\n", tf->trapno, traperrs[tf->trapno]);
     debug(" err:    %#x\n", tf->err);
-    debug(" eip:    %#x\n", tf->eip);
+    debug(" eip:    [<%#x>]\n", tf->eip);
     debug(" cs:     %#x\n", tf->cs);
-    debug(" elfags: %#x\n", tf->eflags);
+    debug(" eflags: %#x\n", tf->eflags);
     debug(" esp:    %#x\n", tf->esp);
     debug(" ss:     %#x\n", tf->ss);
 }
 #endif
 
+
 /* Input source */
 uint8_t source_uart() { return uart_getc(COM1); }
 
 
-
+/* Initialized the trap. */
 void trap_init() {
     for (int i = 0; i < 256; ++i) {
         regist_idt_handler(
@@ -66,15 +102,15 @@ void trap_init() {
 }
 
 
-/*! When a system call is invoked, the system call number is
- *  moved to eax and `int I_SYSCALL` is performed, which
- *  causes the trap to dispatch to this handler.
+/* When a system call is invoked, the system call number is
+ * moved to eax and `int I_SYSCALL` is performed, which
+ * causes the trap to dispatch to this handler.
  *
- *  `handle_syscall` will set the trapframe to the current
- *  process, then it dispatches to `syscall`, the
+ * `handle_syscall` will set the trapframe to the current
+ * process, then it dispatches to `syscall`, the
  *
- *  After trap is invoked, `trapret` will bring the program back
- *  to the user space with `iret`.
+ * After trap is invoked, `trapret` will bring the program back
+ * to the user space with `iret`.
  * */
 void handle_syscall(TrapFrame *tf) {
     if (this_proc()->killed)
@@ -213,13 +249,19 @@ void trap(TrapFrame *tf) {
             this_proc()->killed = 1;
     }
 
-    // exit killed user space process
+    // Exit killed user space process
     if (this_proc() && this_proc()->killed && (tf->cs & 3) == DPL_U) {
         exit();
     }
 
-    // yield running user process.
+    // Yield running user process. This brings the CPU back
+    // to the scheduler.
+    // See trapasm.s to see the stack setup at this point.
     if (this_proc() && this_proc()->state == PROC_RUNNING && (tf->cs & 3) == DPL_U) {
+#if DEBUG // @TODO
+            debug("YEILDING");
+            dump_trapframe(tf);
+#endif
         yield();
     }
 }
