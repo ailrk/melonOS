@@ -12,13 +12,28 @@ void printf(char *fmt, ...) {
 }
 
 
-void putc(char *addr) {
-    vga_writec(addr);
-    uart_putc(COM1, *addr);
-}
-
-
 void vprintf(char *fmt, va_list args) {
     uart_vprintf(COM1, fmt, args);
     vga_vprintf(fmt, args);
+}
+
+
+void dprintf(char *fmt, ...) {
+    va_list args;
+    va_start (args, fmt);
+    dvprintf(fmt, args);
+    va_end (args);
+}
+
+
+void dvprintf(char *fmt, va_list args) {
+    uart_vprintf(COM1, fmt, args);
+    uart_vprintf(COM2, fmt, args);
+    vga_vprintf(fmt, args);
+}
+
+
+void putc(char *addr) {
+    vga_writec(addr);
+    uart_putc(COM1, *addr);
 }

@@ -83,7 +83,10 @@ void *alloc(int n) {
 
 /* Free all allocated heap memory */
 void free() {
-    sbrk(-st.allocated);
+    if (st.allocated > 0) {
+        sbrk(-st.allocated);
+    }
+
     st.allocated = 0;
 }
 
@@ -225,25 +228,34 @@ int next_line() {
     return 1;
 }
 
-
 int main() {
-    int pid = 0;
-    Cmd *cmd = 0;
-
     while (next_line()) {
-        printf("[DEBUG] cmd \n");
-        cmd = parse_cmd();
-        if (cmd == 0) {
-            printf("failed to parse the command\n");
-            continue;
-        }
-
-        pid = fork();
-
-        if (pid == 0) {
-            run_cmd(cmd);
-        }
-        wait();
+        printf("%s\n", st.buf);
     }
     return 0;
 }
+
+
+// int main() {
+//     int pid = 0;
+//     Cmd *cmd = 0;
+
+//     while (next_line()) {
+//         printf("[DEBUG] cmd \n");
+
+//         cmd = parse_cmd();
+
+//         if (cmd == 0) {
+//             printf("failed to parse the command\n");
+//             continue;
+//         }
+
+//         pid = fork();
+
+//         if (pid == 0) {
+//             run_cmd(cmd);
+//         }
+//         wait();
+//     }
+//     return 0;
+// }

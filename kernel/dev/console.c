@@ -139,7 +139,7 @@ void console_handler_cooked() {
 
                 if (c == '\r') c = '\n';
 
-                // cooked mode retain the newline in the buffer.
+                // Cooked mode retain the newline in the buffer.
                 if (c == '\n') {
                     uart_putc(COM1, '\n');
                     line_buffer.data[line_buffer.len++] = '\n';
@@ -153,6 +153,7 @@ void console_handler_cooked() {
                     continue;
                 }
 
+                // Backspace
                 if (c == '\b' || c == 0x7f) {
                     if (line_buffer.len > 0) {
                         line_buffer.len--;
@@ -165,8 +166,8 @@ void console_handler_cooked() {
                     continue;
                 }
 
+                // Normal Characters, insert and Echo
                 if (c >= 0x20 && c < 0x7f) {
-                    // insert and echo char
                     if (line_buffer.len < LINE_BUF_SZ - 1) {
                         line_buffer.data[line_buffer.cursor++] = c;
                         line_buffer.len++;
@@ -175,6 +176,7 @@ void console_handler_cooked() {
                     continue;
                 }
                 break;
+
             case STATE_ESC:
                 if (c == '[') {
                     line_buffer.state = STATE_ESC_BRACKET;
@@ -182,6 +184,7 @@ void console_handler_cooked() {
                     line_buffer.state = STATE_NORMAL; // ignored
                 }
                 break;
+
             case STATE_ESC_BRACKET:
                 switch (c) {
                     case 'D':

@@ -4,6 +4,7 @@
 # A preprocessed file will have `.pp` extension being added before it's suffix.
 # For example, linker.ld will become linker.pp.ld, and the linker.pp.ld will be
 # used in the following linking process.
+#
 KERN_CFILES 	= $(shell find $(KERN_DIR) -name "*.c")
 KERN_VECTORS 	= $(KERN_DIR)/trap/vectors.s # vectors.s is generated from vectors.py
 KERN_ASMFILES 	= $(filter-out $(KERN_VECTORS) $(shell find $(KERN_DIR) -name "*.pp.s"),$(shell find $(KERN_DIR) -name "*.s")) $(KERN_VECTORS)

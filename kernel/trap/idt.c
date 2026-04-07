@@ -33,9 +33,9 @@ void regist_idt_handler(uint8_t vector, void *isr, uint8_t flags) {
 
 
 void idt_init() {
-    printf("[\033[32mboot\033[0m] idt...");
+    dprintf(LOG_BOOT " idt...");
     idtr.base  = (uint32_t)&idt;
     idtr.limit = sizeof(IDTEntry) * IDT_MAX_VECTOR - 1;
     lidt((void *)&idtr);
-    printf("\033[32mok\033[0m\n");
+    dprintf(LOG_OK "\n");
 }

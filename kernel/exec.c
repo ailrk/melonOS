@@ -13,35 +13,7 @@
 #include "memory/vmem.h"
 #include "fs/dir.h"
 
-/*  User memory of the program after elf is loaded and stack is setup
- *
- *    +--------------+ KERN_BASE    +--------------+
- *    |   heap       |              |   arg 0      | here are null terminated strings.
- *    +--------------+              |   ...        | we simply store it next to the call stack.
- *    |   stack      | -----------> |   arg N      |
- *    +--------------+              |   0          |
- *    |   guard page |              +--------------+-------------------------- real call stack.
- *    +--------------+              |   &arg 0     | argv[argc]
- *    |   data       |              |   ...        |
- *    +--------------+              |   &arg N     | argv[0]
- *    |   text       |              +--------------+
- *    +--------------+              |   argv       | points to argv[0]
- *    |   ...        |              +--------------+
- *    +--------------+ 0            |   argc       |
- *                                  +--------------+
- *                                  |   0xffffffff | fake ip for return
- *                                  +--------------+
- *                                  |   <guard>    |
- *                                  +--------------+
- *
- * where `data` and `text` section are loaded from the elf, `guard page`, `stack`, and `heap` are
- * allocated by `exec`.
- *
- * Note: text section doesn't start from va 0. Typically in unix like system elf virtual address will
- * leave some space before text. e.g 32 bit starts at 0x08004000, 64 bit starts at 0x40000000.
- */
-
-/*! Execute a program */
+/* Execute a program */
 int exec(char *path, char **argv) {
     Inode             *ino;
     PageDir            pgtbl;
@@ -117,7 +89,6 @@ int exec(char *path, char **argv) {
         debug_printf(" ");
     }
     debug_printf("binary loaded\n");
-    dump_trapframe(this_proc()->trapframe);
 #endif
 
 
@@ -125,7 +96,7 @@ int exec(char *path, char **argv) {
     inode_drop(ino);
     ino = 0;
 
-    // Allocate 2 pages at the next page boundary,
+    // Allocate 2 pages from the next page boundary,
     // the first page is the guard page and is inaccessible
     // the second page is the user stack
     size = page_alignup(size);
@@ -136,11 +107,41 @@ int exec(char *path, char **argv) {
     // Set guard page permission
     clear_pte_flag(pgtbl, (char *)(size - 2 * PAGE_SZ), PTE_U);
 
+    unsigned buffer[3 + MAXARGS + 1];
+
+    /*
+     * We want to build a stack like this:
+     *
+     *  +-----------------------+
+     *  |      0xffffffff       |  buffer[0]: Fake Return IP
+     *  +-----------------------+
+     *  |         argc          |  buffer[1]: Arg count
+     *  +-----------------------+
+     *  |     addr of argv[0]   |  buffer[2]: Pointer to argv array
+     *  +-----------------------+
+     *  |      ptr to arg0      |  buffer[3]: Pointer to string 0
+     *  +-----------------------+
+     *  |      ptr to arg1      |  buffer[4]: Pointer to string 1
+     *  +-----------------------+
+     *  |          ...          |
+     *  +-----------------------+
+     *  |          0            |  buffer[3+argc]: Null terminator
+     *  +-----------------------+
+     *  |       "arg0\0"        |  Actual string data
+     *  +-----------------------+
+     *  |       "arg1\0"        |  Actual string data
+     *  +-----------------------+
+     *  |          ...          |
+     *  +-----------------------+  <- sp
+     */
+
+    // Set sp to the top.
     sp = size;
 
-    // Push arguments
-    unsigned buffer[3 + MAXARGS + 1];
+    // Clear the buffer
     memset(buffer, 0, sizeof(buffer));
+
+    // Copy args
     for (argc = 0; argv[argc]; ++argc) {
         if (argc > MAXARGS)
             goto bad;
@@ -153,11 +154,30 @@ int exec(char *path, char **argv) {
         buffer[3 + argc] = sp;
     }
 
+    // Setup argc and argv.
     buffer[3 + argc] = 0;
     buffer[2] = sp - (argc + 1) * sizeof(argv[0]);
     buffer[1] = argc;
-    buffer[0] = 0xffffffff; // fake return ip
+    buffer[0] = 0xffffffff;                   // fake return ip
     sp -= (3 + argc + 1) * sizeof(buffer[0]); // set sp to top
+
+
+    /* Copy the stack into uvm.
+     *    +--------------+ 0
+     *    | ...          |
+     *    +--------------+
+     *    | text         |
+     *    +--------------+              +------------+
+     *    | data         |              | 0xffffffff |
+     *    +--------------+              +------------+
+     *    | guard page   |              |            |
+     *    +--------------+              |   buffer   |
+     *    | stack        | <---cpy----- |            |
+     *    +--------------+              |            |
+     *    |  heap        |              +------------+
+     *    +--------------+ KERN_BASE
+     *
+     */
 
     if (uvm_memcpy(pgtbl, sp, buffer, (3 + argc + 1) * sizeof(buffer[0])) == -1) {
         goto bad;
@@ -182,6 +202,7 @@ int exec(char *path, char **argv) {
     // Go to user space
     uvm_switch(p);
 
+    // Now the old page table is no longer needed.
     vmfree(old_pgtbl);
     return 0;
 

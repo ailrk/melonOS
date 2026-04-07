@@ -4,6 +4,7 @@
 #include "err.h"
 #include "mmu.h"
 #include "pdefs.h"
+#include "print.h"
 #include "process.h"
 #include "ps2.h"
 #include "sys/syscall.h"
@@ -86,6 +87,7 @@ uint8_t source_uart() { return uart_getc(COM1); }
 
 /* Initialized the trap. */
 void trap_init() {
+    dprintf(LOG_BOOT " trap_init...\n");
     for (int i = 0; i < 256; ++i) {
         regist_idt_handler(
                 i,
@@ -99,6 +101,7 @@ void trap_init() {
 
     idt_init();
     pic_init();
+    dprintf(LOG_BOOT " trap_init " LOG_OK "\n");
 }
 
 
@@ -258,8 +261,8 @@ void trap(TrapFrame *tf) {
     // to the scheduler.
     // See trapasm.s to see the stack setup at this point.
     if (this_proc() && this_proc()->state == PROC_RUNNING && (tf->cs & 3) == DPL_U) {
-#if DEBUG // @TODO
-            debug("YEILDING");
+#if DEBUG
+            debug("YEILDING\n");
             dump_trapframe(tf);
 #endif
         yield();

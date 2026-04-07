@@ -71,7 +71,6 @@ void dump_process(const Process *p) {
     debug("  pid:   %d\n", p->pid);
     debug("  name:  %s\n", p->name);
     debug("  state: %s\n", state);
-    dump_context (p->context);
 }
 #endif
 
@@ -273,7 +272,7 @@ static void set_pid1_trapframe(Process *p) {
  * 0 +----------------+ copied from __INIT_BEGIN__
  * */
 void init_pid1() {
-    printf(LOG_BOOT " init1...\n");
+    dprintf(LOG_BOOT " init1...\n");
     Process *p;
     if ((p = allocate_process()) == 0) {
         panic ("init_pid1: failed to allocate process");
@@ -302,7 +301,7 @@ void init_pid1() {
     proc_init1 = p;
     unlock(&ptable.lk);
 
-    printf(LOG_BOOT " init1 " LOG_OK "\n");
+    dprintf(LOG_BOOT " init1 " LOG_OK "\n");
 }
 
 
@@ -585,7 +584,7 @@ void yield() {
  *
  * */
 void scheduler() {
-    printf(LOG_BOOT " scheduler...\n");
+    dprintf(LOG_BOOT " scheduler...\n");
     CPU *cpu = this_cpu ();
     cpu->proc = 0;
     for (;;) {
@@ -598,7 +597,6 @@ void scheduler() {
 #if DEBUG && DEBUG_PROC
             debug("====== SWTCH to pid %d =====\n", p->pid);
             dump_process(p);
-            debug("====== SWITCH END ======\n");
 #endif
             /* At this point, we are using the global
              * kernel page table, on the global kernel stack.
@@ -640,6 +638,10 @@ void scheduler() {
              * The first thing t do is to swtich
              * back to kernel only page table.
              */
+
+#if DEBUG && DEBUG_PROC
+            debug("====== SWTCH from pid %d =====\n", p->pid);
+#endif
             kvm_switch();
 
             /* Clear the current process, the

@@ -149,14 +149,14 @@ void kvm_switch() {
 
 /* Setup global kernel virtual memory */
 void kvm_init() {
-    printf(LOG_BOOT " kvm_alloc...\n");
+    dprintf(LOG_BOOT " kvm_alloc...\n");
     init_kmap();
     if (!kvm_allocate(&kernel_pgdir)) {
         panic("kvm_init");
     }
     // map the kernel page table.
     kvm_switch();
-    printf(LOG_BOOT " kvm_alloc " LOG_OK "\n");
+    dprintf(LOG_BOOT " kvm_alloc " LOG_OK "\n");
 }
 
 
@@ -312,20 +312,6 @@ int uvm_load(PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned si
  *
  * The user space address always start from 0, so the returned size can be used
  * as the end address of the virtual memory.
- *
- * oldsz +----------------+      +----------------+
- *       | program data   |      | program data   |
- *       |    & heap      |      |    & heap      |
- *       +................+      |                |
- *                               +................+
- *
- *       +................+      +................+
- *       | user stack     |      | user stack     |
- *       +----------------+ ->   +----------------+
- *       | user data      |      | user data      |
- *       +----------------+      +----------------+
- *       | user text      |      | user text      |
- *     0 +----------------+    0 +----------------+
  * */
 int uvm_allocate(PageDir pgdir, size_t oldsz, size_t newsz) {
 #if DEBUG && DEBUG_VM

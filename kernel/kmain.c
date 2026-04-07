@@ -20,6 +20,8 @@ static void *phystop = P2KA_C (PHYSTOP);               // physical top
 
 void kmain(void) {
     vga_init();
+    uart_init(COM1);
+    uart_init(COM2);
 
 #ifdef DEBUG
     debug("memory: %x:%x, size: %d\n", ptstart, phystop, ptend - phystop);
@@ -34,8 +36,6 @@ void kmain(void) {
     pmem_report();
 #endif
 
-    uart_init(COM1);
-    uart_init(COM2);
     trap_init();
     dev_init();
     fs_init();

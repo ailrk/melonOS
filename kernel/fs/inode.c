@@ -30,9 +30,9 @@ inline static blockno_t inode_block(inodeno_t inum) {
 
 
 void inode_init() {
-    printf("[\033[32mboot\033[0m] inode...");
+    dprintf(LOG_BOOT " inode...");
     icache.lk = new_lock("icache.lk");
-    printf("\033[32mok\033[0m\n");
+    dprintf(LOG_OK "\033[32mok\033[0m\n");
 }
 
 

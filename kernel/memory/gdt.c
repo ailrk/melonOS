@@ -55,7 +55,7 @@ GDTEntry create_descriptor(uint32_t base, uint32_t limit, uint16_t flag) {
 
 
 void gdt_init() {
-    printf("[\033[32mboot\033[0m] gdt...");
+    dprintf(LOG_BOOT " gdt...");
     cpu.gdtr.limit     = sizeof(GDTEntry) * NSEGS - 1;
     cpu.gdtr.base      = (uint32_t)&cpu.gdt;
 
@@ -142,5 +142,5 @@ void gdt_init() {
     //
     // Everytime we switch to user mode, we need to update the TSS
     // segment and indicate the kernel stack address.
-    printf("\033[32mok\033[0m\n");
+    dprintf(LOG_OK "\n");
 }

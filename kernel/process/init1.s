@@ -12,6 +12,9 @@ init1:
     mov eax, SYS_EXEC
     int I_SYSCALL
 
+    ; If exec fails, we land here. Clean up the stack.
+    add esp, 8
+
 loop: jmp loop
 
 
@@ -24,4 +27,4 @@ arg1:
 
 ;; char *argv[] = { init, 0 };
 argv:
-    dq arg1, 0
+    dd arg1, 0

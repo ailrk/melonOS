@@ -36,8 +36,8 @@ static inline unsigned char inb(unsigned short port) {
 #define iret() __asm__ volatile ("iret");
 
 
-static inline uint32_t xchg (volatile uint32_t *addr, uint32_t newval) {
-  uint32_t result;
+static inline unsigned xchg (volatile unsigned *addr, unsigned newval) {
+  unsigned result;
   // The + in "+m" denotes a read-modify-write operand.
   asm volatile ("lock; xchgl %0, %1"
                 : "+m" (*addr), "=a" (result)
