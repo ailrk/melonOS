@@ -15,20 +15,17 @@ int memcmp(const void *v1, const void *v2, size_t n) {
 }
 
 
-void *memmove(void *dest, const void *src, size_t n) {
-    char *d = dest;
+void *memmove(void *dest, const void *src, size_t n) { char *d = dest;
     const char *s = src;
-
     if (s < d && s + n > d) {
-        s += n;
-        d += n;
-        while (--n) *d-- = *s--;
+        s += n - 1;
+        d += n - 1;
+        while (n--) *d-- = *s--;
     } else {
-        while (--n) *d++ = *s++;
+        while (n--) *d++ = *s++;
     }
     return dest;
 }
-
 
 void memcpy(void *dest, const void *src, size_t n) {
     for (int i = 0; i < n; ++i) {

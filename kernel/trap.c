@@ -261,7 +261,7 @@ void trap(TrapFrame *tf) {
     // to the scheduler.
     // See trapasm.s to see the stack setup at this point.
     if (this_proc() && this_proc()->state == PROC_RUNNING && (tf->cs & 3) == DPL_U) {
-#if DEBUG
+#if DEBUG && DEBUG_PROC
             debug("YEILDING\n");
             dump_trapframe(tf);
 #endif

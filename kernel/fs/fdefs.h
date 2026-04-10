@@ -48,10 +48,10 @@ typedef struct Inode {
 static const size_t inode_per_block = BSIZE / sizeof (DInode);
 
 
-/*! Get the block that the inode stored at. An inode is always completely stored within
- *  a block, you will not have an inode stored across 2 blocks.
+/* Get the block that the inode stored at. An inode is always completely
+ * stored within a block, you will not have an inode stored across 2 blocks.
  * */
-inline static blockno_t get_inode_block(inodeno_t inum, SuperBlock *sb) {
+inline static blockno_t get_inode_block(inodeno_t inum, const SuperBlock * sb) {
     return inum / inode_per_block + sb->inodestart;
 }
 

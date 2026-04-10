@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include "debug.h"
 #include "mutex.h"
 #include "print.h"
 #include "stdlib.h"
@@ -52,7 +53,7 @@ static bool dinode_write(Inode *ino, BNode *b) {
 }
 
 
-/*! Allocate an inode on disk and create an inode cache in icache. */
+/* Allocate an inode on disk and create an inode cache in icache. */
 Inode *inode_allocate (devno_t dev, FileType type) {
     for (inodeno_t inum = ROOTINO + 1; inum < super_block.ninodes; ++inum) {
         BNode     *b    = bcache_read(dev, inode_block(inum), false);
@@ -76,21 +77,25 @@ Inode *inode_allocate (devno_t dev, FileType type) {
 }
 
 
-/*! Get an inode cache from icache. If the inode is not cached, allocate
+/* Get an inode cache from icache. If the inode is not cached, allocate
  *  a inode in cache. This function does not read from the disk. To
  *  make sure it syncs with the disk, always call `inode_load` or
  *  `inode_lock` after it.
  *  Return 0 if there is not enough slots.
  * */
 Inode *inode_getc (devno_t dev, inodeno_t inum) {
-    for (unsigned i = 0; i < sizeof(icache.inodes); ++i) {
+    unsigned ninodes = sizeof(icache.inodes);
+    for (unsigned i = 0; i < ninodes; ++i) {
         Inode *ino = &icache.inodes[i];
+
+        // It's an active Inode, simply add a reference.
         if (ino->nref >= 0 && ino->dev == dev && ino->inum == inum) {
             ino->nref++;
             return ino;
         }
 
-        if (ino->nref == 0) { // allocate on free inode
+        // Allocate on free inode
+        if (ino->nref == 0) {
             ino->nref = 1;
             ino->dev  = dev;
             ino->inum = inum;
@@ -113,15 +118,18 @@ bool inode_load (Inode *ino) {
     BNode    *b       = bcache_read(ino->dev, blockno, false);
 
     dinode_read(ino, b);
+
     bcache_release(b);
+
     ino->read = 1;
+
     if (!ino->d.type)
         panic("inode_load: inode has no file type");
     return true;
 }
 
 
-/*! Flush in memory inode cache to disk. Needs to be called everytime inode field is updated. */
+/* Flush in memory inode cache to disk. Needs to be called everytime inode field is updated. */
 void inode_flush(Inode *ino) {
     BNode   *b   = bcache_read (ino->dev, inode_block(ino->inum), false);
     dinode_write(ino, b);
@@ -130,7 +138,7 @@ void inode_flush(Inode *ino) {
 }
 
 
-/*! Lock the inode. Load disk inode if necessary */
+/* Lock the inode. Load disk inode if necessary */
 void inode_lock (Inode *ino) {
     if  (!ino)           panic("inode_lock, invalid inode");
     if  (ino->nref == 0) panic("inode_lock, inode is not used");
@@ -139,7 +147,7 @@ void inode_lock (Inode *ino) {
 }
 
 
-/*! Unlock the locked inode. */
+/* Unlock the locked inode. */
 void inode_unlock (Inode *ino) {
     if (!ino)                      panic("inode_unlock: invalid inode");
     if (!holding_mutex (&ino->lk)) panic("inode_unlock: mutex not locked");
@@ -148,7 +156,7 @@ void inode_unlock (Inode *ino) {
 }
 
 
-/*! Map direct blocks */
+/* Map direct blocks */
 static blockno_t bmap0(Inode *ino, unsigned nth) {
     blockno_t blockno = 0;
     if ((blockno = ino->d.addrs[nth]) == 0) {
@@ -156,36 +164,40 @@ static blockno_t bmap0(Inode *ino, unsigned nth) {
         ino->d.addrs[nth] = blockno;
         inode_flush(ino);
     }
+
+    debug("bmap0 nth %#x, blockno %#x\n", nth, blockno);
     return blockno;
 }
 
 
-/*! Map layer 1 indirect blocks */
+/* Map layer 1 indirect blocks */
 static blockno_t bmap1(Inode *ino, unsigned nth) {
     blockno_t ptrsno  = 0; // blockno of the pointer block
-    offset_t  offset  = nth - NDIRECT;
     blockno_t blockno = 0;
+    offset_t  offset  = nth - NDIRECT;
 
+    // Read the pointers block first.
     if ((ptrsno = ino->d.addrs[NDIRECT]) == 0) {
-        ptrsno            = block_alloc(ino->dev);
+        ptrsno                = block_alloc(ino->dev);
         ino->d.addrs[NDIRECT] = ptrsno;
         inode_flush(ino);
     }
 
-    BNode *blockptrs = bcache_read(ino->dev, ptrsno, false);
+    BNode *ptrsblock = bcache_read(ino->dev, ptrsno, false);
 
-    if ((blockno = ((unsigned *)blockptrs->cache)[offset]) == 0) {
+    if ((blockno = ((unsigned *)ptrsblock->cache)[offset]) == 0) {
         blockno = block_alloc(ino->dev);
-        *(unsigned *)(&blockptrs->cache[offset]) = blockno;
-        bcache_write(blockptrs, false);
+        *(unsigned *)(&ptrsblock->cache[offset]) = blockno;
+        bcache_write(ptrsblock, false);
     }
+    debug("bmap1 offset %#x, ptrsno %#x, blockno %#x\n", offset, ptrsno, blockno);
 
-    bcache_release(blockptrs);
+    bcache_release(ptrsblock);
     return blockno;
 }
 
 
-/*! Return the blockno of the nth block of inode. Allocate blocks if necessary. */
+/* Return the blockno of the nth block of inode. Allocate blocks if necessary. */
 blockno_t inode_bmap(Inode *ino, unsigned nth) {
     if (nth < NDIRECT) return bmap0(ino, nth);
     if (nth >= NDIRECT) return bmap1(ino, nth);
@@ -193,8 +205,8 @@ blockno_t inode_bmap(Inode *ino, unsigned nth) {
 }
 
 
-/*! Allocate blocks for `ino` until `offset` is allocated. Do nothing if the inode file size
- *  is already bigger than `offset`.
+/* Allocate blocks for `ino` until `offset` is allocated. Do nothing if the inode
+ * file size is already bigger than `offset`.
  * */
 void inode_offmap(Inode *ino, offset_t offset) {
     unsigned n;
@@ -214,14 +226,14 @@ void inode_offmap(Inode *ino, offset_t offset) {
 }
 
 
-/*! Increment the reference count for ino */
+/* Increment the reference count for ino */
 Inode *inode_dup(Inode *ino) {
     ino->nref++;
     return ino;
 }
 
 
-/*! Drop reference count of an inode. If the reference count drops to 0 and
+/* Drop reference count of an inode. If the reference count drops to 0 and
  * link count is 0, then `inode_drop` will free the disk space then
  * the ino is free to reuse.
  * TODO implement disk operation
@@ -231,14 +243,18 @@ void inode_drop(Inode *ino) {
 }
 
 
-/*! Read data from inode.
- *  @ino    Inode
- *  @buf    the buffer read into
- *  @offest cursor offset. Indicates n bytes from start of the file.
- *  @sz     read size
- *  @return number of bytes read. Return -1 if failed.
+/* Read data from inode.
+ * @ino    Inode
+ * @buf    The buffer read into
+ * @offest Cursor offset. Indicates n bytes from start of the file.
+ * @sz     Read size
+ * @return Number of bytes read. Return -1 if failed.
  * */
 int inode_read(Inode *ino, char *buf, offset_t offset, unsigned sz) {
+#if DEBUG && DEBUG_FS
+    debug("inode_read> ino: %d, offset: %#x, size: %#x\n", ino->inum, offset, sz);
+#endif
+
     if (!ino->read) inode_load(ino);
 
     switch (ino->d.type) {
@@ -251,7 +267,11 @@ int inode_read(Inode *ino, char *buf, offset_t offset, unsigned sz) {
     case F_FILE:
         if (ino->d.size < offset)         return -1;
         if ((unsigned)(-1) - offset < sz) return -1;
-        if (offset + sz > ino->d.size) sz = ino->d.size - offset; // crops
+
+        // Crops.
+        if (offset + sz > ino->d.size) {
+            sz = ino->d.size - offset;
+        }
 
         BNode *b;
         unsigned m;
@@ -273,12 +293,12 @@ int inode_read(Inode *ino, char *buf, offset_t offset, unsigned sz) {
 }
 
 
-/*! Write data to inode.
- *  @ino    Inode
- *  @buf    the buffer write from
- *  @offest cursor offset, indicates n bytes from start of the file.
- *  @sz     read size
- *  @return number of bytes written. Return -1 if failed.
+/* Write data to inode.
+ * @ino    Inode
+ * @buf    the buffer write from
+ * @offest cursor offset, indicates n bytes from start of the file.
+ * @sz     read size
+ * @return number of bytes written. Return -1 if failed.
  * */
 int inode_write (Inode *ino, const char *buf, offset_t offset, unsigned sz) {
     if (!ino->read) inode_load(ino);
@@ -322,7 +342,7 @@ int inode_write (Inode *ino, const char *buf, offset_t offset, unsigned sz) {
 }
 
 
-/*! Get stat from inode */
+/* Get stat from inode */
 void inode_stat(const Inode *ino, Stat *stat) {
     stat->dev   = ino->dev;
     stat->inum  = ino->inum;

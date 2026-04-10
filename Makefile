@@ -13,6 +13,7 @@ HOSTCC			= gcc
 DEBUG 			?= 1
 DEBUG_VM 		?= 0
 DEBUG_PROC 		?= 0
+DEBUG_FS 		?= 0
 
 GRAPHICS		?= 0
 
@@ -40,6 +41,11 @@ endif
 ifeq ($(DEBUG_PROC), 1)
     CFLAGS += -DDEBUG_PROC
 endif
+
+ifeq ($(DEBUG_FS), 1)
+    CFLAGS += -DDEBUG_FS
+endif
+
 
 
 CWARNS 			= -Wall -Wextra -fno-exceptions

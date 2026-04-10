@@ -273,15 +273,15 @@ void uvm_switch(Process *p) {
 
 /* Load a program segment into page directory.
  * @pgdir page directory
- * @addr     the address of the program. Must be page aligned
- * @ino      inode with the start of the program.
- * @offset   inode offset of the start of the program
- * @size     program size
+ * @addr     The address of the program. Must be page aligned
+ * @ino      Inode with the start of the program.
+ * @offset   Inode offset of the start of the program
+ * @size     Program size
  * @return   0 when succeed, -1 on error
  * */
 int uvm_load(PageDir pgdir, char *addr, Inode *ino, unsigned offset, unsigned size) {
 #if DEBUG && DEBUG_VM
-    debug("uvm_load> pgdir %#x, addr: %#x\n", pgdir.t, addr);
+    debug("uvm_load> pgdir %#x, addr: %#x, ino: %d, offset: %#x, size: %#x \n", pgdir.t, addr, ino->inum, offset, size);
 #endif
 
     if ((unsigned)addr % PAGE_SZ != 0)
