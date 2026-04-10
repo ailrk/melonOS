@@ -1,6 +1,5 @@
 #include "melon.h"
 #include "fmt.h"
-#include "sys.h"
 #include <stddef.h>
 
 /* io */
