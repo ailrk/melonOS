@@ -438,7 +438,7 @@ int uvm_deallocate(PageDir pgdir, uintptr_t oldsz, uintptr_t newsz) {
     uintptr_t newsz_a = page_alignup(newsz);
     uintptr_t oldsz_a = page_alignup(oldsz);
 
-#if DEBUG
+#if DEBUG && DEBUG_VM
     debug("uvm_deallocate> pgdir %#x, oldsz %#x(%#x), newsz %#x(%#x)\n", pgdir.t, oldsz, oldsz_a, newsz, newsz_a);
 #endif
 

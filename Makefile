@@ -14,6 +14,7 @@ DEBUG 			?= 1
 DEBUG_VM 		?= 0
 DEBUG_PROC 		?= 0
 DEBUG_FS 		?= 0
+DEBUG_SH 		?= 0
 
 GRAPHICS		?= 0
 
@@ -44,6 +45,10 @@ endif
 
 ifeq ($(DEBUG_FS), 1)
     CFLAGS += -DDEBUG_FS
+endif
+
+ifeq ($(DEBUG_SH), 1)
+    CFLAGS += -DDEBUG_SH
 endif
 
 

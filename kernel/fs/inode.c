@@ -165,7 +165,6 @@ static blockno_t bmap0(Inode *ino, unsigned nth) {
         inode_flush(ino);
     }
 
-    debug("bmap0 nth %#x, blockno %#x\n", nth, blockno);
     return blockno;
 }
 
@@ -190,7 +189,6 @@ static blockno_t bmap1(Inode *ino, unsigned nth) {
         *(unsigned *)(&ptrsblock->cache[offset]) = blockno;
         bcache_write(ptrsblock, false);
     }
-    debug("bmap1 offset %#x, ptrsno %#x, blockno %#x\n", offset, ptrsno, blockno);
 
     bcache_release(ptrsblock);
     return blockno;
