@@ -1,4 +1,3 @@
-#include "sys.h"
 #include "melon.h"
 #include "string.h"
 
@@ -11,7 +10,7 @@
  * */
 
 
-#define NARGS 2
+#define NARGS 3
 #define BUF_SZ 512
 
 const char whitespace[] = " \t\r\n";
@@ -70,10 +69,6 @@ struct State {
 };
 
 
-// void aa() {
-// }
-
-
 /* Allocate n bytes */
 void *alloc(int n) {
     st.allocated += n;
@@ -124,16 +119,18 @@ char *parse_word() {
 }
 
 
+/* Parse a simple executable command */
 Cmd *parse_exec() {
     ExecCmd *cmd = alloc(sizeof(ExecCmd));
     cmd->type    = EXEC;
     char *arg    = 0;
     int   i      = 0;
-    while (!strchr(symbols, *st.p)) {
+    while (*st.p && !strchr(symbols, *st.p)) {
         if (i > NARGS) {
             return 0;
         }
         arg = parse_word();
+        st.p++;
         cmd->argv[i++] = arg;
         skip_whitespaces();
     }
@@ -141,6 +138,7 @@ Cmd *parse_exec() {
 }
 
 
+/* Parse a pipeline */
 Cmd *parse_pipe() {
     Cmd *cmd = parse_exec();
     skip_whitespaces();
@@ -156,6 +154,7 @@ Cmd *parse_pipe() {
 }
 
 
+/* Parse a sequence */
 Cmd *parse_seq() {
     Cmd *cmd = parse_pipe();
     skip_whitespaces();
@@ -173,7 +172,7 @@ Cmd *parse_seq() {
 
 Cmd *parse_cmd() {
     skip_whitespaces();
-    Cmd  *cmd = parse_seq();
+    Cmd *cmd = parse_seq();
     return cmd;
 }
 
@@ -228,34 +227,66 @@ int next_line() {
     return 1;
 }
 
+#if DEBUG && DEBUG_SH
+void print_indent(unsigned indent) {
+    for (int i = 0; i < indent; ++i) {
+        printf(" ");
+    }
+}
+
+void dump_cmd(Cmd *cmd, unsigned indent) {
+    // Print indents
+    print_indent(indent);
+    printf("| ");
+
+    switch (cmd->type) {
+        case EXEC:
+            for (int i = 0; i < NARGS; ++i) {
+                char *arg = ((ExecCmd *)cmd)->argv[i];
+                if (arg) {
+                    printf("%s ", arg);
+                }
+            }
+            break;
+        case PIPE:
+            printf("pipe> \n");
+            dump_cmd(((PipeCmd *)cmd)->cmd1, indent + 1);
+            dump_cmd(((PipeCmd *)cmd)->cmd2, indent + 1);
+            break;
+        case SEQ:
+            printf("seq> \n");
+            dump_cmd(((PipeCmd *)cmd)->cmd1, indent + 1);
+            dump_cmd(((PipeCmd *)cmd)->cmd2, indent + 1);
+            break;
+    }
+    printf("\n");
+}
+#endif
+
+
 int main() {
+    int pid = 0;
+    Cmd *cmd = 0;
+
     while (next_line()) {
-        printf("%s\n", st.buf);
+        cmd = parse_cmd();
+
+#if DEBUG && DEBUG_SH
+        dump_cmd(cmd, 0);
+#endif
+
+        if (cmd == 0) {
+            printf("failed to parse the command\n");
+            continue;
+        }
+
+        pid = fork();
+
+        if (pid == 0) {
+            run_cmd(cmd);
+        } else {
+            wait();
+        }
     }
     return 0;
 }
-
-
-// int main() {
-//     int pid = 0;
-//     Cmd *cmd = 0;
-
-//     while (next_line()) {
-//         printf("[DEBUG] cmd \n");
-
-//         cmd = parse_cmd();
-
-//         if (cmd == 0) {
-//             printf("failed to parse the command\n");
-//             continue;
-//         }
-
-//         pid = fork();
-
-//         if (pid == 0) {
-//             run_cmd(cmd);
-//         }
-//         wait();
-//     }
-//     return 0;
-// }

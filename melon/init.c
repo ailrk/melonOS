@@ -1,4 +1,4 @@
-#include "sys.h"
+#include "melon.h"
 
 
 char *argv[] = { "sh", 0 };
