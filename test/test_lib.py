@@ -1,18 +1,18 @@
-import ctypes
+from ctypes import c_char_p, c_int, c_long, byref, CDLL, POINTER
 import os
 import pytest
 
 # Load the shared library
 lib_path = os.path.abspath("./test/libutils.so")
-lib = ctypes.CDLL(lib_path)
+lib = CDLL(lib_path)
 
-# Setup atoi: int atoi(char *p)
-lib.atoi.argtypes = [ctypes.c_char_p]
-lib.atoi.restype = ctypes.c_int
+# atoi: int atoi(char *p)
+lib.atoi.argtypes = [c_char_p]
+lib.atoi.restype = c_int
 
-# Setup strtol: long int strtol(char *str, char **endptr)
-lib.strtol.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
-lib.strtol.restype = ctypes.c_long
+# strtol: long int strtol(char *str, char **endptr)
+lib.strtol.argtypes = [c_char_p, POINTER(c_char_p)]
+lib.strtol.restype = c_long
 
 def test_atoi():
     assert lib.atoi(b"123") == 123
@@ -20,9 +20,9 @@ def test_atoi():
     assert lib.atoi(b"0") == 0
 
 def test_strtol_decimal():
-    endptr = ctypes.c_char_p()
+    endptr = c_char_p()
     # Testing "1234abc" -> should return 1234, endptr points to 'a'
-    res = lib.strtol(b"1234abc", ctypes.byref(endptr))
+    res = lib.strtol(b"1234abc", byref(endptr))
     assert res == 1234
     assert endptr.value == b"abc"
 
