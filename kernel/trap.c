@@ -105,15 +105,11 @@ void trap_init() {
 }
 
 
-/* When a system call is invoked, the system call number is
- * moved to eax and `int I_SYSCALL` is performed, which
- * causes the trap to dispatch to this handler.
- *
- * `handle_syscall` will set the trapframe to the current
- * process, then it dispatches to `syscall`, the
- *
- * After trap is invoked, `trapret` will bring the program back
- * to the user space with `iret`.
+/* When a system call is invoked, the system call number is moved to eax and
+ * `int I_SYSCALL` is performed, which causes the trap to dispatch to this
+ * handler. `handle_syscall` will set the trapframe to the current process,
+ * then it dispatches to `syscall`. After trap is invoked, `trapret` will bring
+ * the program back to the user space with `iret`.
  * */
 void handle_syscall(TrapFrame *tf) {
     if (this_proc()->killed)
@@ -257,8 +253,7 @@ void trap(TrapFrame *tf) {
         exit();
     }
 
-    // Yield running user process. This brings the CPU back
-    // to the scheduler.
+    // Yield running user process. This brings the CPU back to the scheduler.
     // See trapasm.s to see the stack setup at this point.
     if (this_proc() && this_proc()->state == PROC_RUNNING && (tf->cs & 3) == DPL_U) {
 #if DEBUG && DEBUG_PROC

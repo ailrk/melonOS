@@ -80,10 +80,10 @@ Inode *fs_create(const char *path, FileType type, uint16_t major, uint16_t minor
 }
 
 
-/*! Allocate a file descriptor for f for the current process.
- *  @f      file descriptor
- *  @return on success return the file descriptor number, return
- *          -1 on errors.
+/* Allocate a file descriptor for f for the current process.
+ * @f      file descriptor
+ * @return on success return the file descriptor number, return
+ *         -1 on errors.
  * */
 int fs_fdalloc(File *f) {
     for (int fd = 0; fd < NOFILE; ++fd) {

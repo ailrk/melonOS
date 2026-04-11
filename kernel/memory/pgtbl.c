@@ -44,8 +44,8 @@ PTE *get_pte1(PDE *pde, const void *vaddr) {
 }
 
 
-/* Walk the page directory to find the PTE corresponding to the virtual address.
- * walk will allocate the page table if it doesn't exists.
+/* Walk the page directory to find the PTE corresponding to the virtual
+ * address. walk will allocate the page table if it doesn't exists.
  *
  * @pgdir  the page directory
  * @vaddr  virtual addess
@@ -69,9 +69,9 @@ PTE *walk(PageDir pgdir, const void *vaddr) {
 
 
 
-/* Create PTE for virtual addresses starting at vaddr, mapped to paddr.
- * virtual address doesn't need to align on page boundry, `map_pages
- * will automatically round down the address.
+/* Create PTE for virtual addresses starting at vaddr, mapped to paddr. virtual
+ * address doesn't need to align on page boundry, `map_pages will automatically
+ * round down the address.
  *
  * @return true if pages are mapped successfully. false otherwise.
  * */
@@ -107,9 +107,9 @@ bool map_pages(PageDir pgdir, const VMap *k) {
 
 
 /* Unmap npages from the virtual address mapping k. If free is true then free
- * the allocation as well. The mapping must exists.
- * If ptr_add(*pte) is in invalid address range, we simply ignore it.
- **/
+ * the allocation as well. The mapping must exists. If ptr_add(*pte) is in
+ * invalid address range, we simply ignore it.
+ * */
 void unmap_pages(PageDir pgdir, uintptr_t vstart, size_t n, bool free) {
     uintptr_t vend = vstart + n * PAGE_SZ;
     PTE      *pte;

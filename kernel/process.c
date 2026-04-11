@@ -137,23 +137,17 @@ static Process *get_unused_process() {
  * | | eip = 0 (or entry)  |
  * +-----------------------+ <- kstk + KSTACK_SZ
  *
- * Note the kernel stack size is fixed, unlike user stack which you
- * can grow by adding more pages. This is because Kernel stack is the
- * ground truth, operations on virtual memory themselves rely on it
- * being stable.
+ * Note the kernel stack size is fixed, unlike user stack which you can grow by
+ * adding more pages. This is because Kernel stack is the ground truth,
+ * operations on virtual memory themselves rely on it being stable.
  *
- * Before switching in to the process, swtch will pop
- * all context except $eip.
+ * Before switching in to the process, swtch will pop all context except $eip.
+ * When it `ret`, the control will be transferred to `eip` in this case we set
+ * to `forkret.` `forkret` simply return to caller. In this case it will return
+ * to `trapret`, which will further pop all registers in the trap frame.
  *
- * When it `ret`, the control will be transferred to `eip`
- * in this case we set to `forkret.`
- *
- * `forkret` simply return to caller. In this case it will
- * return to `trapret`, which will further pop all registers
- * in the trap frame.
- *
- * We set the eip in the trapframe to 0, so after `trapret` the process
- * will start running on the address 0x0.
+ * We set the eip in the trapframe to 0, so after `trapret` the process will
+ * start running on the address 0x0.
  */
 static bool setup_process_stack(Process *p) {
     // allocate and build the kernel stack
@@ -168,9 +162,8 @@ static bool setup_process_stack(Process *p) {
     sp             -= sizeof(TrapFrame);
     p->trapframe    = (TrapFrame*)sp;
 
-    // Setup `trapret` as the return address from
-    // `forkret`. `trapret` will restore the CPU
-    // state from (TramFrame *).
+    // Setup `trapret` as the return address from `forkret`. `trapret` will
+    // restore the CPU state from (TramFrame *).
     sp             -= sizeof (uintptr_t);
     *(uintptr_t*)sp = (uintptr_t)trapret;
 
@@ -213,9 +206,9 @@ Process *allocate_process() {
 
 
 /* Deallocate a process.
- * It tries to free all resources hold by the process.
- * Note this is not locked, it should be called in a critical
- * section.
+ *
+ * It tries to free all resources hold by the process. Note this is not locked,
+ * it should be called in a critical section.
  * */
 void deallocate_process_unlocked(Process *p) {
     p->size = 0;
@@ -239,9 +232,9 @@ void deallocate_process_unlocked(Process *p) {
 }
 
 
-/* Setup the trapframe for the first process to create an illusion
- * that a trap occured. So if we call trapret, it will pop all registers
- * in the trap frame hence switch the control.
+/* Setup the trapframe for the first process to create an illusion that a trap
+ * occured. So if we call trapret, it will pop all registers in the trap frame
+ * hence switch the control.
  * */
 static void set_pid1_trapframe(Process *p) {
     memset(p->trapframe, 0, sizeof (*p->trapframe));
@@ -255,10 +248,9 @@ static void set_pid1_trapframe(Process *p) {
 }
 
 
-/* Initialize the first user space process.
- * We allocate 1 page for the user memory of init. The
- * source code of init is direclty copied from the
- * kernel's .text section to the user vmem.
+/* Initialize the first user space process. We allocate 1 page for the user
+ * memory of init. The source code of init is direclty copied from the kernel's
+ * .text section to the user vmem.
  *
  *   +----------------+
  *   | program data   |
@@ -278,9 +270,8 @@ void init_pid1() {
         panic ("init_pid1: failed to allocate process");
     }
 
-    // Allocate a page to hold the pgdir for init.
-    // The kernel space is also mapped into the pgdir
-    // in this process.
+    // Allocate a page to hold the pgdir for init. The kernel space is also
+    // mapped into the pgdir in this process.
     if (!kvm_allocate(&p->pgdir))
         panic("init_pid1");
 
@@ -362,8 +353,8 @@ int fork() {
 
     strncpy(child->name, thisp->name, sizeof(thisp->name));
 
-    // State transition needs to be protected by lock.
-    // The forked process will be picked up by the scheduler.
+    // State transition needs to be protected by lock. The forked process will
+    // be picked up by the scheduler.
     lock(&ptable.lk);
     child->state = PROC_READY;
     unlock(&ptable.lk);
@@ -372,10 +363,9 @@ int fork() {
 }
 
 
-/* Exit the current process. On exit the control is immediately
- * transferred to scheduler through `sched()`. The exited process remains
- * in `PROC_ZOMBIE` state until its parent calls wait, which clean up
- * the zombie process.
+/* Exit the current process. On exit the control is immediately transferred to
+ * scheduler through `sched()`. The exited process remains in `PROC_ZOMBIE`
+ * state until its parent calls wait, which clean up the zombie process.
  * */
 void exit() {
     Process *thisp = this_proc();
@@ -462,8 +452,8 @@ void sched() {
 }
 
 
-/* Release lock and sleep on `chan`. Acquire the lock when wake up.
- * Sleep modifies
+/* Release lock and sleep on `chan`. Acquire the lock when wake up. Sleep
+ * modifies
  * @chan  identify the channel the process is being slept. Usually
  *        it's the address of the lock.
  * @lk    the lock the process
@@ -476,8 +466,7 @@ void sleep(void *chan, SpinLock *lk) {
     if (lk == 0)
         panic("sleep: lk");
 
-    // Lock PTable  to protect process state
-    // Unlock the sleep lock to proceed.
+    // Lock PTable  to protect process state Unlock the sleep lock to proceed.
     if (lk != &ptable.lk) {
         lock(&ptable.lk);
         unlock(lk);
@@ -498,7 +487,7 @@ void sleep(void *chan, SpinLock *lk) {
 }
 
 
-/*! Walke up all sleeping processes sleep on `chan` */
+/* Walke up all sleeping processes sleep on `chan` */
 void wakeup_unlocked(void *chan) {
     Process *p;
 
@@ -511,9 +500,7 @@ void wakeup_unlocked(void *chan) {
 }
 
 
-/*! Walke up all sleeping processes sleeps on `chan`. Protected
- *  by ptable lock.
- * */
+/* Walke up all sleeping processes sleeps on `chan`. Protected by ptable lock. */
 void wakeup(void *chan) {
     lock(&ptable.lk);
     wakeup_unlocked(chan);
@@ -521,8 +508,9 @@ void wakeup(void *chan) {
 }
 
 
-/*! Like sched but set the process state to ready so it will be
- * picked up by the scheduler later. */
+/* Like sched but set the process state to ready so it will be picked up by the
+ * scheduler later.
+ * */
 void yield() {
     lock (&ptable.lk);
     this_proc()->state = PROC_READY;

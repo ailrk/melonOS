@@ -57,9 +57,9 @@ struct State {
     char     buf[BUF_SZ];
     char    *p;            // line buffer pointer
 
-    /* We use sbrk as a bump allocator. Heap memory is allocated for
-     * commands, when process a new line we free all memory for the
-     * previous command at once.
+    /* We use sbrk as a bump allocator. Heap memory is allocated for commands,
+     * when process a new line we free all memory for the previous command at
+     * once.
      * */
     unsigned allocated; // total number of allocated bytes
 } st = {

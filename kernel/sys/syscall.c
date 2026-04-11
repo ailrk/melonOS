@@ -30,15 +30,14 @@
  *      |  eip   |
  *      +--------+ <- esp
  *
- * During the system call, the `esp` is saved in the trapframe,
- * the process switch from lower privilege level to high privilege
- * level, so the TSS descriptor we defined earlier will be used to
- * switch the user stack into kernel stack: `ss0` and `esp0` stored in
- * TSS will be used to replace the the current user's `ss` and `esp0`,
- * and user's `ss` and `esp` are stored in the kernel stack.
- * The user stack is still accessible when we are in ring 0. The kernel esp
- * is stored in the trapframe. We need to manually fetch arguments from user
- * stack for each system call.
+ * During the system call, the `esp` is saved in the trapframe, the process
+ * switch from lower privilege level to high privilege level, so the TSS
+ * descriptor we defined earlier will be used to switch the user stack into
+ * kernel stack: `ss0` and `esp0` stored in TSS will be used to replace the the
+ * current user's `ss` and `esp0`, and user's `ss` and `esp` are stored in the
+ * kernel stack. The user stack is still accessible when we are in ring 0. The
+ * kernel esp is stored in the trapframe. We need to manually fetch arguments
+ * from user stack for each system call.
  * */
 
 

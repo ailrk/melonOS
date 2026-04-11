@@ -10,8 +10,8 @@
 #include "err.h"
 
 /* Pipe is a buffer that is shared by two files. We call one file read end and
- * the other write end. If you write into it through one file, you can read
- * it from the other file.
+ * the other write end. If you write into it through one file, you can read it
+ * from the other file.
  * */
 
 #define PIPESZ 512

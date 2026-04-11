@@ -8,11 +8,12 @@
 /* IO agnostic formatting functions */
 
 
-/*! Write null terminated string.
+/* Write null terminated string.
  *
- *  @data   the string to write
- *  @size   size of character to write
- *  @return the pointer to the character one after the last character been printed.
+ * @data   the string to write
+ * @size   size of character to write
+ * @return the pointer to the character one after the last character been
+ *         printed.
  * */
 static char *write_string(char *data, FmtIO io) {
     char *end = data + strlen(data);
@@ -34,7 +35,7 @@ typedef struct PrintCtl {
 } PrintCtl;
 
 
-/*! Print integral number  */
+/* Print integral number  */
 static int print_uint(unsigned n, PrintCtl ctl) {
     static const char digits[] = "0123456789abcdef";
 
@@ -85,24 +86,24 @@ static void pad(int n, char c, FmtIO io) {
 #define PCTL_X(flush_) (PrintCtl){ .base = 16, .upper = true, .io = io, .sign = false, .flush = flush_}
 
 
-/*! formatter. supports %d, %x, %X, %p, %s, %c.
- *  Syntax: %<1 char flags field><width field><format specifier>
- *  flags field:
- *      -: left aligned
- *      #: alternate form
- *      0: when width is specified, prepend 0s for numeric types.
- *  width field: integer, default right aligned. If starts with 0 pad
- *               number with 0s.
- *  format specifier:
- *      d: signed decimal.
- *      x: unsigned hexidecimal.
- *      X: unsigned hexidecimal with capital letters.
- *      p: pointer.
- *      s: null terminated string.
- *      c: character.
+/* formatter. supports %d, %x, %X, %p, %s, %c.
+ * Syntax: %<1 char flags field><width field><format specifier>
+ * flags field:
+ *     -: left aligned
+ *     #: alternate form
+ *     0: when width is specified, prepend 0s for numeric types.
+ * width field: integer, default right aligned. If starts with 0 pad
+ *              number with 0s.
+ * format specifier:
+ *     d: signed decimal.
+ *     x: unsigned hexidecimal.
+ *     X: unsigned hexidecimal with capital letters.
+ *     p: pointer.
+ *     s: null terminated string.
+ *     c: character.
  *
- *  @fmt formatted string
- *  @... data to be formatted
+ * @fmt formatted string
+ * @... data to be formatted
  * */
 void format(FmtIO io, char *fmt, va_list args) {
     bool     pad0    = false;

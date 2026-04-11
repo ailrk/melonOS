@@ -114,12 +114,12 @@ static bool set_state(ANSIState *s, char c) {
 }
 
 
-/*! Parse list in form of `n1;n2;..` where nx is an integer.
+/* Parse list in form of `n1;n2;..` where nx is an integer.
  *
- *  @top      top pointer of the integer stack.
- *  @cbegin   pointer to start of the string
- *  @return:  return the top pointer of the stack. The pointer points to
- *            one element after the last integral number being parsed.
+ * @top      top pointer of the integer stack.
+ * @cbegin   pointer to start of the string
+ * @return:  return the top pointer of the stack. The pointer points to
+ *           one element after the last integral number being parsed.
  * */
 static int *parse_list(int *top, char **cbegin) {
     int n;
@@ -135,13 +135,13 @@ static int *parse_list(int *top, char **cbegin) {
 }
 
 
-/*! Parse an ansi escape code and return the `ANSIState` indicate the escape
- *  code content.
+/* Parse an ansi escape code and return the `ANSIState` indicate the escape
+ * code content.
  *
- *  @state:  return value
- *  @c:      start of the escape code string
- *  @size:   max size of the string
- *  @return  the pointer to one plus the last character from the escape code
+ * @state:  return value
+ * @c:      start of the escape code string
+ * @size:   max size of the string
+ * @return  the pointer to one plus the last character from the escape code
  * */
 char *ansi_parse(ANSIState *state, char *c) {
     int *top;

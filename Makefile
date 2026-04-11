@@ -63,6 +63,7 @@ LIB_DIR 		= lib
 MELON_DIR		= melon
 MELIB_DIR 		= melib
 MKFS_DIR		= mkfs
+TEST_DIR 		= test
 
 
 BOOT			= melonos-bootloader
@@ -124,11 +125,13 @@ $(MELONFS): $(MKFS) $(USERPROGS)
 
 .PHONY: clean qemu-debug copy echo
 clean:
-	find $(KERN_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	find $(BOOT_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	find $(LIB_DIR) \( -name "*.o" -o -name "*.pp.*" \) -exec rm {} \;
-	find $(MELON_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
-	find $(MELIB_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" \) -exec rm {} \;
+	find $(KERN_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*.so" \) -exec rm {} \;
+	find $(BOOT_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*.so" \) -exec rm {} \;
+	find $(LIB_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*.so" \) -exec rm {} \;
+	find $(MELON_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" -o -name "*.so" \) -exec rm {} \;
+	find $(MELIB_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" -o -name "*.so" \) -exec rm {} \;
+	find $(TEST_DIR) \( -name "*.o" -o -name "*.pp.*" -o -name "*_" -o -name "*.so" \) -exec rm {} \;
+
 	rm -rf *.o *.pp.* $(MELONOS_QCOW2) $(MELONOS) $(MELONFS) $(MELONFS_QCOW2) $(MKFS) $(BOOT) $(KERNEL) $(LIBUTILS) $(LIBMELON)
 
 echo:
@@ -263,6 +266,15 @@ stop:
 	-tmux kill-pane -t 1
 	-tmux kill-pane -t 1
 	-tmux kill-pane -t 1
+
+.PHONY: test
+test:
+	@echo "Building host-compatible library for testing..."
+	$(MAKE) lib_test_so
+	@echo "Running Python tests..."
+	# We move the .so into the test folder or set LD_LIBRARY_PATH
+	mv libutils.so test/
+	pytest test/test_lib.py
 
 
 # subfolder makefiles

@@ -118,13 +118,13 @@ bool ide_check_error (Channel ch) {
 }
 
 
-/*! Send ide command request. This returns immediately so we can
- *  perform disk IO asynchronously.
- *  @ch   Channel
- *  @d    Channel drive
- *  @cmd  ATA command
- *  @lba  LBA address
- *  @secn Sector counts
+/* Send ide command request. This returns immediately so we can
+ * perform disk IO asynchronously.
+ * @ch   Channel
+ * @d    Channel drive
+ * @cmd  ATA command
+ * @lba  LBA address
+ * @secn Sector counts
  * */
 void ide_request(Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn) {
     if (secn == 0)
@@ -140,12 +140,12 @@ void ide_request(Channel ch, Drive d, ATACmd cmd, unsigned lba, size_t secn) {
 }
 
 
-/*! Send read request to ide without waiting.
- *  @ch   Channel
- *  @d    Channel drive
- *  @dst  Memory read to. The size of `dst` should be bigger
- *        than (SECSZ * secn).
- *  @secn read n sectors
+/* Send read request to ide without waiting.
+ * @ch   Channel
+ * @d    Channel drive
+ * @dst  Memory read to. The size of `dst` should be bigger
+ *       than (SECSZ * secn).
+ * @secn read n sectors
  * */
 void ide_read_request(Channel ch, Drive d, unsigned lba, size_t secn) {
     ide_wait(ch);
@@ -154,7 +154,7 @@ void ide_read_request(Channel ch, Drive d, unsigned lba, size_t secn) {
 }
 
 
-/*! Read immediately without sending a read request. */
+/* Read immediately without sending a read request. */
 void ide_read(Channel ch, void *dst, size_t secn) {
     insl(regb(ch, BR_DATA), dst, (SECSZ * secn)/4);
 }

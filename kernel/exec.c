@@ -96,9 +96,8 @@ int exec(char *path, char **argv) {
     inode_drop(ino);
     ino = 0;
 
-    // Allocate 2 pages from the next page boundary,
-    // the first page is the guard page and is inaccessible
-    // the second page is the user stack
+    // Allocate 2 pages from the next page boundary, the first page is the
+    // guard page and is inaccessible the second page is the user stack
     size = page_alignup(size);
     if ((size = uvm_allocate(pgtbl, size, size + PAGE_SZ * 2)) == 0) {
         goto bad;

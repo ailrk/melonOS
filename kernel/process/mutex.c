@@ -13,7 +13,7 @@ Mutex new_mutex(const char *name) {
 }
 
 
-/*! Is the current process holding the mutex? */
+/* Is the current process holding the mutex? */
 bool holding_mutex(Mutex *slk) {
     bool r;
     lock (&slk->lk);
@@ -23,8 +23,8 @@ bool holding_mutex(Mutex *slk) {
 }
 
 
-/*! Try acquire the mutex. If the lock is already acquired
- *  then put the current process on sleep.
+/* Try acquire the mutex. If the lock is already acquired then put the current
+ * process on sleep.
  * */
 void lock_mutex(Mutex *slk) {
     lock(&slk->lk);
@@ -38,7 +38,7 @@ void lock_mutex(Mutex *slk) {
 }
 
 
-/*! Release the mutex . Wake up all other processes sleeping on the mutex.
+/* Release the mutex . Wake up all other processes sleeping on the mutex.
  * */
 void unlock_mutex(Mutex *slk) {
     lock (&slk->lk);

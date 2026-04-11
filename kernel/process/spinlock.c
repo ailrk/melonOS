@@ -25,10 +25,9 @@ bool holding(SpinLock *lk) {
 }
 
 
-/* Disable interrupt for the entire critical section to avoid
- * deadlock.
- * e.g If an interrupt handler also acquire the same lock
- * the lock will never be released.
+/* Disable interrupt for the entire critical section to avoid deadlock.
+ * e.g If an interrupt handler also acquire the same lock the lock will never
+ * be released.
  * */
 void lock(SpinLock *lk) {
     push_cli();
@@ -49,7 +48,7 @@ void unlock(SpinLock *lk) {
 
     lk->cpu = 0;
     __sync_synchronize();
-      // The xchg is atomic.
+    // The xchg is atomic.
     xchg(&lk->locked, 0);
     pop_cli();
 }

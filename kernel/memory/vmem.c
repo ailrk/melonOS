@@ -25,9 +25,8 @@ PageDir     kernel_pgdir; // kernel only page directory.
 VMap        kmap[4];
 
 
-/* There is one page table for each process. The following
- * mapping for kernel space presents on every processes'
- * page table.
+/* There is one page table for each process. The following mapping for kernel
+ * space presents on every processes' page table.
  *
  *     KERN_BASE..KERN_BASE+EXTMEM => 0..EXTMEM
  *     KERN_BASE+EXTMEM..data      => EXTMEM..KA2P(data)
@@ -95,14 +94,13 @@ static char *uva2ka(PageDir pgdir, char *vaddr) {
  */
 
 
-/* Setup the kernel part of the page table. we allocate
- * a single page to hold the PageDir. Then we map pages base
- * on the `kmap` to setup the kernel virtual memory.
+/* Setup the kernel part of the page table. we allocate a single page to hold
+ * the PageDir. Then we map pages base on the `kmap` to setup the kernel
+ * virtual memory.
  *
- * The kernel space is mapped in every process's page table
- * so we don't need to switch page table on every system call.
- * Otherwise we need to flush the full TLB which is of course
- * expensive.
+ * The kernel space is mapped in every process's page table so we don't need to
+ * switch page table on every system call. Otherwise we need to flush the full
+ * TLB which is of course expensive.
  *
  * @return initialized page directory
  * */
@@ -135,8 +133,8 @@ bool kvm_allocate(PageDir *pgdir) {
 }
 
 
-/* Switch page table register cr3 to kernel only page table. This page
- * table is used when there is no process running.
+/* Switch page table register cr3 to kernel only page table. This page table is
+ * used when there is no process running.
  * */
 void kvm_switch() {
 #if DEBUG && DEBUG_VM
@@ -210,8 +208,8 @@ void uvm_init1(PageDir pgdir, char *init, size_t sz) {
 
 /* Write TSS segment for user space task switching
  *
- * Kernel stack and user stack are separated, you don't want a user program
- * to modify kernel state.
+ * Kernel stack and user stack are separated, you don't want a user program to
+ * modify kernel state.
  *
  * Every process has its own kernel stack.
  *
@@ -372,9 +370,8 @@ int uvm_allocate(PageDir pgdir, size_t oldsz, size_t newsz) {
  *    | user text      |    | user text      |
  *  0 +----------------+  0 +----------------+
  *
- * umv_copy will allocate more pages if needed.
- * Usually you want npg to cover the whole user space
- * of the source process.
+ * umv_copy will allocate more pages if needed. Usually you want npg to cover
+ * the whole user space of the source process.
  * */
 bool uvm_copy(PageDir *out, PageDir in, size_t npg) {
 #if DEBUG && DEBUG_VM
@@ -450,10 +447,10 @@ int uvm_deallocate(PageDir pgdir, uintptr_t oldsz, uintptr_t newsz) {
     return newsz;
 }
 
-/* Copy size amount of bytes from address p to user virtual addr in pgdir.
- * This can be used to copy memory to a different page table.
- * The page being copied into must have PTE_P and PTE_U set, otherwise
- * the copy is aborted immediately.
+/* Copy size amount of bytes from address p to user virtual addr in pgdir. This
+ * can be used to copy memory to a different page table. The page being copied
+ * into must have PTE_P and PTE_U set, otherwise the copy is aborted
+ * immediately.
  * If succeed return 0, otherwise return -1;
  * */
 int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *buf, unsigned size) {
@@ -481,8 +478,9 @@ int uvm_memcpy(PageDir pgdir, unsigned vaddr, void *buf, unsigned size) {
 
 
 /* Free a page table.
- * This will also free all physical memory used in the user part. (va 0-KERN_BASE)
- * as well as the kernel page directory (which is 1 page)
+ *
+ * This will also free all physical memory used in the user part. as well as
+ * the kernel page directory (which is 1 page)
  * */
 void vmfree(PageDir pgdir) {
 #if DEBUG && DEBUG_VM

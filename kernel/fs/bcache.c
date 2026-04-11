@@ -7,8 +7,8 @@
 #include "fs/fdefs.h"
 
 /* BCache is a circular doubly linked list for buffering disk blocks in memory.
- * Caching blocks allow us to perform expensive updates in memory and
- * flush them to the disk when necessary.
+ * Caching blocks allow us to perform expensive updates in memory and flush
+ * them to the disk when necessary.
  *
  * We need to ensure there is only one buffer cache node for one particular
  * disk block, otherwise it will causes consistency issues when multiple
@@ -49,8 +49,7 @@ void bcache_init() {
 }
 
 
-/*! Lookup for block cached in bcache. If the block is not cached,
- *  return 0 */
+/* Lookup for block cached in bcache. If the block is not cached, return 0 */
 static BNode* bcachce_lookup(unsigned dev, blockno_t blockno) {
     BNode *b = bcache.head;
 
@@ -66,8 +65,8 @@ static BNode* bcachce_lookup(unsigned dev, blockno_t blockno) {
 }
 
 
-/*! Allocate an unused bcache node for the block. If no block is
- *  available return 0;
+/* Allocate an unused bcache node for the block. If no block is available
+ * return 0;
  * */
 static BNode *bcache_allocate(unsigned dev, blockno_t blockno) {
     BNode *b = bcache.head;
@@ -88,7 +87,7 @@ static BNode *bcache_allocate(unsigned dev, blockno_t blockno) {
 }
 
 
-/*! Look for buffer cache on dev. Allocate if the cache is not found. */
+/* Look for buffer cache on dev. Allocate if the cache is not found. */
 static BNode *bcache_acquire(unsigned dev, blockno_t blockno) {
     BNode *b;
 
@@ -104,10 +103,10 @@ static BNode *bcache_acquire(unsigned dev, blockno_t blockno) {
 }
 
 
-/*! Read a `BNode` from blockno.
- *  `bcache_read` allocates a node from `bcache` and locks the
- *  mutex on that node. The node needs to be released manually
- *  to be available in the bcache again.
+/* Read a `BNode` from blockno.
+ * `bcache_read` allocates a node from `bcache` and locks the mutex on that
+ * node. The node needs to be released manually to be available in the bcache
+ * again.
  * */
 BNode *bcache_read(devno_t dev, blockno_t blockno, bool poll) {
     BNode *b;
@@ -122,15 +121,14 @@ BNode *bcache_read(devno_t dev, blockno_t blockno, bool poll) {
 }
 
 
-/*! Write `BNode` to blockno */
+/* Write `BNode` to blockno */
 void bcache_write(BNode *b, bool poll) {
     b->dirty = true;
     disk_sync(b, poll);
 }
 
 
-/*! Clean up the node and move it to the head of the cache.
- * */
+/* Clean up the node and move it to the head of the cache. */
 static void bcache_free(BNode *b) {
     b->nref--;
     if (b->nref == 0) {
@@ -147,8 +145,7 @@ static void bcache_free(BNode *b) {
 }
 
 
-/*! Release the BNode.
- * */
+/* Release the BNode. */
 void bcache_release(BNode *b) {
     bcache_free(b);
 }

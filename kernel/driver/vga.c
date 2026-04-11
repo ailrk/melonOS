@@ -180,8 +180,8 @@ static void ansi_cntl(const ANSIState *ansi) {
 }
 
 
-/*! Write a single char to the screen. If it encounters an escape code, consume
- *  it first then print the next character.
+/* Write a single char to the screen. If it encounters an escape code, consume
+ * it first then print the next character.
  * */
 char *vga_writec(char *data) {
     ANSIState ansi;
@@ -199,13 +199,13 @@ char *vga_writec(char *data) {
 }
 
 
-/*! The implementation should always use `vga_write_string` because it handles
- *  ansi escapes properly.
+/* The implementation should always use `vga_write_string` because it handles
+ * ansi escapes properly.
  *
- *  `vga_printf` is driven by `format` and it supports all it's format specifiers.
+ * `vga_printf` is driven by `format` and it supports all it's format specifiers.
  *
- *  @fmt formatted string
- *  @... data to be formatted
+ * @fmt formatted string
+ * @... data to be formatted
  * */
 void vga_printf(char *fmt, ...) {
     va_list args;

@@ -34,8 +34,8 @@ void palloc_init(void *vstart, void *vend) {
 }
 
 
-/* Alloc a PAGE_SZ memory aligned at page boundry
- * return 0 if the memory cannot be allocated.
+/* Alloc a PAGE_SZ memory aligned at page boundry return 0 if the memory cannot
+ * be allocated.
  * */
 char *palloc() {
     Run *r = kernel_mem.freelist;
@@ -67,8 +67,8 @@ end:
 #endif
 
 
-/* Free a page of physical memory pointed by v
- * v needs to align at page boundry otherwise we panic.
+/* Free a page of physical memory pointed by v v needs to align at page boundry
+ * otherwise we panic.
  *
  * @v:  virtual address
  * */

@@ -2,11 +2,9 @@
 #include <stdint.h>
 
 
-/* Layout of the trap frame built on the stack by the
- * hardware and by trapasm.S, and passed to trap().
- *
- * TrapFrame saves the state of the user mode program
- * when it enters the kernel.
+/* Layout of the trap frame built on the stack by the hardware and by
+ * trapasm.S, and passed to trap(). TrapFrame saves the state of the user mode
+ * program when it enters the kernel.
  */
 typedef struct TrapFrame {
   /* pushed by `trapgo` in `trapasm.s` */
