@@ -35,6 +35,10 @@ def test_strtol_octal():
     res = lib.strtol(b"010", None)
     assert res == 8
 
+def test_strtol_negative1():
+    res = lib.strtol(b"0x0A", None)
+    assert res == 10
+
 def test_strtol_negative():
     res = lib.strtol(b"-0x0A", None)
     assert res == -10

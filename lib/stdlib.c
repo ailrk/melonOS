@@ -48,16 +48,17 @@ long int strtol(char *str, char **endptr) {
         neg = 1;
         p++;
     }
+    while (isspace(*p)) p++;
 
     if (p[0] == '0' && p[1] == 'x') { // hex
         p += 2;
-        while (isdigit(*p) || *p > 'a' && *p < 'f' || *p > 'A' && *p < 'F') {
+        while (isdigit(*p) || *p >= 'a' && *p <= 'f' || *p >= 'A' && *p <= 'F') {
             k = k * 16;
             if (isdigit(*p))
                 k += *p - '0';
-            else if (*p > 'a' && *p < 'f')
+            else if (*p >= 'a' && *p <= 'f')
                 k += *p - 'a' + 10;
-            else if (*p > 'A' && *p < 'F')
+            else if (*p >= 'A' && *p <= 'F')
                 k += *p - 'A' + 10;
             else
                 goto abort;
@@ -66,7 +67,7 @@ long int strtol(char *str, char **endptr) {
 
     } else if (p[0] == '0') { // oct
         p += 1;
-        while (isdigit(*p)) {
+        while (*p >= '0' && *p <= '7') {
             k = k * 8 + (*p - '0');
             p++;
         }
