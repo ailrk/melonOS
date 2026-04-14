@@ -40,6 +40,8 @@
             pkgs.socat
             pkgs.picocom
             pkgs.nasm
+            pkgs.python312
+            pkgs.python312Packages.pytest
           ];
         };
       });
